@@ -1,41 +1,65 @@
-# Prerequisites
-*.d
+# =========================
+# Build directories
+# =========================
+build/
+out/
+bin/
+bin-int/
 
-# Compiled Object files
-*.slo
-*.lo
+# =========================
+# CMake
+# =========================
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Generated project files
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.user
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+*.log
+
+# =========================
+# Compiled binaries
+# =========================
+*.exe
+*.dll
+*.lib
+*.so
+*.dylib
+*.a
+
+# Debug symbols
+*.pdb
+*.idb
+
+# Object files
 *.o
 *.obj
 
-# Precompiled Headers
-*.gch
-*.pch
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
 
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# debug information files
-*.dwo
+# =========================
+# Editor files
+# =========================
+*.swp
+*.swo
+*~
