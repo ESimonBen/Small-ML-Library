@@ -1,19 +1,20 @@
 # MLCore CMakeLists
 set(MLCORE_SOURCES
-    src/mlcore/tensor/tensor.cpp
-    src/mlcore/operations/elementwise.cpp
-    src/mlcore/memory/allocator.cpp
-    src/mlcore/utils/shape.cpp
+    src/mlCore/tensor/tensor.cpp
+    src/mlCore/operations/elementwise.cpp
+    src/mlCore/memory/allocator.cpp
+    src/mlCore/utils/shape.cpp
 )
 
 set(MLCORE_HEADERS
-    include/mlcore/config.h
-    include/mlcore/tensor/tensor.h
-    include/mlcore/operations/elementwise.h
-    include/mlcore/memory/allocator.h
-    include/mlcore/memory/allocator.inl
-    include/mlcore/memory/storage.h
-    include/mlcore/utils/shape.h
+    include/mlCore/config.h
+    include/mlCore/tensor/tensor.h
+    include/mlCore/operations/elementwise.h
+    include/mlCore/memory/allocator.h
+    include/mlCore/memory/allocator.inl
+    include/mlCore/memory/storage.h
+    include/mlCore/utils/shape.h
+    include/mlCore/utils/shape.inl
 )
 
 add_library(MLCore STATIC

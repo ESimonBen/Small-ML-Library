@@ -2,23 +2,23 @@
 #include <cstddef>
 #include <mlcore/memory/allocator.h>
 
-namespace mlcore::memory {
+namespace MLCore::Memory {
 	template <typename T>
 	class Storage {
 	public:
 		Storage(T* data, size_t size)
-			: data(data), size(size) 
+			: m_Data(data), m_Size(size) 
 		{}
 
-		T* data() {
+		T* Data() {
 			return m_Data;
 		}
 
-		const T* data() const {
+		const T* Data() const {
 			return m_Data;
 		}
 
-		size_t size() const {
+		size_t Size() const {
 			return m_Size;
 		}
 
@@ -28,8 +28,8 @@ namespace mlcore::memory {
 	};
 
 	template <typename T>
-	inline Storage<T> MakeAllocation(ArenaAllocator& allocator, size_t size) {
-		T* ptr = allocator.allocate<T>(size);
+	inline Storage<T> MakeStorage(ArenaAllocator& allocator, size_t size) {
+		T* ptr = allocator.Allocate<T>(size);
 		return Storage<T>(ptr, size);
 	}
 }

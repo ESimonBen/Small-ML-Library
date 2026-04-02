@@ -1,3 +1,45 @@
+// shape.h
 #pragma once
+#include <vector>
+#include <cstddef>
+#include <type_traits>
 
-// TODO: Shape Code
+namespace MLCore::Utils{
+	class Shape {
+	public:
+		Shape() = default;
+
+		explicit Shape(const std::vector<size_t>& dims);
+
+		template <typename... Dimensions, typename = std::enable_if_t<(std::is_integral_v<Dimensions> && ...)>>
+		explicit Shape(Dimensions... dims);
+
+		size_t Dim() const;
+		
+		size_t NumElements() const;
+
+		const std::vector<size_t>& Strides() const;
+
+		size_t FlattenIndex(const std::vector<size_t>& indices) const;
+
+		std::vector<size_t> UnflattenIndex(size_t index) const;
+
+		const std::vector<size_t>& Dims() const;
+
+		bool operator==(const Shape& other) const;
+
+		bool operator!=(const Shape& other) const;
+
+		// Possible function to be added
+		/*static Shape Broadcast(const Shape& a, const Shape& b);*/
+
+	private:
+		void ComputeStrides();
+
+	private:
+		std::vector<size_t> m_Dims;
+		std::vector<size_t> m_Strides;
+	};
+}
+
+#include <mlCore/utils/shape.inl>

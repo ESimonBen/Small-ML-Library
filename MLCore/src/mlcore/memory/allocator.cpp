@@ -1,7 +1,7 @@
 // allocator.cpp
 #include <mlcore/memory/allocator.h>
 
-namespace mlcore::memory {
+namespace MLCore::Memory {
 	ArenaAllocator::ArenaAllocator(size_t arenaSize) 
 		: m_ArenaCapacity(arenaSize), m_Offset(0) {
 		m_Arena = static_cast<char*>(std::malloc(arenaSize));
@@ -20,7 +20,7 @@ namespace mlcore::memory {
 		m_Arena = nullptr;
 	}
 
-	void ArenaAllocator::reset() {
+	void ArenaAllocator::Reset() {
 		#ifdef ML_CORE_DEBUG
 			std::memset(m_Arena, 0xDD, m_ArenaCapacity);
 		#endif
@@ -28,15 +28,15 @@ namespace mlcore::memory {
 		m_Offset = 0;
 	}
 
-	size_t ArenaAllocator::capacity() const {
+	size_t ArenaAllocator::Capacity() const {
 		return m_ArenaCapacity;
 	}
 
-	size_t ArenaAllocator::used() const {
+	size_t ArenaAllocator::UsedBytes() const {
 		return m_Offset;
 	}
 
-	size_t ArenaAllocator::remaining() const {
+	size_t ArenaAllocator::Remaining() const {
 		return m_ArenaCapacity - m_Offset;
 	}
 }
