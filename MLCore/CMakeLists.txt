@@ -1,15 +1,18 @@
 # MLCore CMakeLists
 set(MLCORE_SOURCES
-    src/tensor/tensor.cpp
-    src/operations/elementwise.cpp
-    src/memory/allocator.cpp
-    src/utils/shape.cpp
+    src/mlcore/tensor/tensor.cpp
+    src/mlcore/operations/elementwise.cpp
+    src/mlcore/memory/allocator.cpp
+    src/mlcore/utils/shape.cpp
 )
 
 set(MLCORE_HEADERS
+    include/mlcore/config.h
     include/mlcore/tensor/tensor.h
     include/mlcore/operations/elementwise.h
     include/mlcore/memory/allocator.h
+    include/mlcore/memory/allocator.inl
+    include/mlcore/memory/storage.h
     include/mlcore/utils/shape.h
 )
 
