@@ -12,7 +12,7 @@ namespace MLCore::Utils {
 		}
 	}
 
-	inline size_t Shape::Dim() const {
+	inline size_t Shape::Rank() const {
 		return m_Dims.size();
 	}
 

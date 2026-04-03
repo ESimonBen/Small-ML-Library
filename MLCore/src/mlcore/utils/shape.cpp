@@ -57,4 +57,8 @@ namespace MLCore::Utils {
 			}
 		}
 	}
+
+	size_t Shape::operator[](size_t i) const {
+		return m_Dims[i];
+	}
 }

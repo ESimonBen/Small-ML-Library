@@ -1,6 +1,6 @@
 // allocator.cpp
 #include <cstring>
-#include <mlcore/memory/allocator.h>
+#include <mlCore/memory/allocator.h>
 
 namespace MLCore::Memory {
 	ArenaAllocator::ArenaAllocator(size_t arenaSize) 

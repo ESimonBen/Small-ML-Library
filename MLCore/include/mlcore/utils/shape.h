@@ -15,7 +15,7 @@ namespace MLCore::Utils{
 		template <typename... Dimensions, typename = std::enable_if_t<(std::is_integral_v<Dimensions> && ...)>>
 		explicit Shape(Dimensions... dims);
 
-		size_t Dim() const;
+		size_t Rank() const;
 		
 		size_t NumElements() const;
 
@@ -31,6 +31,8 @@ namespace MLCore::Utils{
 
 		bool operator!=(const Shape& other) const;
 
+		size_t operator[](size_t i) const;
+
 		// Possible function to be added
 		/*static Shape Broadcast(const Shape& a, const Shape& b);*/
 
@@ -44,4 +46,4 @@ namespace MLCore::Utils{
 	};
 }
 
-#include <mlCore/utils/shape.inl>
+#include "shape.inl"

@@ -48,4 +48,4 @@ namespace MLCore::TensorCore {
 	};
 }
 
-#include <mlCore/tensor/tensor.inl>
+#include "tensor.inl"

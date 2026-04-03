@@ -1,22 +1,15 @@
 // tensor.inl
 #include <stdexcept>
-#include <iostream>
 
 namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator)
 		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())) {
-		#ifdef ML_CORE_DEBUG
-			Fill(std::numeric_limits<T>::quiet_NaN());
-		#endif
 	}
 
 	template<typename T>
 	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator)
 		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) {
-		#ifdef ML_CORE_DEBUG
-			Fill(std::numeric_limits<T>::quiet_NaN());
-		#endif
 	}
 
 	template <typename T>
@@ -120,7 +113,7 @@ namespace MLCore::TensorCore {
 	template <typename... Indices, typename>
 	inline T& Tensor<T>::operator()(Indices... indices) {
 		#ifdef ML_CORE_DEBUG
-			if (sizeof...(indices) != m_Shape.Dim()) {
+			if (sizeof...(indices) != m_Shape.Rank()) {
 				throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
 			}
 		#endif
