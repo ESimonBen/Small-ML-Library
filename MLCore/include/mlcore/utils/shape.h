@@ -11,6 +11,7 @@ namespace MLCore::Utils{
 
 		explicit Shape(const std::vector<size_t>& dims);
 
+		// Shape with any number of arguments (makes sure to have only integral types for the arguments)
 		template <typename... Dimensions, typename = std::enable_if_t<(std::is_integral_v<Dimensions> && ...)>>
 		explicit Shape(Dimensions... dims);
 
@@ -39,6 +40,7 @@ namespace MLCore::Utils{
 	private:
 		std::vector<size_t> m_Dims;
 		std::vector<size_t> m_Strides;
+		size_t m_NumElements = 0;
 	};
 }
 

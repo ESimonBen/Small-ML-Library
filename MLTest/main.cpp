@@ -1,17 +1,29 @@
 // main.cpp
 #include <iostream>
-#include <mlcore/memory/storage.h>
+#include <mlCore/tensor/tensor.h>
+
+using namespace MLCore;
 
 int main() {
-    MLCore::Memory::ArenaAllocator arena(1024);
+    Memory::ArenaAllocator allocator;
+    TensorCore::Tensor<float> A({ 2, 3 }, allocator);
 
-    auto storage = MLCore::Memory::MakeStorage<float>(arena, 10);
+    A.Fill(0.0f);
+    float num = 1.0f;
 
-    for (int i = 0; i <= 10; i++) {
-        storage.Data()[i] = i * 2.0f;
+    A[5] = 1.0f;
+
+    for (auto& v : A) {
+        std::cout << v << " ";
     }
 
-    for (int i = 0; i <= 10; i++) {
-        std::cout << storage.Data()[i] << "\n";
+    A(0, 0) = 3.4f;
+    A(1, 2) = 4.3f;
+
+    for (auto& v : A) {
+        std::cout << v << " ";
     }
+
+    std::cout << std::endl;
+    std::cout << std::endl << A.NumElements() << std::endl;
 }

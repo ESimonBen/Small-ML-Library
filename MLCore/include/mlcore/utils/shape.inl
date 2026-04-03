@@ -1,10 +1,15 @@
 // shape.inl
+#include <numeric>
 
 namespace MLCore::Utils {
 	template <typename... Dimensions, typename>
 	inline Shape::Shape(Dimensions... dims) 
-		: m_Dims(dims) {
-
+		: m_Dims{ static_cast<size_t>(dims)... } {
+		ComputeStrides();
+		m_NumElements = 1;
+		for (size_t d : m_Dims) {
+			m_NumElements *= d;
+		}
 	}
 
 	inline size_t Shape::Dim() const {
@@ -12,7 +17,11 @@ namespace MLCore::Utils {
 	}
 
 	inline size_t Shape::NumElements() const {
-		return std::accumulate(m_Dims.begin(), m_Dims.end(), size_t(1), std::multiplies<size_t>()); // Takes all the elements of m_Dims and multiplies them together
+		if (m_Dims.empty()) {
+			return 0;
+		}
+
+		return m_NumElements;
 	}
 
 	inline const std::vector<size_t>& Shape::Strides() const {

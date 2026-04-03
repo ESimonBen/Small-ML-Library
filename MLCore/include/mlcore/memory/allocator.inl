@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 #include <mlcore/config.h>
 
 namespace MLCore::Memory {
@@ -21,7 +22,7 @@ namespace MLCore::Memory {
 		size_t alignment = alignof(T);
 		assert(alignment > 0);
 
-		uintptr_t currentAddress = reinterpret_cast<size_t>(m_Arena) + m_Offset;
+		uintptr_t currentAddress = reinterpret_cast<uintptr_t>(m_Arena) + m_Offset;
 		uintptr_t alignedAddress = AlignForward(currentAddress, alignment);
 
 		size_t adjustment = alignedAddress - currentAddress;

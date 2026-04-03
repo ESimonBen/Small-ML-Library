@@ -9,6 +9,7 @@ set(MLCORE_SOURCES
 set(MLCORE_HEADERS
     include/mlCore/config.h
     include/mlCore/tensor/tensor.h
+    include/mlCore/tensor/tensor.inl
     include/mlCore/operations/elementwise.h
     include/mlCore/memory/allocator.h
     include/mlCore/memory/allocator.inl

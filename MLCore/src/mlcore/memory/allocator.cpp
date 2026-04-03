@@ -1,4 +1,5 @@
 // allocator.cpp
+#include <cstring>
 #include <mlcore/memory/allocator.h>
 
 namespace MLCore::Memory {

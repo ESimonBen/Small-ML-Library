@@ -7,11 +7,20 @@ namespace MLCore::Utils {
 	Shape::Shape(const std::vector<size_t>& dims) 
 		: m_Dims(dims) {
 		ComputeStrides();
+
+		m_NumElements = 1;
+		for (size_t d : m_Dims) {
+			m_NumElements *= d;
+		}
 	}
 	
 	size_t Shape::FlattenIndex(const std::vector<size_t>& indices) const {
 		if (indices.size() != m_Dims.size()) {
 			throw std::runtime_error("ERROR: Index dimension mismatch");
+		}
+
+		if (m_Strides.size() != m_Dims.size()) {
+			throw std::runtime_error("ERror: Shape strides not initialized");
 		}
 
 		size_t offset = 0;
