@@ -11,11 +11,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = input[i] + Scalar;
+			Output[i] = Input[i] + Scalar;
 		}
 
 		return Output;
@@ -27,11 +24,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = input[i] - Scalar;
+			Output[i] = Input[i] - Scalar;
 		}
 
 		return Output;
@@ -43,11 +37,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = input[i] * Scalar;
+			Output[i] = Input[i] * Scalar;
 		}
 
 		return Output;
@@ -65,11 +56,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = input[i] / Scalar;
+			Output[i] = Input[i] / Scalar;
 		}
 
 		return Output;
@@ -82,11 +70,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = Scalar + input[i];
+			Output[i] = Scalar + Input[i];
 		}
 
 		return Output;
@@ -98,11 +83,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = Scalar - input[i];
+			Output[i] = Scalar - Input[i];
 		}
 
 		return Output;
@@ -114,11 +96,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = Scalar * input[i];
+			Output[i] = Scalar * Input[i];
 		}
 
 		return Output;
@@ -136,11 +115,8 @@ namespace MLCore::Operations {
 
 		const size_t size = Input.NumElements();
 
-		auto* input = Input.Data();
-		auto* output = Output.Data();
-
 		for (size_t i = 0; i < size; ++i) {
-			output[i] = Scalar / input[i];
+			Output[i] = Scalar / Input[i];
 		}
 
 		return Output;

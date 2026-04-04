@@ -20,7 +20,7 @@ namespace MLCore::Utils {
 		}
 
 		if (m_Strides.size() != m_Dims.size()) {
-			throw std::runtime_error("ERror: Shape strides not initialized");
+			throw std::runtime_error("ERROR: Shape strides not initialized");
 		}
 
 		size_t offset = 0;

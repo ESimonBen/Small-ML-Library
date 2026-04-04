@@ -4,13 +4,18 @@
 namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator)
-		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())) {
-	}
+		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())) 
+	{}
 
 	template<typename T>
 	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator)
-		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) {
-	}
+		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) 
+	{}
+
+	template<typename T>
+	inline Tensor<T>::Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator)
+		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) 
+	{}
 
 	template <typename T>
 	inline const Utils::Shape& Tensor<T>::GetShape() const {
@@ -37,6 +42,16 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline const T* Tensor<T>::Data() const {
 		return m_Storage.Data();
+	}
+
+	template <typename T>
+	inline size_t Tensor<T>::Rank() const {
+		return m_Shape.Rank();
+	}
+
+	template <typename T>
+	inline const std::vector<size_t>& Tensor<T>::Dims() const {
+		return m_Shape.Dims();
 	}
 
 	template<typename T>

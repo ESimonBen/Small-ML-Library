@@ -12,15 +12,11 @@ namespace MLCore::Operations {
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
-		auto* a = A.Data();
-		auto* b = B.Data();
-		auto* c = C.Data();
-
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
 			for (size_t i = 0; i < size; ++i) {
-				c[i] = a[i] + b[i];
+				C[i] = A[i] + B[i];
 			}
 
 			return C;
@@ -53,15 +49,11 @@ namespace MLCore::Operations {
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
-		auto* a = A.Data();
-		auto* b = B.Data();
-		auto* c = C.Data();
-
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
 			for (size_t i = 0; i < size; ++i) {
-				c[i] = a[i] - b[i];
+				C[i] = A[i] - B[i];
 			}
 
 			return C;
@@ -93,15 +85,11 @@ namespace MLCore::Operations {
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
-		auto* a = A.Data();
-		auto* b = B.Data();
-		auto* c = C.Data();
-
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
 			for (size_t i = 0; i < size; ++i) {
-				c[i] = a[i] * b[i];
+				C[i] = A[i] * B[i];
 			}
 
 			return C;
@@ -133,15 +121,11 @@ namespace MLCore::Operations {
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
-		auto* a = A.Data();
-		auto* b = B.Data();
-		auto* c = C.Data();
-
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
 			for (size_t i = 0; i < size; ++i) {
-				c[i] = a[i] / b[i];
+				C[i] = A[i] / B[i];
 			}
 
 			return C;

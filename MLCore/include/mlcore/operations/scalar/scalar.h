@@ -19,16 +19,16 @@ namespace MLCore::Operations {
 
 	// Scalar Operations on LHS
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> AddScalarLeft(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  noexcept;
+	[[nodiscard]] TensorCore::Tensor<T> AddScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> SubtractScalarLeft(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
+	[[nodiscard]] TensorCore::Tensor<T> SubtractScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MultiplyScalarLeft(const TensorCore::Tensor<T>& A, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
+	[[nodiscard]] TensorCore::Tensor<T> MultiplyScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> DivideScalarLeft(const TensorCore::Tensor<T>& A, const T Scalar, Memory::ArenaAllocator& allocator);
+	[[nodiscard]] TensorCore::Tensor<T> DivideScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator);
 }
 
 #include "scalar.inl"

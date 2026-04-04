@@ -11,6 +11,7 @@ namespace MLCore::TensorCore {
 	public:
 		Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator);
 		explicit Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator);
+		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);
 
 		const Utils::Shape& GetShape() const;
 
@@ -20,6 +21,9 @@ namespace MLCore::TensorCore {
 
 		T* Data();
 		const T* Data() const;
+
+		size_t Rank() const;
+		const std::vector<size_t>& Dims() const;
 
 		// Added these to use iterators (that's the reason for the difference in style from the rest of the code)
 		T* begin();

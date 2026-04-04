@@ -13,12 +13,10 @@ namespace MLCore::Operations {
 			return 0;
 		}
 
-		const T* data = A.Data();
-
-		T result = data[0];
+		T result = A[0];
 
 		for (size_t i = 1; i < size; ++i) {
-			result += data[i];
+			result += A[i];
 		}
 
 		return result;
@@ -39,12 +37,10 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor is empty");
 		}
 
-		const T* data = A.Data();
-
-		T result = data[0];
+		T result = A[0];
 
 		for (size_t i = 1; i < size; ++i) {
-			result = (result > data[i]) ? result : data[i];
+			result = (result > A[i]) ? result : A[i];
 		}
 
 		return result;
@@ -59,12 +55,10 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor is empty");
 		}
 
-		const T* data = A.Data();
-
-		T result = data[0];
+		T result = A[0];
 
 		for (size_t i = 1; i < size; ++i) {
-			result = (result < data[i]) ? result : data[i];
+			result = (result < A[i]) ? result : A[i];
 		}
 
 		return result;
