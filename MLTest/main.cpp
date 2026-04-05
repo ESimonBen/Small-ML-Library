@@ -44,14 +44,12 @@ int main() {
         std::cout << std::endl;
     }
 
-    auto sum = AxisSum(A, 0, allocator);
-    std::cout << "Sum: " << std::endl;
-    for (size_t i = 0; i < sum.NumElements(); ++i) {
-        std::cout << sum[i] << " ";
+    auto sum = AxisSum(A, 2, allocator);
+    auto dimensions = sum.Dims();
+    std::cout << "Sum Dimensions: ";
+    for (size_t i = 0; i < dimensions.size(); ++i) {
+        std::cout << dimensions[i] << " ";
     }
-
-    std::cout << std::endl;
-    std::cout << "Number of elements: " << sum.NumElements() << std::endl;
 
     return 0;
 }

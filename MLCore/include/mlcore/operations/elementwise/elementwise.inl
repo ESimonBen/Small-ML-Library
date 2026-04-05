@@ -34,7 +34,7 @@ namespace MLCore::Operations {
 				idxB += dimIndex * info.strideB[j];
 			}
 
-			c[i] = a[idxA] + b[idxB];
+			C[i] = A[idxA] + B[idxB];
 		}
 
 		return C;
@@ -70,7 +70,7 @@ namespace MLCore::Operations {
 				idxB += dimIndex * info.strideB[j];
 			}
 
-			c[i] = a[idxA] - b[idxB];
+			C[i] = A[idxA] - B[idxB];
 		}
 
 		return C;
@@ -106,7 +106,7 @@ namespace MLCore::Operations {
 				idxB += dimIndex * info.strideB[j];
 			}
 
-			c[i] = a[idxA] * b[idxB];
+			C[i] = A[idxA] * B[idxB];
 		}
 
 		return C;
@@ -142,9 +142,33 @@ namespace MLCore::Operations {
 				idxB += dimIndex * info.strideB[j];
 			}
 
-			c[i] = a[idxB] / b[idxB];
+			C[i] = A[idxA] / B[idxB];
 		}
 
 		return C;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
+		const size_t size = B.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			B[i] = -A[i];
+		}
+
+		return B;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
+		const size_t size = B.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			B[i] = A[i] * A[i];
+		}
+
+		return B;
 	}
 }

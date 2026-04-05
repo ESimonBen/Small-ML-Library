@@ -9,7 +9,7 @@ namespace MLCore::Memory {
 	public:
 		Storage(T* data, size_t size)
 			: m_Data(data), m_Size(size) {
-			assert(data != nullptr /*&& size == 0*/);
+			assert(data != nullptr || size == 0);
 		}
 
 		T* Data() {

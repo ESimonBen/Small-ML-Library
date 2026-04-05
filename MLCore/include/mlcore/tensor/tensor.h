@@ -1,9 +1,12 @@
 // tensor.h
 #pragma once
+#include <memory>
 #include <vector>
+#include <optional>
 #include <type_traits>
-#include <mlCore/memory/storage.h>
 #include <mlCore/utils/shape.h>
+#include <mlCore/memory/storage.h>
+#include <mlCore/autograd/gradientFn.h>
 
 namespace MLCore::TensorCore {
 	template <typename T>
@@ -14,9 +17,7 @@ namespace MLCore::TensorCore {
 		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);
 
 		const Utils::Shape& GetShape() const;
-
 		size_t NumElements() const;
-
 		void Fill(const T& value);
 
 		T* Data();
@@ -24,6 +25,9 @@ namespace MLCore::TensorCore {
 
 		size_t Rank() const;
 		const std::vector<size_t>& Dims() const;
+
+		Memory::ArenaAllocator& GetAllocator();
+		const Memory::ArenaAllocator& GetAllocator() const;
 
 		// Added these to use iterators (that's the reason for the difference in style from the rest of the code)
 		T* begin();
@@ -46,9 +50,32 @@ namespace MLCore::TensorCore {
 		template <typename... Indices, typename = std::enable_if_t<(std::is_integral_v<Indices> && ...)>>
 		const T& operator()(Indices... indices) const;
 
+		//AutoGrad API
+		bool RequiresGrad() const;
+		bool HasGrad() const;
+		bool IsLeaf() const;
+		void SetRequiresGrad(bool require);
+
+		Tensor<T>* Grad();
+		const Tensor<T>* Grad() const;
+		Tensor<T> Detach();
+
+		AutoGrad::GradFn<T>* GradFn();
+		const AutoGrad::GradFn<T>* GradFn() const;
+
+		void SetGradFn(AutoGrad::GradFn<T>* gradFn);
+		void AccumulateGrad(const Tensor<T>& gradInput);
+
+		void Backward(const Tensor<T>& gradOutput);
+		void Backward(Memory::ArenaAllocator& allocator);
+
 	private:
 		Utils::Shape m_Shape;
 		Memory::Storage<T> m_Storage;
+		Memory::ArenaAllocator* m_Allocator;
+		bool m_RequiresGrad = false;
+		std::unique_ptr<Tensor<T>> m_Grad;
+		std::unique_ptr<AutoGrad::GradFn<T>> m_GradFn = nullptr;
 	};
 }
 

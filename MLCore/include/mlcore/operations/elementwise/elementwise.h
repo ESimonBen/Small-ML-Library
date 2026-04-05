@@ -14,6 +14,12 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 }
 
 #include "elementwise.inl"

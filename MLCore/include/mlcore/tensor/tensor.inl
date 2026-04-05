@@ -4,17 +4,17 @@
 namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator)
-		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())) 
+		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())), m_Allocator(&allocator)
 	{}
 
-	template<typename T>
+	template <typename T>
 	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator)
-		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) 
+		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())), m_Allocator(&allocator)
 	{}
 
-	template<typename T>
+	template <typename T>
 	inline Tensor<T>::Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator)
-		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())) 
+		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())), m_Allocator(&allocator)
 	{}
 
 	template <typename T>
@@ -27,7 +27,7 @@ namespace MLCore::TensorCore {
 		return m_Shape.NumElements();
 	}
 
-	template<typename T>
+	template <typename T>
 	inline void Tensor<T>::Fill(const T& value) {
 		for (size_t i = 0; i < NumElements(); ++i) {
 			m_Storage.Data()[i] = value;
@@ -54,22 +54,32 @@ namespace MLCore::TensorCore {
 		return m_Shape.Dims();
 	}
 
-	template<typename T>
+	template <typename T>
+	Memory::ArenaAllocator& Tensor<T>::GetAllocator() {
+		return *m_Allocator;
+	}
+
+	template <typename T>
+	const Memory::ArenaAllocator& Tensor<T>::GetAllocator() const {
+		return *m_Allocator;
+	}
+
+	template <typename T>
 	inline T* Tensor<T>::begin() {
 		return m_Storage.Data();
 	}
 
-	template<typename T>
+	template <typename T>
 	inline T* Tensor<T>::end() {
 		return m_Storage.Data() + NumElements();
 	}
 
-	template<typename T>
+	template <typename T>
 	inline const T* Tensor<T>::begin() const {
 		return m_Storage.Data();
 	}
 
-	template<typename T>
+	template <typename T>
 	inline const T* Tensor<T>::end() const {
 		return m_Storage.Data() + NumElements();
 	}
@@ -77,7 +87,7 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline T& Tensor<T>::operator[](size_t i) {
 		#ifdef ML_CORE_DEBUG
-			if (i > m_Storage.Size()) {
+			if (i >= m_Storage.Size()) {
 				throw std::out_of_range("ERROR: Tensor linear index out of bounds");
 			}
 		#endif
@@ -86,9 +96,9 @@ namespace MLCore::TensorCore {
 	}
 
 	template <typename T>
-	const inline T& Tensor<T>::operator[](size_t i) const {
+	inline const T& Tensor<T>::operator[](size_t i) const {
 		#ifdef ML_CORE_DEBUG
-			if (i > m_Storage.Size()) {
+			if (i >= m_Storage.Size()) {
 				throw std::out_of_range("ERROR: Tensor linear index out of bounds");
 			}
 		#endif
@@ -155,7 +165,7 @@ namespace MLCore::TensorCore {
 	template <typename... Indices, typename>
 	inline const T& Tensor<T>::operator()(Indices... indices) const {
 		#ifdef ML_CORE_DEBUG
-			if (sizeof...(indices) != m_Shape.Dim()) {
+			if (sizeof...(indices) != m_Shape.Rank()) {
 				throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
 			}
 		#endif
@@ -176,5 +186,109 @@ namespace MLCore::TensorCore {
 
 
 		return m_Storage.Data()[offset];
+	}
+
+	template <typename T>
+	bool Tensor<T>::RequiresGrad() const {
+		return m_RequiresGrad;
+	}
+
+	template <typename T>
+	bool Tensor<T>::HasGrad() const {
+		return m_Grad != nullptr;
+	}
+
+	template <typename T>
+	bool Tensor<T>::IsLeaf() const {
+		return m_GradFn == nullptr;
+	}
+
+	template <typename T>
+	void Tensor<T>::SetRequiresGrad(bool require) {
+		m_RequiresGrad = require;
+	}
+
+	template <typename T>
+	Tensor<T>* Tensor<T>::Grad() {
+		return m_Grad.get();
+	}
+
+	template <typename T>
+	const Tensor<T>* Tensor<T>::Grad() const {
+		return m_Grad.get();
+	}
+
+	template <typename T>
+	Tensor<T> Tensor<T>::Detach() {
+		Tensor<T> out{ m_Shape, m_Allocator };
+
+		for (size_t i = 0; i < NumElements(); ++i) {
+			out[i] = (*this)[i];
+		}
+
+		return out;
+	}
+
+	template <typename T>
+	AutoGrad::GradFn<T>* Tensor<T>::GradFn() {
+		return m_GradFn.get();
+	}
+
+	template <typename T>
+	const AutoGrad::GradFn<T>* Tensor<T>::GradFn() const {
+		return m_GradFn.get();
+	}
+
+	template <typename T>
+	void Tensor<T>::SetGradFn(AutoGrad::GradFn<T>* gradFn) {
+		m_GradFn.reset(gradFn);
+	}
+
+	template <typename T>
+	void Tensor<T>::AccumulateGrad(const Tensor<T>& gradInput) {
+		if (!m_RequiresGrad) {
+			return;
+		}
+
+		if (!m_Grad) {
+			m_Grad = std::make_unique<Tensor<T>>(gradInput.GetShape(), gradInput.GetAllocator());
+			m_Grad->Fill(T(0));
+
+			for (size_t i = 0; i < gradInput.NumElements(); ++i) {
+				(*m_Grad)[i] += gradInput[i];
+			}
+		}
+		else {
+			for (size_t i = 0; i < gradInput.NumElements(); ++i) {
+				(*m_Grad)[i] += gradInput[i];
+			}
+		}
+	}
+
+	template <typename T>
+	void Tensor<T>::Backward(const Tensor<T>& gradOutput) {
+		if (!m_RequiresGrad) {
+			return;
+		}
+		
+		AccumulateGrad(gradOutput);
+
+		if (m_GradFn) {
+			m_GradFn->Backward(gradOutput);
+		}
+	}
+	
+	template <typename T>
+	void Tensor<T>::Backward(Memory::ArenaAllocator& allocator) {
+		if (!m_RequiresGrad) {
+			return;
+		}
+
+		Tensor<T> gradOutput{ GetShape(), allocator};
+		gradOutput.Fill(T(1));
+
+		if (m_GradFn) {
+			m_GradFn->Backward(gradOutput);
+		}
 	}
 }
