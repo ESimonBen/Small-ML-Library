@@ -2,6 +2,7 @@
 #pragma once
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/autograd/gradientFn.h>
+#include <mlCore/autograd/gradientUtils.h>
 #include <mlCore/operations/elementwise/elementwise.h>
 
 namespace MLCore::AutoGrad {
@@ -16,19 +17,32 @@ namespace MLCore::AutoGrad {
 			auto* a = this->inputs[0];
 			auto* b = this->inputs[1];
 
-			if (a->RequiresGrad()) {
-				TensorCore::Tensor<T> divOutput = Operations::Divide(gradOutput, (*b), gradOutput.GetAllocator());
+			auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
 
-				a->AccumulateGrad(divOutput);
-				a->Backward(divOutput);
+			if (a->RequiresGrad()) {
+				auto gradA = Operations::Divide(ReduceSumToShape(gradOutput, a->GetShape()), (*b), allocator);
+
+				a->AccumulateGrad(gradA);
+				
+				if (a->HasGrad()) {
+					a->Grad()->Backward(gradA);
+				}
 			}
 
 			if (b->RequiresGrad()) {
-				TensorCore::Tensor<T> divOutput = Operations::Multiply(Operations::Negate(gradOutput, gradOutput.GetAllocator()), Operations::Divide((*a), Operations::Square((*b), gradOutput.GetAllocator()), gradOutput.GetAllocator()), gradOutput.GetAllocator());
+				auto negGradOutput = Operations::Negate(ReduceSumToShape(gradOutput, b->GetShape()), allocator);
+				auto bSquared = Operations::Square(*b, allocator);
 
-				b->AccumulateGrad(divOutput);
-				b->Backward(divOutput);
+				auto gradB = Operations::Multiply(negGradOutput, Operations::Divide((*a), bSquared, allocator), allocator);
+
+				b->AccumulateGrad(gradB);
+				
+				if (b->HasGrad()) {
+					b->Grad()->Backward(gradB);
+				}
 			}
 		}
+
+		// Maybe store the saved forward values of the tensors (needed for multiply and divide)
 	};
 }

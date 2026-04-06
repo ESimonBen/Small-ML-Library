@@ -12,6 +12,23 @@ namespace MLCore::Memory {
 			assert(data != nullptr || size == 0);
 		}
 
+		Storage(Storage&& other) noexcept
+			: m_Data(other.m_Data), m_Size(other.m_Size) {
+			other.m_Data = nullptr;
+			other.m_Size = 0;
+		}
+
+		Storage& operator=(Storage&& other) noexcept {
+			if (this != &other) {
+				m_Data = other.m_Data;
+				other.m_Data = nullptr;
+				m_Size = other.m_Size;
+				other.m_Size = 0;
+			}
+
+			return *this;
+		}
+
 		T* Data() {
 			return m_Data;
 		}

@@ -2,6 +2,7 @@
 #pragma once
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/autograd/gradientFn.h>
+#include <mlCore/autograd/gradientUtils.h>
 #include <mlCore/operations/elementwise/elementwise.h>
 
 namespace MLCore::AutoGrad {
@@ -17,15 +18,24 @@ namespace MLCore::AutoGrad {
 			auto* b = this->inputs[1];
 
 			if (a->RequiresGrad()) {
-				a->AccumulateGrad(gradOutput);
-				a->Backward(gradOutput);
+				auto gradA = ReduceSumToShape(gradOutput, a->GetShape());
+
+				a->AccumulateGrad(gradA);
+
+				if (a->HasGrad()) {
+					a->Grad()->Backward(gradA);
+				}
 			}
 
 			if (b->RequiresGrad()) {
-				TensorCore::Tensor<T> negOutput = Operations::Negate(gradOutput, gradOutput.GetAllocator());
+				auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
+				auto gradB = Operations::Negate(ReduceSumToShape(gradOutput, b->GetShape()), allocator);
 
-				b->AccumulateGrad(negOutput);
-				b->Backward(negOutput);
+				b->AccumulateGrad(gradB);
+				
+				if (b->HasGrad()) {
+					b->Grad()->Backward(gradB);
+				}
 			}
 		}
 	};

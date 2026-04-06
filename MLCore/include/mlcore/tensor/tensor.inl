@@ -4,17 +4,46 @@
 namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator)
-		: m_Shape(shape), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements())), m_Allocator(&allocator)
+		: m_Shape(shape), m_Allocator(&allocator), m_Storage(Memory::MakeStorage<T>(allocator, shape.NumElements()))
 	{}
 
 	template <typename T>
+	inline Tensor<T>::Tensor(const Tensor<T>& other)
+		: m_Shape(other.GetShape()), m_Allocator(const_cast<Memory::ArenaAllocator*>(&(other.GetAllocator()))), m_Storage(Memory::MakeStorage<T>(*m_Allocator, m_Shape.NumElements())) {
+		// This for-loop form of allocation can be optimized with std::memcpy
+		for (size_t i = 0; i < NumElements(); ++i) {
+			(*this)[i] = other[i];
+		}
+	}
+
+	template <typename T>
+	inline Tensor<T>::Tensor(Tensor&& other) noexcept
+		: m_Shape(std::move(other.m_Shape)), m_Allocator(other.m_Allocator), m_Storage(std::move(other.m_Storage)), m_Grad(std::move(other.m_Grad)),
+		  m_GradFn(std::move(other.m_GradFn)), m_RequiresGrad(other.m_RequiresGrad)
+	{}
+
+	template <typename T>
+	inline Tensor<T>& Tensor<T>::operator=(Tensor&& other) noexcept {
+		if (this != &other) {
+			m_Shape = std::move(other.m_Shape);
+			m_Allocator = other.m_Allocator;
+			m_Storage = std::move(other.m_Storage);
+			m_Grad = std::move(other.m_Grad);
+			m_GradFn = std::move(other.m_GradFn);
+			m_RequiresGrad = other.m_RequiresGrad;
+		}
+
+		return *this;
+	}
+
+	template <typename T>
 	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator)
-		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())), m_Allocator(&allocator)
+		: m_Shape(dims), m_Allocator(&allocator), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements()))
 	{}
 
 	template <typename T>
 	inline Tensor<T>::Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator)
-		: m_Shape(dims), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements())), m_Allocator(&allocator)
+		: m_Shape(dims), m_Allocator(&allocator), m_Storage(Memory::MakeStorage<T>(allocator, m_Shape.NumElements()))
 	{}
 
 	template <typename T>
@@ -199,6 +228,15 @@ namespace MLCore::TensorCore {
 	}
 
 	template <typename T>
+	void Tensor<T>::ZeroGrad() {
+		if (m_Grad) {
+			for (size_t i = 0; i < m_Grad->NumElements(); ++i) {
+				(*m_Grad)[i] = T(0);
+			}
+		}
+	}
+
+	template <typename T>
 	bool Tensor<T>::IsLeaf() const {
 		return m_GradFn == nullptr;
 	}
@@ -251,7 +289,8 @@ namespace MLCore::TensorCore {
 		}
 
 		if (!m_Grad) {
-			m_Grad = std::make_unique<Tensor<T>>(gradInput.GetShape(), gradInput.GetAllocator());
+			auto& allocator = const_cast<Memory::ArenaAllocator&>(gradInput.GetAllocator());
+			m_Grad = std::make_unique<Tensor<T>>(gradInput.GetShape(), allocator);
 			m_Grad->Fill(T(0));
 
 			for (size_t i = 0; i < gradInput.NumElements(); ++i) {

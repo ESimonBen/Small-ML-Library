@@ -2,8 +2,6 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <optional>
-#include <type_traits>
 #include <mlCore/utils/shape.h>
 #include <mlCore/memory/storage.h>
 #include <mlCore/autograd/gradientFn.h>
@@ -13,6 +11,9 @@ namespace MLCore::TensorCore {
 	class Tensor {
 	public:
 		Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator);
+		Tensor(const Tensor& other);
+		Tensor(Tensor&& other) noexcept;
+		Tensor& operator=(Tensor&& other) noexcept;
 		explicit Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator);
 		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);
 
@@ -53,6 +54,7 @@ namespace MLCore::TensorCore {
 		//AutoGrad API
 		bool RequiresGrad() const;
 		bool HasGrad() const;
+		void ZeroGrad();
 		bool IsLeaf() const;
 		void SetRequiresGrad(bool require);
 
@@ -71,10 +73,10 @@ namespace MLCore::TensorCore {
 
 	private:
 		Utils::Shape m_Shape;
-		Memory::Storage<T> m_Storage;
 		Memory::ArenaAllocator* m_Allocator;
+		Memory::Storage<T> m_Storage;
 		bool m_RequiresGrad = false;
-		std::unique_ptr<Tensor<T>> m_Grad;
+		std::unique_ptr<Tensor<T>> m_Grad = nullptr;
 		std::unique_ptr<AutoGrad::GradFn<T>> m_GradFn = nullptr;
 	};
 }

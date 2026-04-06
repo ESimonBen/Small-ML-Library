@@ -2,6 +2,20 @@
 #include <stdexcept>
 #include <mlCore/operations/broadcast/broadcast.h>
 
+namespace MLCore::AutoGrad {
+	template <typename T>
+	class AddGradFn;
+
+	template <typename T>
+	class SubGradFn;
+
+	template <typename T>
+	class MulGradFn;
+
+	template <typename T>
+	class DivGradFn;
+}
+
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> Add(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
@@ -35,6 +49,11 @@ namespace MLCore::Operations {
 			}
 
 			C[i] = A[idxA] + B[idxB];
+		}
+
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::AddGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
 		}
 
 		return C;
@@ -73,6 +92,11 @@ namespace MLCore::Operations {
 			C[i] = A[idxA] - B[idxB];
 		}
 
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::SubGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+		}
+
 		return C;
 	}
 
@@ -109,6 +133,11 @@ namespace MLCore::Operations {
 			C[i] = A[idxA] * B[idxB];
 		}
 
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::MulGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+		}
+
 		return C;
 	}
 
@@ -143,6 +172,11 @@ namespace MLCore::Operations {
 			}
 
 			C[i] = A[idxA] / B[idxB];
+		}
+
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::DivGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
 		}
 
 		return C;

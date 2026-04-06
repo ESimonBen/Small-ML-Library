@@ -1,15 +1,14 @@
-// mulGradFn.h
+// matMulGradFn.h
 #pragma once
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/autograd/gradientFn.h>
-#include <mlCore/autograd/gradientUtils.h>
-#include <mlCore/operations/elementwise/elementwise.h>
+#include <mlCore/operations/linearAlgebra/linalg.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	class MulGradFn : public GradFn<T> {
+	class MatMulGradFn : public GradFn<T> {
 	public:
-		MulGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b)
+		MatMulGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b)
 			: GradFn<T>({ a, b })
 		{}
 
@@ -20,17 +19,21 @@ namespace MLCore::AutoGrad {
 			auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
 
 			if (a->RequiresGrad()) {
-				auto gradA = Operations::Multiply(ReduceSumToShape(gradOutput, a->GetShape()), (*b), allocator);
+				auto bT = Operations::Transpose((*b), allocator);
+
+				auto gradA = Operations::MatMultiply(gradOutput, bT, allocator);
 
 				a->AccumulateGrad(gradA);
-				
+
 				if (a->HasGrad()) {
 					a->Grad()->Backward(gradA);
 				}
 			}
 
 			if (b->RequiresGrad()) {
-				auto gradB = Operations::Multiply(ReduceSumToShape(gradOutput, b->GetShape()), (*a), allocator);
+				auto aT = Operations::Transpose((*a), allocator);
+
+				auto gradB = Operations::MatMultiply(aT, gradOutput, allocator);
 
 				b->AccumulateGrad(gradB);
 				
@@ -39,7 +42,5 @@ namespace MLCore::AutoGrad {
 				}
 			}
 		}
-
-		// Maybe store the saved forward values of the tensors (needed for multiply and divide)
 	};
 }

@@ -8,6 +8,9 @@ namespace MLCore::Utils{
 	class Shape {
 	public:
 		Shape() = default;
+		Shape(const Shape& other) noexcept;
+		Shape(Shape&& other) noexcept;
+		Shape& operator=(Shape&& other) noexcept;
 
 		explicit Shape(const std::vector<size_t>& dims);
 

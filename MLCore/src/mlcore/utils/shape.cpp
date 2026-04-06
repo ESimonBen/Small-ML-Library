@@ -13,6 +13,24 @@ namespace MLCore::Utils {
 			m_NumElements *= d;
 		}
 	}
+
+	Shape::Shape(const Shape& other) noexcept
+		: m_Dims(other.m_Dims), m_Strides(other.m_Strides), m_NumElements(other.m_NumElements)
+	{}
+
+	Shape::Shape(Shape&& other) noexcept
+		: m_Dims(std::move(other.m_Dims)), m_Strides(std::move(other.m_Strides)), m_NumElements(other.m_NumElements)
+	{}
+
+	Shape& Shape::operator=(Shape&& other) noexcept {
+		if (*this != other) {
+			m_Dims = std::move(other.m_Dims);
+			m_Strides = std::move(other.m_Strides);
+			m_NumElements = other.m_NumElements;
+		}
+
+		return *this;
+	}
 	
 	size_t Shape::FlattenIndex(const std::vector<size_t>& indices) const {
 		if (indices.size() != m_Dims.size()) {
