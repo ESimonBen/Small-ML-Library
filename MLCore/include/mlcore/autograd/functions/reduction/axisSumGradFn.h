@@ -26,8 +26,9 @@ namespace MLCore::AutoGrad {
 
 			TensorCore::Tensor<T> gradInput{ inputShape, allocator };
 
+			size_t size = gradInput.NumElements();
 
-			for (size_t i = 0; i < gradInput.NumElements(); ++i) {
+			for (size_t i = 0; i < size; ++i) {
 				auto reduced = inputShape.UnflattenIndex(i);
 				reduced.erase(reduced.begin() + axis);
 

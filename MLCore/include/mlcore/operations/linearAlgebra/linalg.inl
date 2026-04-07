@@ -2,6 +2,17 @@
 #include <vector>
 #include <stdexcept>
 
+namespace MLCore::AutoGrad {
+	template <typename T>
+	class MatMulGradFn;
+
+	template <typename T>
+	class DotGradFn;
+
+	template <typename T>
+	class TransposeGradFn;
+}
+
 namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
@@ -29,6 +40,11 @@ namespace MLCore::Operations {
 			}
 		}
 
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::MatMulGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+		}
+
 		return C;
 	}
 
@@ -49,6 +65,11 @@ namespace MLCore::Operations {
 			}
 		}
 
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			B.SetRequiresGrad(true);
+			B.SetGradFn(new AutoGrad::TransposeGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+		}
+
 		return B;
 	}
 
@@ -66,6 +87,11 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> C{ {1}, allocator };
 		C[0] = sum;
+
+		if (A.RequiresGrad() || B.RequiresGrad()) {
+			C.SetRequiresGrad(true);
+			C.SetGradFn(new AutoGrad::DotGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+		}
 
 		return C;
 	}

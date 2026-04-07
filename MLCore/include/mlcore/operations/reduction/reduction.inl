@@ -2,6 +2,23 @@
 #include <concepts>
 #include <stdexcept>
 
+namespace MLCore::AutoGrad {
+	template <typename T>
+	class SumGradFn;
+
+	template <typename T>
+	class MeanGradFn;
+
+	template <typename T>
+	class MaxGradFn;
+
+	template <typename T>
+	class MinGradFn;
+
+	template <typename T>
+	class AxisSumGradFn;
+}
+
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> Sum(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
@@ -23,6 +40,11 @@ namespace MLCore::Operations {
 
 		result[0] = sum;
 
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new SumGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+		}
+
 		return result;
 	}
 
@@ -39,6 +61,11 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		result[0] = Sum(A, allocator)[0] / (static_cast<T>(size));
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new MeanGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+		}
 
 		return result;
 	}
@@ -62,6 +89,11 @@ namespace MLCore::Operations {
 
 		result[0] = max;
 
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new MaxGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), max));
+		}
+
 		return result;
 	}
 
@@ -83,6 +115,11 @@ namespace MLCore::Operations {
 		}
 
 		result[0] = min;
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new MinGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), min));
+		}
 
 		return result;
 	}
@@ -113,6 +150,11 @@ namespace MLCore::Operations {
 			}
 
 			result[i] = sum;
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new AxisSumGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), axis));
 		}
 
 		return result;

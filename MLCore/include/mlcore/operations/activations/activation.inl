@@ -2,6 +2,11 @@
 #include <cmath>
 #include <algorithm>
 
+namespace MLCore::AutoGrad {
+	template <typename T>
+	class ReLUGradFn;
+}
+
 namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
@@ -9,6 +14,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
 			result[i] = std::max(T(0), A[i]);
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(new AutoGrad::ReLUGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
 		}
 
 		return result;
