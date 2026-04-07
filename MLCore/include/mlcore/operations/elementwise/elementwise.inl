@@ -1,4 +1,5 @@
 // elementwise.inl
+#include <cmath>
 #include <stdexcept>
 #include <mlCore/operations/broadcast/broadcast.h>
 
@@ -19,7 +20,7 @@ namespace MLCore::AutoGrad {
 	class NegateGradFn;
 
 	template <typename T>
-	class SquareGradFn;
+	class PowerGradFn;
 }
 
 namespace MLCore::Operations {
@@ -201,19 +202,24 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	[[nodiscard]] TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		const size_t size = B.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
-			B[i] = A[i] * A[i];
+			B[i] = std::pow(A[i], exponent); // May be optimized in the future
 		}
 
 		if (A.RequiresGrad()) {
 			B.SetRequiresGrad(true);
-			B.SetGradFn(new AutoGrad::SquareGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+			B.SetGradFn(new AutoGrad::PowerGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), exponent));
 		}
 
 		return B;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		return Power(A, static_cast<T>(2), allocator);
 	}
 }

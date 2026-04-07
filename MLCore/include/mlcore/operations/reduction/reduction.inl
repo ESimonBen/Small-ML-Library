@@ -4,50 +4,47 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline T Sum(const TensorCore::Tensor<T>& A) {
+	inline TensorCore::Tensor<T> Sum(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_arithmetic_v<T>, "ERROR: T must be an arithmetic type");
 
 		const size_t size = A.NumElements();
+		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		if (size == 0) {
-			return 0;
+			result[0] = T(0);
+			return result;
 		}
 
-		T result = A[0];
+		T sum = T(0);
 
-		for (size_t i = 1; i < size; ++i) {
-			result += A[i];
+		for (size_t i = 0; i < size; ++i) {
+			sum += A[i];
 		}
+
+		result[0] = sum;
 
 		return result;
 	}
 
 	template <typename T>
-	inline T Mean(const TensorCore::Tensor<T>& A) {
+	inline TensorCore::Tensor<T> Mean(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "ERROR: T must be a floating point type");
-		return Sum(A) / (static_cast<T>(A.NumElements()));
-	}
 
-	template <typename T>
-	inline T Max(const TensorCore::Tensor<T>& A) {
-		static_assert(std::totally_ordered<T>, "T must be totally ordered");
+		size_t size = A.NumElements();
 
-		const size_t size = A.NumElements();
 		if (size == 0) {
-			throw std::runtime_error("ERROR: Tensor is empty");
+			throw std::runtime_error("ERROR: Mean: Tensor was empty");
 		}
 
-		T result = A[0];
+		TensorCore::Tensor<T> result{ {1}, allocator };
 
-		for (size_t i = 1; i < size; ++i) {
-			result = (result > A[i]) ? result : A[i];
-		}
+		result[0] = Sum(A, allocator)[0] / (static_cast<T>(size));
 
 		return result;
 	}
 
 	template <typename T>
-	inline T Min(const TensorCore::Tensor<T>& A) {
+	inline TensorCore::Tensor<T> Max(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::totally_ordered<T>, "T must be totally ordered");
 
 		const size_t size = A.NumElements();
@@ -55,11 +52,37 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor is empty");
 		}
 
-		T result = A[0];
+		T max = A[0];
+
+		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		for (size_t i = 1; i < size; ++i) {
-			result = (result < A[i]) ? result : A[i];
+			max = (max > A[i]) ? max : A[i];
 		}
+
+		result[0] = max;
+
+		return result;
+	}
+
+	template <typename T>
+	inline TensorCore::Tensor<T> Min(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		static_assert(std::totally_ordered<T>, "T must be totally ordered");
+
+		const size_t size = A.NumElements();
+		if (size == 0) {
+			throw std::runtime_error("ERROR: Tensor is empty");
+		}
+
+		T min = A[0];
+
+		TensorCore::Tensor<T> result{ {1}, allocator };
+
+		for (size_t i = 1; i < size; ++i) {
+			min = (min < A[i]) ? min : A[i];
+		}
+
+		result[0] = min;
 
 		return result;
 	}

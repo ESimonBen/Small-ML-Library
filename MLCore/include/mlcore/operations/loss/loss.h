@@ -14,6 +14,8 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator);
+
+	// Planning to add other loss functions (Mean Bias Error, Huber/Smooth Mean Absolute Error, etc.)
 }
 
 #include "loss.inl"
