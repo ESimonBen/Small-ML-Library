@@ -8,7 +8,7 @@
 #include <mlCore/autograd/functions/elementwise/mulGradFn.h>
 #include <mlCore/autograd/functions/elementwise/divGradFn.h>
 #include <mlCore/autograd/functions/elementwise/negateGradFn.h>
-#include <mlCore/autograd/functions/elementwise/squareGradFn.h>
+#include <mlCore/autograd/functions/elementwise/powerGradFn.h>
 
 using namespace MLCore;
 using namespace MLCore::TensorCore;
