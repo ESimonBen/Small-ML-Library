@@ -69,35 +69,4 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
-	template <typename T>
-	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
-		if (axis >= A.Rank()) {
-			throw std::out_of_range("ERROR: Sum: Axis out of bounds");
-		}
-
-		std::vector<size_t> dims = A.Dims();
-		dims.erase(dims.begin() + axis);
-
-		if (dims.empty()) {
-			dims.push_back(1);
-		}
-
-		TensorCore::Tensor<T> result{ dims, allocator };
-
-		for (size_t i = 0; i < result.NumElements(); ++i) {
-			std::vector<size_t> indices = result.GetShape().UnflattenIndex(i); // Can be optimized later
-			T sum = T{};
-
-			for (size_t j = 0; j < A.Dims()[axis]; ++j) {
-				std::vector<size_t> fullIndices = indices; // Can be optimized later
-				fullIndices.insert(fullIndices.begin() + axis, j);
-				sum += A[A.GetShape().FlattenIndex(fullIndices)];
-			}
-
-			result[i] = sum;
-		}
-
-		return result;
-	}
 }

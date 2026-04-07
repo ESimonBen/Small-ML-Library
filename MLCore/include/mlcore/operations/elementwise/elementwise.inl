@@ -14,6 +14,12 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	class DivGradFn;
+
+	template <typename T>
+	class NegateGradFn;
+
+	template <typename T>
+	class SquareGradFn;
 }
 
 namespace MLCore::Operations {
@@ -32,23 +38,21 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < size; ++i) {
 				C[i] = A[i] + B[i];
 			}
-
-			return C;
 		}
+		else {
+			for (size_t i = 0; i < size; ++i) {
+				size_t idxA = 0, idxB = 0, tmp = i;
 
+				for (size_t j = 0; j < info.shape.Rank(); ++j) {
+					size_t dimIndex = tmp / info.shape.Strides()[j];
+					tmp %= info.shape.Strides()[j];
 
-		for (size_t i = 0; i < size; ++i) {
-			size_t idxA = 0, idxB = 0, tmp = i;
+					idxA += dimIndex * info.strideA[j];
+					idxB += dimIndex * info.strideB[j];
+				}
 
-			for (size_t j = 0; j < info.shape.Rank(); ++j) {
-				size_t dimIndex = tmp / info.shape.Strides()[j];
-				tmp %= info.shape.Strides()[j];
-
-				idxA += dimIndex * info.strideA[j];
-				idxB += dimIndex * info.strideB[j];
+				C[i] = A[idxA] + B[idxB];
 			}
-
-			C[i] = A[idxA] + B[idxB];
 		}
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
@@ -74,22 +78,21 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < size; ++i) {
 				C[i] = A[i] - B[i];
 			}
-
-			return C;
 		}
+		else {
+			for (size_t i = 0; i < size; ++i) {
+				size_t idxA = 0, idxB = 0, tmp = i;
 
-		for (size_t i = 0; i < size; ++i) {
-			size_t idxA = 0, idxB = 0, tmp = i;
+				for (size_t j = 0; j < info.shape.Rank(); ++j) {
+					size_t dimIndex = tmp / info.shape.Strides()[j];
+					tmp %= info.shape.Strides()[j];
 
-			for (size_t j = 0; j < info.shape.Rank(); ++j) {
-				size_t dimIndex = tmp / info.shape.Strides()[j];
-				tmp %= info.shape.Strides()[j];
+					idxA += dimIndex * info.strideA[j];
+					idxB += dimIndex * info.strideB[j];
+				}
 
-				idxA += dimIndex * info.strideA[j];
-				idxB += dimIndex * info.strideB[j];
+				C[i] = A[idxA] - B[idxB];
 			}
-
-			C[i] = A[idxA] - B[idxB];
 		}
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
@@ -115,22 +118,21 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < size; ++i) {
 				C[i] = A[i] * B[i];
 			}
-
-			return C;
 		}
+		else {
+			for (size_t i = 0; i < size; ++i) {
+				size_t idxA = 0, idxB = 0, tmp = i;
 
-		for (size_t i = 0; i < size; ++i) {
-			size_t idxA = 0, idxB = 0, tmp = i;
+				for (size_t j = 0; j < info.shape.Rank(); ++j) {
+					size_t dimIndex = tmp / info.shape.Strides()[j];
+					tmp %= info.shape.Strides()[j];
 
-			for (size_t j = 0; j < info.shape.Rank(); ++j) {
-				size_t dimIndex = tmp / info.shape.Strides()[j];
-				tmp %= info.shape.Strides()[j];
+					idxA += dimIndex * info.strideA[j];
+					idxB += dimIndex * info.strideB[j];
+				}
 
-				idxA += dimIndex * info.strideA[j];
-				idxB += dimIndex * info.strideB[j];
+				C[i] = A[idxA] * B[idxB];
 			}
-
-			C[i] = A[idxA] * B[idxB];
 		}
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
@@ -156,22 +158,21 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < size; ++i) {
 				C[i] = A[i] / B[i];
 			}
-
-			return C;
 		}
+		else {
+			for (size_t i = 0; i < size; ++i) {
+				size_t idxA = 0, idxB = 0, tmp = i;
 
-		for (size_t i = 0; i < size; ++i) {
-			size_t idxA = 0, idxB = 0, tmp = i;
+				for (size_t j = 0; j < info.shape.Rank(); ++j) {
+					size_t dimIndex = tmp / info.shape.Strides()[j];
+					tmp %= info.shape.Strides()[j];
 
-			for (size_t j = 0; j < info.shape.Rank(); ++j) {
-				size_t dimIndex = tmp / info.shape.Strides()[j];
-				tmp %= info.shape.Strides()[j];
+					idxA += dimIndex * info.strideA[j];
+					idxB += dimIndex * info.strideB[j];
+				}
 
-				idxA += dimIndex * info.strideA[j];
-				idxB += dimIndex * info.strideB[j];
+				C[i] = A[idxA] / B[idxB];
 			}
-
-			C[i] = A[idxA] / B[idxB];
 		}
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
@@ -191,6 +192,11 @@ namespace MLCore::Operations {
 			B[i] = -A[i];
 		}
 
+		if (A.RequiresGrad()) {
+			B.SetRequiresGrad(true);
+			B.SetGradFn(new AutoGrad::NegateGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+		}
+
 		return B;
 	}
 
@@ -201,6 +207,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			B[i] = A[i] * A[i];
+		}
+
+		if (A.RequiresGrad()) {
+			B.SetRequiresGrad(true);
+			B.SetGradFn(new AutoGrad::SquareGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
 		}
 
 		return B;

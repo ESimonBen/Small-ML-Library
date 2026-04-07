@@ -16,30 +16,24 @@ namespace MLCore::AutoGrad {
 			auto* a = this->inputs[0];
 			auto* b = this->inputs[1];
 
+			if (gradOutput.Dims() != std::vector<size_t>{a->Dims()[0], b->Dims()[1]}) {
+				throw std::runtime_error("ERROR: MatMulGradFn: gradOutput shape mismatch");
+			}
+
 			auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
 
 			if (a->RequiresGrad()) {
 				auto bT = Operations::Transpose((*b), allocator);
 
 				auto gradA = Operations::MatMultiply(gradOutput, bT, allocator);
-
-				a->AccumulateGrad(gradA);
-
-				if (a->HasGrad()) {
-					a->Grad()->Backward(gradA);
-				}
+				a->Backward(gradA);
 			}
 
 			if (b->RequiresGrad()) {
 				auto aT = Operations::Transpose((*a), allocator);
 
 				auto gradB = Operations::MatMultiply(aT, gradOutput, allocator);
-
-				b->AccumulateGrad(gradB);
-				
-				if (b->HasGrad()) {
-					b->Grad()->Backward(gradB);
-				}
+				b->Backward(gradB);
 			}
 		}
 	};

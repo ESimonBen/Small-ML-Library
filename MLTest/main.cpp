@@ -2,11 +2,13 @@
 #include <iostream>
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/autograd/gradientFn.h>
-#include <mlCore/autograd/functions/addGradFn.h>
-#include <mlCore/autograd/functions/subGradFn.h>
-#include <mlCore/autograd/functions/mulGradFn.h>
-#include <mlCore/autograd/functions/divGradFn.h>
 #include <mlCore/operations/elementwise/elementwise.h>
+#include <mlCore/autograd/functions/elementwise/addGradFn.h>
+#include <mlCore/autograd/functions/elementwise/subGradFn.h>
+#include <mlCore/autograd/functions/elementwise/mulGradFn.h>
+#include <mlCore/autograd/functions/elementwise/divGradFn.h>
+#include <mlCore/autograd/functions/elementwise/negateGradFn.h>
+#include <mlCore/autograd/functions/elementwise/squareGradFn.h>
 
 using namespace MLCore;
 using namespace MLCore::TensorCore;
@@ -33,22 +35,21 @@ int main() {
     Tensor<float> gradOut({ 2,2 }, allocator);
     gradOut[0] = 1.0f; gradOut[1] = 1.0f; gradOut[2] = 1.0f; gradOut[3] = 1.0f;
 
-
     AddGradFn<float> addFn(&a, &b);
     addFn.Backward(gradOut);
 
     std::cout << "Add Gradient - a:\n";
-    for (size_t i = 0; i < a.NumElements(); ++i) {
-        std::cout << (*a.Grad())[i] << " ";
+    for (auto v : *a.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     std::cout << "Add Gradient - b:\n";
-    for (size_t i = 0; i < b.NumElements(); ++i) {
-        std::cout << (*b.Grad())[i] << " ";
+    for (auto v : *b.Grad()) {
+        std::cout << v << " ";
     }
 
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     a.ZeroGrad();
     b.ZeroGrad();
@@ -57,16 +58,16 @@ int main() {
     subFn.Backward(gradOut);
 
     std::cout << "Sub Gradient - a:\n";
-    for (size_t i = 0; i < a.NumElements(); ++i) {
-        std::cout << (*a.Grad())[i] << " ";
+    for (auto v : *a.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     std::cout << "Sub Gradient - b:\n";
-    for (size_t i = 0; i < b.NumElements(); ++i) {
-        std::cout << (*b.Grad())[i] << " ";
+    for (auto v : *b.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     a.ZeroGrad();
     b.ZeroGrad();
@@ -75,16 +76,16 @@ int main() {
     mulFn.Backward(gradOut);
 
     std::cout << "Mul Gradient - a:\n";
-    for (size_t i = 0; i < a.NumElements(); ++i) {
-        std::cout << (*a.Grad())[i] << " ";
+    for (auto v : *a.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     std::cout << "Mul Gradient - b:\n";
-    for (size_t i = 0; i < b.NumElements(); ++i) {
-        std::cout << (*b.Grad())[i] << " ";
+    for (auto v : *b.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     a.ZeroGrad();
     b.ZeroGrad();
@@ -93,16 +94,16 @@ int main() {
     divFn.Backward(gradOut);
 
     std::cout << "Div Gradient - a:\n";
-    for (size_t i = 0; i < a.NumElements(); ++i) {
-        std::cout << (*a.Grad())[i] << " ";
+    for (auto v : *a.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     std::cout << "Div Gradient - b:\n";
-    for (size_t i = 0; i < b.NumElements(); ++i) {
-        std::cout << (*b.Grad())[i] << " ";
+    for (auto v : *b.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
     Tensor<float> c({ 1,2 }, allocator); // shape (1,2)
     Tensor<float> d({ 2,2 }, allocator); // shape (2,2)
@@ -116,17 +117,71 @@ int main() {
     AddGradFn<float> addBroadcast(&c, &d);
     addBroadcast.Backward(gradOut); // gradOut must match broadcasted shape
 
-    std::cout << "Broadcast Gradient - c:\n";
-    for (size_t i = 0; i < c.NumElements(); ++i) {
-        std::cout << (*c.Grad())[i] << " ";
+    std::cout << "Broadcast Add Gradient - c:\n";
+    for (auto v : *c.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 
-    std::cout << "Broadcast Gradient - d:\n";
-    for (size_t i = 0; i < d.NumElements(); ++i) {
-        std::cout << (*d.Grad())[i] << " ";
+    std::cout << "Broadcast Add Gradient - d:\n";
+    for (auto v : *d.Grad()) {
+        std::cout << v << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
+
+    c.ZeroGrad();
+    d.ZeroGrad();
+
+    SubGradFn<float> subBroadcast(&c, &d);
+    subBroadcast.Backward(gradOut);
+
+    std::cout << "Broadcast Sub Gradient - c:\n";
+    for (auto v : *c.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
+
+    std::cout << "Broadcast Sub Gradient - d:\n";
+    for (auto v : *d.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
+
+    c.ZeroGrad();
+    d.ZeroGrad();
+
+    MulGradFn<float> mulBroadcast(&c, &d);
+    mulBroadcast.Backward(gradOut);
+
+    std::cout << "Broadcast Mul Gradient - c:\n";
+    for (auto v : *c.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
+
+    std::cout << "Broadcast Mul Gradient - d:\n";
+    for (auto v : *d.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
+
+    c.ZeroGrad();
+    d.ZeroGrad();
+
+    DivGradFn<float> divBroadcast(&c, &d);
+    divBroadcast.Backward(gradOut);
+
+    std::cout << "Broadcast Div Gradient - c:\n";
+    for (auto v : *c.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
+
+    std::cout << "Broadcast Div Gradient - d:\n";
+    for (auto v : *d.Grad()) {
+        std::cout << v << " ";
+    }
+    std::cout << "\n\n";
 
     return 0;
 }

@@ -312,6 +312,12 @@ namespace MLCore::TensorCore {
 		
 		AccumulateGrad(gradOutput);
 
+		if (m_Visited) {
+			return;
+		}
+
+		m_Visited = true;
+
 		if (m_GradFn) {
 			m_GradFn->Backward(gradOutput);
 		}
@@ -325,6 +331,12 @@ namespace MLCore::TensorCore {
 
 		Tensor<T> gradOutput{ GetShape(), allocator};
 		gradOutput.Fill(T(1));
+
+		if (m_Visited) {
+			return;
+		}
+
+		m_Visited = true;
 
 		if (m_GradFn) {
 			m_GradFn->Backward(gradOutput);

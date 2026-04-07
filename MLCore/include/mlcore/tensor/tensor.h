@@ -76,6 +76,7 @@ namespace MLCore::TensorCore {
 		Memory::ArenaAllocator* m_Allocator;
 		Memory::Storage<T> m_Storage;
 		bool m_RequiresGrad = false;
+		bool m_Visited = false;
 		std::unique_ptr<Tensor<T>> m_Grad = nullptr;
 		std::unique_ptr<AutoGrad::GradFn<T>> m_GradFn = nullptr;
 	};

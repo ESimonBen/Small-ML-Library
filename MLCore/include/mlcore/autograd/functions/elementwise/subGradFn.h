@@ -19,23 +19,13 @@ namespace MLCore::AutoGrad {
 
 			if (a->RequiresGrad()) {
 				auto gradA = ReduceSumToShape(gradOutput, a->GetShape());
-
-				a->AccumulateGrad(gradA);
-
-				if (a->HasGrad()) {
-					a->Grad()->Backward(gradA);
-				}
+				a->Backward(gradA);
 			}
 
 			if (b->RequiresGrad()) {
 				auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
 				auto gradB = Operations::Negate(ReduceSumToShape(gradOutput, b->GetShape()), allocator);
-
-				b->AccumulateGrad(gradB);
-				
-				if (b->HasGrad()) {
-					b->Grad()->Backward(gradB);
-				}
+				b->Backward(gradB);
 			}
 		}
 	};

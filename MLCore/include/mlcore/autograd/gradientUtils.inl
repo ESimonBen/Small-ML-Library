@@ -1,5 +1,5 @@
 // gradientUtils.inl
-#include <mlCore/operations/linearAlgebra/linalg.h>
+#include <mlCore/operations/reduction/reduction.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
