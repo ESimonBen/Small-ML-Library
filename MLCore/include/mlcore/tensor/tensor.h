@@ -13,6 +13,7 @@ namespace MLCore::TensorCore {
 		Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator);
 		Tensor(const Tensor& other);
 		Tensor(Tensor&& other) noexcept;
+		Tensor& operator=(const Tensor& other) noexcept;
 		Tensor& operator=(Tensor&& other) noexcept;
 		explicit Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator);
 		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);

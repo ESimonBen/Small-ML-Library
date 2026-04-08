@@ -9,7 +9,8 @@ namespace MLCore::TensorCore {
 
 	template <typename T>
 	inline Tensor<T>::Tensor(const Tensor<T>& other)
-		: m_Shape(other.GetShape()), m_Allocator(const_cast<Memory::ArenaAllocator*>(&(other.GetAllocator()))), m_Storage(Memory::MakeStorage<T>(*m_Allocator, m_Shape.NumElements())) {
+		: m_Shape(other.GetShape()), m_Allocator(const_cast<Memory::ArenaAllocator*>(&(other.GetAllocator()))), m_Storage(Memory::MakeStorage<T>(*m_Allocator, m_Shape.NumElements())),
+		  m_RequiresGrad(other.m_RequiresGrad) {
 		// This for-loop form of allocation can be optimized with std::memcpy
 		for (size_t i = 0; i < NumElements(); ++i) {
 			(*this)[i] = other[i];
@@ -21,6 +22,29 @@ namespace MLCore::TensorCore {
 		: m_Shape(std::move(other.m_Shape)), m_Allocator(other.m_Allocator), m_Storage(std::move(other.m_Storage)), m_Grad(std::move(other.m_Grad)),
 		  m_GradFn(std::move(other.m_GradFn)), m_RequiresGrad(other.m_RequiresGrad)
 	{}
+
+	template <typename T>
+	inline Tensor<T>& Tensor<T>::operator=(const Tensor& other) noexcept {
+		if (this != &other) {
+			m_Shape = other.m_Shape;
+			m_Allocator = const_cast<Memory::ArenaAllocator*>(&(other.GetAllocator()));
+
+			size_t size = NumElements();
+			m_Storage = Memory::MakeStorage<T>(*m_Allocator, size);
+
+			for (size_t i = 0; i < size; ++i) {
+				(*this)[i] = other[i];
+			}
+
+			m_RequiresGrad = other.m_RequiresGrad;
+
+			m_Grad.reset();
+			m_GradFn.reset();
+			m_Visited = false;
+		}
+
+		return *this;
+	}
 
 	template <typename T>
 	inline Tensor<T>& Tensor<T>::operator=(Tensor&& other) noexcept {

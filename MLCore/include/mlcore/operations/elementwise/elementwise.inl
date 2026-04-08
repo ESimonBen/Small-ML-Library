@@ -1,6 +1,7 @@
 // elementwise.inl
 #include <cmath>
 #include <stdexcept>
+#include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/broadcast/broadcast.h>
 
 namespace MLCore::AutoGrad {
@@ -186,12 +187,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
-		const size_t size = B.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			B[i] = -A[i];
-		}
+		TensorCore::Tensor<T> B = Operations::MultiplyScalar(A, -1);
 
 		if (A.RequiresGrad()) {
 			B.SetRequiresGrad(true);

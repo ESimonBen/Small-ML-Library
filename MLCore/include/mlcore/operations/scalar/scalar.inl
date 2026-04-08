@@ -77,19 +77,6 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> MultiplyScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept {
-		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
-
-		const size_t size = Input.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Scalar * Input[i];
-		}
-
-		return Output;
-	}
-
-	template <typename T>
 	inline TensorCore::Tensor<T> DivideScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) {
 		if constexpr (!std::is_floating_point_v<T>) {
 			for (size_t i = 0; i < Input.NumElements(); ++i) {
