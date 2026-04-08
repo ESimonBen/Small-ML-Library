@@ -4,28 +4,24 @@
 #include <mlCore/tensor/tensor.h>
 
 namespace MLCore::Operations {
-	// Scalar Operations on RHS
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> AddScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  noexcept;
+	[[nodiscard]] TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  noexcept;
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
+
+	// Scalar Operations on RHS
 
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> SubtractScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MultiplyScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
-
-	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> DivideScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator);
 
 	// Scalar Operations on LHS
-	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> AddScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> SubtractScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
-
-	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MultiplyScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept;
 
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> DivideScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator);

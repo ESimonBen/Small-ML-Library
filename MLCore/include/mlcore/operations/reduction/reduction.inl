@@ -28,11 +28,11 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		if (size == 0) {
-			result[0] = T(0);
+			result[0] = static_cast<T>(0);
 			return result;
 		}
 
-		T sum = T(0);
+		T sum = static_cast<T>(0);
 
 		for (size_t i = 0; i < size; ++i) {
 			sum += A[i];

@@ -6,7 +6,7 @@
 namespace MLCore::Operations {
 	// Scalar Operations on RHS
 	template <typename T>
-	inline TensorCore::Tensor<T> AddScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
+	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -32,7 +32,7 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> MultiplyScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
+	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -58,20 +58,6 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			Output[i] = Input[i] / Scalar;
-		}
-
-		return Output;
-	}
-
-	// Scalar Operations on LHS
-	template <typename T>
-	inline TensorCore::Tensor<T> AddScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept {
-		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
-
-		const size_t size = Input.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Scalar + Input[i];
 		}
 
 		return Output;
@@ -106,8 +92,10 @@ namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> DivideScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) {
 		if constexpr (!std::is_floating_point_v<T>) {
-			if (Scalar == 0) {
-				throw std::runtime_error("ERROR: Divide by 0");
+			for (size_t i = 0; i < Input.NumElements(); ++i) {
+				if (Input[i] == 0) {
+					throw std::runtime_error("ERROR: Divide by 0");
+				}
 			}
 		}
 			

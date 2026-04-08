@@ -15,7 +15,8 @@ namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
-	// Planning to add other activation functions (softmax mainly,s possibly others)
+	template <typename T>
+	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 }
 
 #include "activation.inl"

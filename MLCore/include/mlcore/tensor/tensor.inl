@@ -231,7 +231,7 @@ namespace MLCore::TensorCore {
 	void Tensor<T>::ZeroGrad() {
 		if (m_Grad) {
 			for (size_t i = 0; i < m_Grad->NumElements(); ++i) {
-				(*m_Grad)[i] = T(0);
+				(*m_Grad)[i] = static_cast<T>(0);
 			}
 		}
 	}
@@ -291,7 +291,7 @@ namespace MLCore::TensorCore {
 		if (!m_Grad) {
 			auto& allocator = const_cast<Memory::ArenaAllocator&>(gradInput.GetAllocator());
 			m_Grad = std::make_unique<Tensor<T>>(gradInput.GetShape(), allocator);
-			m_Grad->Fill(T(0));
+			m_Grad->Fill(static_cast<T>(0));
 
 			for (size_t i = 0; i < gradInput.NumElements(); ++i) {
 				(*m_Grad)[i] += gradInput[i];
@@ -330,7 +330,7 @@ namespace MLCore::TensorCore {
 		}
 
 		Tensor<T> gradOutput{ GetShape(), allocator};
-		gradOutput.Fill(T(1));
+		gradOutput.Fill(static_cast<T>(1));
 
 		if (m_Visited) {
 			return;
