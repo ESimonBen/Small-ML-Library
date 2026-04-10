@@ -18,9 +18,6 @@ namespace MLCore::AutoGrad {
 	class DivGradFn;
 
 	template <typename T>
-	class NegateGradFn;
-
-	template <typename T>
 	class PowerGradFn;
 }
 
@@ -187,14 +184,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> B = Operations::MultiplyScalar(A, -1);
-
-		if (A.RequiresGrad()) {
-			B.SetRequiresGrad(true);
-			B.SetGradFn(new AutoGrad::NegateGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
-		}
-
-		return B;
+		return MultiplyScalar(A, -1);
 	}
 
 	template <typename T>

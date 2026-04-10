@@ -3,6 +3,20 @@
 #include <stdexcept>
 #include <functional>
 
+namespace MLCore::AutoGrad {
+	template <typename T>
+	class AddScalarGradFn;
+
+	template <typename T>
+	class SubScalarGradFn;
+
+	template <typename T>
+	class MulScalarGradFn;
+
+	template <typename T>
+	class DivScalarGradFn;
+}
+
 namespace MLCore::Operations {
 	// Scalar Operations on RHS
 	template <typename T>
@@ -13,6 +27,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			Output[i] = Input[i] + Scalar;
+		}
+
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new AddScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input)));
 		}
 
 		return Output;
@@ -28,6 +47,11 @@ namespace MLCore::Operations {
 			Output[i] = Input[i] - Scalar;
 		}
 
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new SubScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), false));
+		}
+
 		return Output;
 	}
 
@@ -39,6 +63,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			Output[i] = Input[i] * Scalar;
+		}
+
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar));
 		}
 
 		return Output;
@@ -60,6 +89,11 @@ namespace MLCore::Operations {
 			Output[i] = Input[i] / Scalar;
 		}
 
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar, false));
+		}
+
 		return Output;
 	}
 
@@ -71,6 +105,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			Output[i] = Scalar - Input[i];
+		}
+
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new SubScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), true));
 		}
 
 		return Output;
@@ -92,6 +131,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			Output[i] = Scalar / Input[i];
+		}
+
+		if (Input.RequiresGrad()) {
+			Output.SetRequiresGrad(true);
+			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar, true));
 		}
 
 		return Output;

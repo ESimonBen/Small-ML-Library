@@ -284,7 +284,9 @@ namespace MLCore::TensorCore {
 	Tensor<T> Tensor<T>::Detach() {
 		Tensor<T> out{ m_Shape, m_Allocator };
 
-		for (size_t i = 0; i < NumElements(); ++i) {
+		size_t size = NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
 			out[i] = (*this)[i];
 		}
 
@@ -330,15 +332,11 @@ namespace MLCore::TensorCore {
 
 	template <typename T>
 	void Tensor<T>::Backward(const Tensor<T>& gradOutput) {
-		if (!m_RequiresGrad) {
+		if (!m_RequiresGrad || m_Visited) {
 			return;
 		}
-		
-		AccumulateGrad(gradOutput);
 
-		if (m_Visited) {
-			return;
-		}
+		AccumulateGrad(gradOutput);
 
 		m_Visited = true;
 
@@ -349,16 +347,12 @@ namespace MLCore::TensorCore {
 	
 	template <typename T>
 	void Tensor<T>::Backward(Memory::ArenaAllocator& allocator) {
-		if (!m_RequiresGrad) {
+		if (!m_RequiresGrad || m_Visited) {
 			return;
 		}
 
 		Tensor<T> gradOutput{ GetShape(), allocator};
 		gradOutput.Fill(static_cast<T>(1));
-
-		if (m_Visited) {
-			return;
-		}
 
 		m_Visited = true;
 

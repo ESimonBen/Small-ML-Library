@@ -1,6 +1,7 @@
 // reduction.inl
 #include <concepts>
 #include <stdexcept>
+#include <mlCore/operations/scalar/scalar.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
@@ -58,14 +59,13 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Mean: Tensor was empty");
 		}
 
-		TensorCore::Tensor<T> result{ {1}, allocator };
+		auto sum = Sum(A, allocator);
+		TensorCore::Tensor<T> result = DivideScalarRight(sum, static_cast<T>(size), allocator);
 
-		result[0] = Sum(A, allocator)[0] / (static_cast<T>(size));
-
-		if (A.RequiresGrad()) {
+		/*if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
 			result.SetGradFn(new MeanGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
-		}
+		}*/
 
 		return result;
 	}

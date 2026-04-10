@@ -74,8 +74,12 @@ namespace MLCore::AutoGrad {
 
 		auto& allocator = const_cast<Memory::ArenaAllocator&>(gradOutput.GetAllocator());
 
+		// Must create a detached version of the input to make sure another
+		// computation graph is not created while backpropogating
+		auto detachedInput = input->Detach();
+
 		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ?
-			Operations::Multiply(gradOutput, Operations::DivideScalarLeft(-scalar, Operations::Square(*input, allocator), allocator), allocator)
+			Operations::Multiply(gradOutput, Operations::DivideScalarLeft(-scalar, Operations::Square(detachedInput, allocator), allocator), allocator)
 			: Operations::DivideScalarRight(gradOutput, scalar, allocator);
 
 		input->Backward(gradInput);
