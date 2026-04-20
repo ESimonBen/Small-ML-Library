@@ -103,4 +103,50 @@ namespace MLCore::Operations {
 
 		return result;
 	}
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (axis >= A.Rank()) {
+			throw std::out_of_range("ERROR: AxisSoftmax: Axis out of bounds");
+		}
+
+		auto shape = A.GetShape(); // I'm intentionally making a copy here, because it's going to be done anyway
+		TensorCore::Tensor<T> result{ shape, allocator };
+
+		size_t axisSize = A.Dims()[axis];
+		size_t outerSize = result.NumElements() / axisSize;
+
+		for (size_t i = 0; i < outerSize; ++i) {
+			auto baseIndex = shape.UnflattenIndex(i);
+			baseIndex.insert(baseIndex.begin() + axis, 0);
+
+			T max = A[shape.FlattenIndex(baseIndex)];
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				max = std::max(max, A[shape.FlattenIndex(baseIndex)]);
+			}
+
+			T sumExp = static_cast<T>(0);
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				T exp = std::exp(A[shape.FlattenIndex(baseIndex)] - max);
+				result[shape.FlattenIndex(baseIndex)] = exp;
+				sumExp += exp;
+			}
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				result[shape.FlattenIndex(baseIndex)] /= sumExp;
+			}
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::AxisSoftmaxGradFn<T>>(A.GetImpl(), result.GetImpl(), axis));
+		}
+
+		return result;
+	}
 }

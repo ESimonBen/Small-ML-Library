@@ -47,7 +47,6 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		size_t axis;
 		Utils::Shape inputShape;
 	};
 }

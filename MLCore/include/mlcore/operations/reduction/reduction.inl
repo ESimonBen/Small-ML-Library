@@ -50,11 +50,11 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> Max(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		static_assert(std::totally_ordered<T>, "T must be totally ordered");
+		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
 
 		const size_t size = A.NumElements();
 		if (size == 0) {
-			throw std::runtime_error("ERROR: Tensor is empty");
+			throw std::runtime_error("ERROR: Min: Tensor is empty");
 		}
 
 		T max = A[0];
@@ -77,11 +77,11 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> Min(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		static_assert(std::totally_ordered<T>, "T must be totally ordered");
+		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
 
 		const size_t size = A.NumElements();
 		if (size == 0) {
-			throw std::runtime_error("ERROR: Tensor is empty");
+			throw std::runtime_error("ERROR: Min: Tensor is empty");
 		}
 
 		T min = A[0];
@@ -105,7 +105,7 @@ namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (axis >= A.Rank()) {
-			throw std::out_of_range("ERROR: Sum: Axis out of bounds");
+			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
 		}
 
 		std::vector<size_t> dims = A.Dims();
@@ -134,6 +134,19 @@ namespace MLCore::Operations {
 			result.SetRequiresGrad(true);
 			result.SetGradFn(std::make_shared<AutoGrad::AxisSumGradFn<T>>(A.GetImpl(), axis));
 		}
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisMean(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (axis >= A.Rank()) {
+			throw std::out_of_range("ERROR: AxisMean: Axis out of bounds");
+		}
+
+		size_t axisSize = A.Dims()[axis];
+
+		TensorCore::Tensor<T> result = DivideScalar(AxisSum(A, axis, allocator), static_cast<T>(axisSize), allocator, false);
 
 		return result;
 	}

@@ -21,6 +21,9 @@ namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator);
 
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Memory::ArenaAllocator& allocator);
+
 	// Planning to add other loss functions (Mean Bias Error, Huber/Smooth Mean Absolute Error, etc.)
 }
 

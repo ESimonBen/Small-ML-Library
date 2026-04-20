@@ -17,6 +17,9 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator);
 }
 
 #include "activation.inl"

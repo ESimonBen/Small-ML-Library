@@ -62,12 +62,13 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class CEWithLogitsGradFn : public GradFn<T> {
 	public:
-		CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
+		CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target, size_t axis);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
+		size_t axis;
 	};
 }
 

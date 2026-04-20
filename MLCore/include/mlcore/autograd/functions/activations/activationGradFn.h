@@ -55,6 +55,18 @@ namespace MLCore::AutoGrad {
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> outputImpl;
 	};
+
+	template <typename T>
+	class AxisSoftmaxGradFn : public GradFn<T> {
+	public:
+		AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+
+	private:
+		std::shared_ptr<typename GradFn<T>::Impl> outputImpl;
+		size_t axis;
+	};
 }
 
 #include "activationGradFn.inl"

@@ -190,8 +190,8 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	CEWithLogitsGradFn<T>::CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target)
-		: GradFn<T>(pred), targetImpl(target)
+	CEWithLogitsGradFn<T>::CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target, size_t axis)
+		: GradFn<T>(pred), targetImpl(target), axis(axis)
 	{}
 
 	template <typename T>
@@ -201,20 +201,37 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> logits{ this->inputs[0] };
-		TensorCore::Tensor<T> target{ targetImpl };
+		
+		if (!logits.RequiresGrad()) {
+			return;
+		}
+		
+		TensorCore::Tensor<T> targets{ targetImpl };
 
 		TensorCore::Tensor<T> detachedLogits = logits.Detach();
 		auto& allocator = detachedLogits.GetAllocator();
-		size_t size = logits.NumElements();
 
-		TensorCore::Tensor<T> softmax = Operations::Softmax(detachedLogits, allocator);
+		TensorCore::Tensor<T> softmax = Operations::AxisSoftmax(detachedLogits, axis, allocator);
 
 		TensorCore::Tensor<T> gradInput{ logits.GetShape(), allocator };
 		T gradScalar = gradOutput[0];
 
-		for (size_t i = 0; i < size; ++i) {
-			gradInput[i] = gradScalar * ((softmax[i] - target[i]) / size);
+		auto shape = logits.GetShape();
+		size_t axisSize = logits.Dims()[axis];
+		size_t outerSize = logits.NumElements() / axisSize;
+
+		for (size_t i = 0; i < outerSize; ++i) {
+			auto baseIndex = shape.UnflattenIndex(i);
+			baseIndex.insert(baseIndex.begin() + axis, 0);
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				size_t idx = shape.FlattenIndex(baseIndex);
+				gradInput[idx] = gradScalar * (softmax[idx] - targets[idx]);
+			}
 		}
+
+		gradInput = Operations::DivideScalar(gradInput, static_cast<T>(outerSize), allocator, false);
 
 		logits.Backward(gradInput);
 	}

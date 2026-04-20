@@ -176,4 +176,48 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
+
+	template <typename T>
+	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis)
+		: GradFn<T>({ a, b }), axis(axis)
+	{}
+
+	template <typename T>
+	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
+		auto& allocator = gradientOut.GetAllocator();
+
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+
+		size_t axisSize = input.Dims()[axis];
+		size_t outerSize = input.NumElements() / axisSize;
+		auto shape = input.GetShape();
+
+		for (size_t i = 0; i < outerSize; ++i) {
+			auto baseIndex = shape.UnflattenIndex(i);
+			baseIndex.insert(baseIndex.begin() + axis, 0);
+
+			T sum = static_cast<T>(0);
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				size_t idx = shape.FlattenIndex(baseIndex);
+				sum += gradientOut[idx] * y[idx];
+			}
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				size_t idx = shape.FlattenIndex(baseIndex);
+				gradInput[idx] = y[idx] * (gradientOut[idx] - sum);
+			}
+		}
+
+		input.Backward(gradInput);
+	}
 }

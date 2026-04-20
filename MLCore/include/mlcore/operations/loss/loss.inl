@@ -139,7 +139,7 @@ namespace MLCore::Operations {
 		return result;
 	}
 
-	template <typename T>
+	/*template <typename T>
 	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
@@ -175,5 +175,65 @@ namespace MLCore::Operations {
 		}
 
 		return result;
+	}*/
+
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (logits.GetShape() != targets.GetShape()) {
+			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
+		}
+
+		if (axis >= logits.Rank()) {
+			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
+		}
+
+		auto shape = logits.GetShape();
+		size_t axisSize = logits.Dims()[axis];
+		size_t outerSize = logits.NumElements() / axisSize;
+
+		T totalLoss = static_cast<T>(0);
+
+		for (size_t i = 0; i < outerSize; ++i) {
+			auto baseIndex = shape.UnflattenIndex(i);
+			baseIndex.insert(baseIndex.begin() + axis, 0);
+
+			T max = static_cast<T>(0);
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				max = std::max(max, logits[shape.FlattenIndex(baseIndex)]);
+			}
+
+			T sumExp = static_cast<T>(0);
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				sumExp += std::exp(logits[shape.FlattenIndex(baseIndex)] - max);
+			}
+
+			T logSumExp = std::log(sumExp) + max;
+
+			for (size_t j = 0; j < axisSize; ++j) {
+				baseIndex[axis] = j;
+				size_t idx = shape.FlattenIndex(baseIndex);
+				T target = targets[idx];
+				totalLoss += -target * (logits[idx] - logSumExp);
+			}
+		}
+
+		TensorCore::Tensor<T> result{ {1}, allocator };
+		result[0] = totalLoss / outerSize;
+
+		if (logits.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::CEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl(), axis));
+		}
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, allocator);
 	}
 }

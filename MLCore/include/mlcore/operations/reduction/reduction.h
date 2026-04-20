@@ -17,6 +17,9 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisMean(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator);
 }
 
 #include "reduction.inl"

@@ -114,7 +114,7 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
-		: GradFn<T>(a), axis(axis), inputShape(a->shape) {
+		: GradFn<T>(a), inputShape(a->shape) {
 		assert(axis < inputShape.Rank());
 	}
 

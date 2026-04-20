@@ -16,27 +16,19 @@ int main() {
     ArenaAllocator allocator;
 
     Tensor<float> predict({ 2, 2 }, allocator);
-    predict.Fill(0.0f);
-    predict[0] = 3.0f;
-    predict[1] = 2.4f;
-    predict[2] = .23f;
+    predict.Fill(1.0f);
+    predict[0] = 4.0f;
     predict.SetRequiresGrad(true);
 
-    //Tensor<float> target({ 2, 2 }, allocator);
-    //target.Fill(0.0f);
-    //target[1] = 1.0f; // correct class
-    //target.SetRequiresGrad(true);
-
-    auto result = Softmax(predict, allocator);
+    auto result = AxisSum(predict, 0, allocator);
 
     for (auto& v : result) {
         std::cout << v << " ";
     }
     std::cout << std::endl << std::endl;
 
-    Tensor<float> gradient{ {2, 2}, allocator };
-    gradient.Fill(0.0f);
-    gradient[0] = 1.0f;
+    Tensor<float> gradient{ {2}, allocator };
+    gradient.Fill(1.0f);
 
     result.Backward(gradient);
 

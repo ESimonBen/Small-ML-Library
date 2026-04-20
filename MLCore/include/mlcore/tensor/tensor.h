@@ -28,8 +28,8 @@ namespace MLCore::TensorCore {
 			allocator(allocator),
 			requiresGrad(requiresGrad),
 			grad(std::move(grad)),
-			gradFn(std::move(gradFn)) {
-		}
+			gradFn(std::move(gradFn)) 
+		{}
 	};
 
 	// Tensor wrapper (gives acces to actual tensor node while not BEING the node)
