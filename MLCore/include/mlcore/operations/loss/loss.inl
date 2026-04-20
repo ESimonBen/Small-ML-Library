@@ -139,44 +139,6 @@ namespace MLCore::Operations {
 		return result;
 	}
 
-	/*template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
-		if (logits.GetShape() != targets.GetShape()) {
-			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
-		}
-
-		size_t size = logits.NumElements();
-
-		T maxLogit = logits[0];
-		for (size_t i = 1; i < size; ++i) {
-			if (logits[i] > maxLogit) {
-				maxLogit = logits[i];
-			}
-		}
-
-		T sumExp = static_cast<T>(0);
-		for (size_t i = 0; i < size; ++i) {
-			sumExp += std::exp(logits[i] - maxLogit);
-		}
-
-		T logSumExp = std::log(sumExp) + maxLogit;
-
-		T loss = static_cast<T>(0);
-		for (size_t i = 0; i < size; ++i) {
-			loss += -targets[i] * (logits[i] - logSumExp);
-		}
-
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = loss / size;
-
-		if (logits.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::CEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl()));
-		}
-
-		return result;
-	}*/
-
 	template <typename T>
 	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
@@ -194,10 +156,19 @@ namespace MLCore::Operations {
 		T totalLoss = static_cast<T>(0);
 
 		for (size_t i = 0; i < outerSize; ++i) {
-			auto baseIndex = shape.UnflattenIndex(i);
-			baseIndex.insert(baseIndex.begin() + axis, 0);
+			std::vector<size_t> baseIndex{ shape.Rank(), 0 };
+			size_t temp = i;
+			
+			for (size_t j = shape.Rank(); j-- > 0;) {
+				if (j == axis) {
+					baseIndex[j] = 0;
+				}
 
-			T max = static_cast<T>(0);
+				baseIndex[j] = temp % shape.Dims()[j];
+				temp /= shape.Dims()[j];
+			}
+
+			T max = -std::numeric_limits<T>::infinity();
 
 			for (size_t j = 0; j < axisSize; ++j) {
 				baseIndex[axis] = j;

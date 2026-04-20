@@ -20,17 +20,19 @@ int main() {
     predict[0] = 4.0f;
     predict.SetRequiresGrad(true);
 
-    auto result = AxisSum(predict, 0, allocator);
+    Tensor<float> target({ 2, 2 }, allocator);
+    target.Fill(0.0f);
+    target[0] = 1.0f;
+
+    auto result = CrossEntropyWithLogits(predict, target, 0, allocator);
 
     for (auto& v : result) {
         std::cout << v << " ";
     }
+
     std::cout << std::endl << std::endl;
 
-    Tensor<float> gradient{ {2}, allocator };
-    gradient.Fill(1.0f);
-
-    result.Backward(gradient);
+    result.Backward();
 
     auto grad1 = predict.Grad();
 
@@ -41,3 +43,6 @@ int main() {
 
 	return 0;
 }
+
+/*Tensor<float> gradient{ {2}, allocator };
+    gradient.Fill(1.0f);*/

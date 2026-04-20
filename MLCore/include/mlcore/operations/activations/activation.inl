@@ -117,8 +117,17 @@ namespace MLCore::Operations {
 		size_t outerSize = result.NumElements() / axisSize;
 
 		for (size_t i = 0; i < outerSize; ++i) {
-			auto baseIndex = shape.UnflattenIndex(i);
-			baseIndex.insert(baseIndex.begin() + axis, 0);
+			std::vector<size_t> baseIndex{ shape.Rank(), 0 };
+			size_t temp = i;
+
+			for (size_t j = shape.Rank(); j-- > 0;) {
+				if (j == axis) {
+					baseIndex[j] = 0;
+				}
+
+				baseIndex[j] = temp % shape.Dims()[j];
+				temp /= shape.Dims()[j];
+			}
 
 			T max = A[shape.FlattenIndex(baseIndex)];
 
