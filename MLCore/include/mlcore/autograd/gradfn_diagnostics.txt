@@ -1,0 +1,25 @@
+Concise root cause (what's happening)
+- The GradFn stores a raw Tensor* pointer to its input. In Mean you create a temporary intermediate (sum) and pass it into DivideScalar; DivideScalar sets a GradFn that stores a pointer to that temporary. When Mean returns the temporary is destroyed and the pointer in the GradFn becomes dangling. At Backward time you therefore access a destroyed Tensor object (its members get overwritten / m_Arena becomes invalid) and Allocate asserts.
+
+Why this only reproduces via Mean (and not when you tested DivScalarGradFn directly)
+- When you tested DivScalarGradFn directly you passed a live Tensor that outlived the GradFn. In the Mean path the input to DivideScalar (the sum) is a temporary local that is destroyed at the end of Mean, so the pointer saved by the GradFn becomes invalid.
+
+How to confirm quickly
+- Log the address of the Tensor passed into DivideScalar and the address stored in the created GradFn.inputs vector at the time of SetGradFn; log again at Backward time. If addresses match but the object no longer contains the same internal fields (or is overwritten), you have a dangling-pointer.
+
+Safe fixes (ranked)
+1) Make GradFn own/hold shared ownership of inputs (preferred design):
+   - Change inputs to std::vector<std::shared_ptr<Tensor<T>>> and pass shared_ptrs for any tensor you want a GradFn to reference. This guarantees the referenced Tensor stays alive until no shared_ptr remains.
+2) Make GradFn store copies or the minimal data it needs:
+   - Instead of pointing to the whole Tensor object, copy only what the GradFn needs (shape, indices, cached values). This avoids needing to keep intermediates alive.
+3) Ensure you never create GradFns that reference temporaries:
+   - Modify operations so you do not create a GradFn that points at a local temporary. Either allocate the intermediate on the heap and transfer ownership, or restructure Mean so the graph references the original input (A) rather than the transient sum.
+4) Short-term diagnostic guard:
+   - Add an IsInitialized() check on the allocator and/or debug logging in GradFn constructor to detect when pointers refer to temporaries or destroyed objects.
+
+Concrete recommendation (next steps)
+- Refactor GradFn to use std::shared_ptr<Tensor<T>> for inputs (and update SetGradFn call sites). If you cannot refactor everywhere now, pick the costly-but-safe route: have DivideScalar (and other ops that might reference temporaries) store a detached copy or heap-allocate the intermediate and transfer ownership into the GradFn so it cannot dangle.
+
+If you want, I can:
+- Show the minimal code changes to convert GradFn::inputs to hold std::shared_ptr and update a few call sites (large but robust), or
+- Add debug logging/asserts to trace where the temporary is created and where the pointer becomes invalid. Which would you prefer?

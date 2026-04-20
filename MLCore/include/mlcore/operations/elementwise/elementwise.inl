@@ -3,23 +3,7 @@
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/broadcast/broadcast.h>
-
-namespace MLCore::AutoGrad {
-	template <typename T>
-	class AddGradFn;
-
-	template <typename T>
-	class SubGradFn;
-
-	template <typename T>
-	class MulGradFn;
-
-	template <typename T>
-	class DivGradFn;
-
-	template <typename T>
-	class PowerGradFn;
-}
+#include <mlCore/autograd/functions/elementwise/elementwiseGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -56,7 +40,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::AddGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::AddGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;
@@ -96,7 +80,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::SubGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::SubGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;
@@ -136,7 +120,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::MulGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::MulGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;
@@ -176,7 +160,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::DivGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::DivGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;
@@ -184,7 +168,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		return MultiplyScalar(A, -1);
+		return MultiplyScalar(A, static_cast<T>(-1), allocator);
 	}
 
 	template <typename T>
@@ -198,7 +182,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			B.SetRequiresGrad(true);
-			B.SetGradFn(new AutoGrad::PowerGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), exponent));
+			B.SetGradFn(std::make_shared<AutoGrad::PowerGradFn<T>>(A.GetImpl(), exponent));;
 		}
 
 		return B;

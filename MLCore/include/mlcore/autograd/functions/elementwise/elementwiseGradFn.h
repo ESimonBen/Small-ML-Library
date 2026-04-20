@@ -2,15 +2,12 @@
 #pragma once
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/autograd/gradientFn.h>
-#include <mlCore/autograd/gradientUtils.h>
-#include <mlCore/operations/scalar/scalar.h>
-#include <mlCore/operations/elementwise/elementwise.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
 	class AddGradFn : public GradFn<T> {
 	public:
-		AddGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
@@ -18,7 +15,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class SubGradFn : public GradFn<T> {
 	public:
-		SubGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
 	};
@@ -26,7 +23,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class MulGradFn : public GradFn<T> {
 	public:
-		MulGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
@@ -36,10 +33,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class DivGradFn : public GradFn<T> {
 	public:
-		DivGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b)
-			: GradFn<T>({ a, b })
-		{
-		}
+		DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
@@ -49,7 +43,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class PowerGradFn : public GradFn<T> {
 	public:
-		PowerGradFn(TensorCore::Tensor<T>* a, T exponent);
+		PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 

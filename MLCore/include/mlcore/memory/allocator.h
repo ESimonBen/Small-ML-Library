@@ -25,6 +25,8 @@ namespace MLCore::Memory {
 		// Get the amount of memory Remaining
 		size_t Remaining() const;
 
+		bool IsInitialized() const;
+
 	private:
 		char* m_Arena;
 		size_t m_ArenaCapacity;

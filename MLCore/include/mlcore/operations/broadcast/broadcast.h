@@ -10,5 +10,6 @@ namespace MLCore::Operations {
 	};
 
 	[[nodiscard]] BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB);
+	[[nodiscard]] BroadcastInfo ComputeBroadcastTo(const Utils::Shape& input, const Utils::Shape& target);
 	[[nodiscard]] bool CanBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB);
 }

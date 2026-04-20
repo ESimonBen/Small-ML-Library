@@ -1,13 +1,21 @@
 // gradientUtils.inl
+#include <mlCore/operations/broadcast/broadcast.h>
 #include <mlCore/operations/reduction/reduction.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
 	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& gradient, const Utils::Shape& targetShape) {
-		const auto& gradShape = gradient.GetShape();
-		auto& allocator = const_cast<Memory::ArenaAllocator&>(gradient.GetAllocator());
+		#ifdef ML_CORE_DEBUG
+			if (!Operations::CanBroadcast(targetShape, gradient.GetShape())) {
+				throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
+			}
+		#endif
 
-		TensorCore::Tensor<T> result{ gradient };
+		const auto& gradShape = gradient.GetShape();
+		TensorCore::Tensor<T> grad = gradient.Detach();
+		auto& allocator = grad.GetAllocator();
+
+		TensorCore::Tensor<T> result = gradient.Clone();
 
 		size_t gradRank = gradShape.Rank();
 		size_t targetRank = targetShape.Rank();
@@ -27,6 +35,36 @@ namespace MLCore::AutoGrad {
 			}
 		}
 
+		result.SetRequiresGrad(false);
 		return result;
+	}
+	
+	template <typename T>
+	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& gradient, const Utils::Shape& targetShape) {
+		auto info = Operations::ComputeBroadcastTo(gradient.GetShape(), targetShape);
+
+		TensorCore::Tensor<T> grad = gradient.Detach();
+		TensorCore::Tensor<T> output{ targetShape, grad.GetAllocator() };
+
+		const size_t size = output.NumElements();
+		auto& targetStrides = targetShape.Strides();
+
+		for (size_t i = 0; i < size; ++i) {
+			size_t idxInput = 0;
+			size_t temp = i;
+
+			size_t targetRank = targetShape.Rank();
+
+			for (size_t j = 0; j < targetRank; ++j) {
+				size_t dimIndex = temp / targetStrides[j];
+				temp %= targetStrides[j];
+
+				idxInput += dimIndex * info.strideA[j];
+			}
+
+			output[i] = gradient[idxInput];
+		}
+
+		return output;
 	}
 }

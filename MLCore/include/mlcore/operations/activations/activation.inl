@@ -1,11 +1,7 @@
 // activation.inl
 #include <cmath>
 #include <algorithm>
-
-namespace MLCore::AutoGrad {
-	template <typename T>
-	class ReLUGradFn;
-}
+#include <mlCore/autograd/functions/activations/activationGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -18,7 +14,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(new AutoGrad::ReLUGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+			result.SetGradFn(std::make_shared<AutoGrad::ReLUGradFn<T>>(A.GetImpl()));
 		}
 
 		return result;
@@ -30,6 +26,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
 			result[i] = (A[i] > 0) ? A[i] : alpha * A[i];
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::LeakyReLUGradFn<T>>(A.GetImpl(), alpha));
 		}
 
 		return result;
@@ -48,6 +49,11 @@ namespace MLCore::Operations {
 			}
 		}
 
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::SigmoidGradFn<T>>(A.GetImpl(), result.GetImpl()));
+		}
+
 		return result;
 	}
 
@@ -57,6 +63,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
 			result[i] = std::tanh(A[i]);
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::TanhGradFn<T>>(A.GetImpl(), result.GetImpl()));
 		}
 
 		return result;
@@ -83,6 +94,11 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			result[i] /= sumExp;
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::SoftmaxGradFn<T>>(A.GetImpl(), result.GetImpl()));
 		}
 
 		return result;

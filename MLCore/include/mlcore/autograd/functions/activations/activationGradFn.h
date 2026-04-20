@@ -7,7 +7,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class ReLUGradFn : public GradFn<T> {
 	public:
-		ReLUGradFn(TensorCore::Tensor<T>* a);
+		ReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
@@ -15,7 +15,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class LeakyReLUGradFn : public GradFn<T> {
 	public:
-		LeakyReLUGradFn(TensorCore::Tensor<T>* a, T alpha);
+		LeakyReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T alpha);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
@@ -26,34 +26,34 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class SigmoidGradFn : public GradFn<T> {
 	public:
-		SigmoidGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		SigmoidGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* outputTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> outputImpl;
 	};
 
 	template <typename T>
 	class TanhGradFn : public GradFn<T> {
 	public:
-		TanhGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		TanhGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* outputTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> outputImpl;
 	};
 
 	template <typename T>
 	class SoftmaxGradFn : public GradFn<T> {
 	public:
-		SoftmaxGradFn(TensorCore::Tensor<T>* a, TensorCore::Tensor<T>* b);
+		SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* outputTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> outputImpl;
 	};
 }
 

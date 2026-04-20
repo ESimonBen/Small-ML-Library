@@ -1,21 +1,9 @@
 // scalar.inl
-#include <type_traits>
+#include <concepts>
 #include <stdexcept>
 #include <functional>
-
-namespace MLCore::AutoGrad {
-	template <typename T>
-	class AddScalarGradFn;
-
-	template <typename T>
-	class SubScalarGradFn;
-
-	template <typename T>
-	class MulScalarGradFn;
-
-	template <typename T>
-	class DivScalarGradFn;
-}
+#include <type_traits>
+#include <mlCore/autograd/functions/scalar/scalarGradFn.h>
 
 namespace MLCore::Operations {
 	// Scalar Operations on RHS
@@ -31,25 +19,25 @@ namespace MLCore::Operations {
 
 		if (Input.RequiresGrad()) {
 			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new AddScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input)));
+			Output.SetGradFn(std::make_shared<AutoGrad::AddScalarGradFn<T>>(Input.GetImpl()));
 		}
 
 		return Output;
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> SubtractScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
+	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) noexcept {
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Input[i] - Scalar;
+			Output[i] = (scalarOnLeft) ? Scalar - Input[i] : Input[i] - Scalar;
 		}
 
 		if (Input.RequiresGrad()) {
 			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new SubScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), false));
+			Output.SetGradFn(std::make_shared<AutoGrad::SubScalarGradFn<T>>(Input.GetImpl(), scalarOnLeft));
 		}
 
 		return Output;
@@ -67,18 +55,17 @@ namespace MLCore::Operations {
 
 		if (Input.RequiresGrad()) {
 			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar));
+			Output.SetGradFn(std::make_shared<AutoGrad::MulScalarGradFn<T>>(Input.GetImpl(), Scalar));
 		}
 
 		return Output;
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> DivideScalarRight(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) {
-		if constexpr (!std::is_floating_point_v<T>) {
-			if (Scalar == 0) {
-				throw std::runtime_error("ERROR: Divide by 0");
-			}
+	inline TensorCore::Tensor<T> DivideScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) {
+		// Also should create checks for if the tensor itself has any zeros
+		if (Scalar == static_cast<T>(0) && !scalarOnLeft) {
+			throw std::runtime_error("ERROR: Divide by 0");
 		}
 
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
@@ -86,56 +73,12 @@ namespace MLCore::Operations {
 		const size_t size = Input.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Input[i] / Scalar;
+			Output[i] = (scalarOnLeft) ? Scalar / Input[i] : Input[i] / Scalar;
 		}
 
 		if (Input.RequiresGrad()) {
 			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar, false));
-		}
-
-		return Output;
-	}
-
-	template <typename T>
-	inline TensorCore::Tensor<T> SubtractScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) noexcept {
-		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
-
-		const size_t size = Input.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Scalar - Input[i];
-		}
-
-		if (Input.RequiresGrad()) {
-			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new SubScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), true));
-		}
-
-		return Output;
-	}
-
-	template <typename T>
-	inline TensorCore::Tensor<T> DivideScalarLeft(const T Scalar, const TensorCore::Tensor<T>& Input, Memory::ArenaAllocator& allocator) {
-		if constexpr (!std::is_floating_point_v<T>) {
-			for (size_t i = 0; i < Input.NumElements(); ++i) {
-				if (Input[i] == 0) {
-					throw std::runtime_error("ERROR: Divide by 0");
-				}
-			}
-		}
-			
-		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
-
-		const size_t size = Input.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			Output[i] = Scalar / Input[i];
-		}
-
-		if (Input.RequiresGrad()) {
-			Output.SetRequiresGrad(true);
-			Output.SetGradFn(new MulScalarGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&Input), Scalar, true));
+			Output.SetGradFn(std::make_shared<AutoGrad::DivScalarGradFn<T>>(Input.GetImpl(), Scalar, scalarOnLeft));
 		}
 
 		return Output;

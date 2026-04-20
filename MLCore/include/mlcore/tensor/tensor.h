@@ -7,16 +7,46 @@
 #include <mlCore/autograd/gradientFn.h>
 
 namespace MLCore::TensorCore {
+	// Tensor implementation (used in computation graph)
+	template <typename T>
+	struct TensorImpl {
+		Utils::Shape shape;
+		Memory::Storage<T> storage;
+		Memory::ArenaAllocator* allocator;
+		bool requiresGrad;
+		std::shared_ptr<TensorImpl<T>> grad;
+		std::shared_ptr<AutoGrad::GradFn<T>> gradFn;
+
+		TensorImpl(const Utils::Shape& shape,
+			Memory::Storage<T> storage,
+			Memory::ArenaAllocator* allocator,
+			bool requiresGrad = false,
+			std::shared_ptr<TensorImpl<T>> grad = nullptr,
+			std::shared_ptr<AutoGrad::GradFn<T>> gradFn = nullptr)
+			: shape(shape),
+			storage(std::move(storage)),
+			allocator(allocator),
+			requiresGrad(requiresGrad),
+			grad(std::move(grad)),
+			gradFn(std::move(gradFn)) {
+		}
+	};
+
+	// Tensor wrapper (gives acces to actual tensor node while not BEING the node)
 	template <typename T>
 	class Tensor {
 	public:
+		using Impl = TensorImpl<T>;
+
 		Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator);
-		Tensor(const Tensor& other);
-		Tensor(Tensor&& other) noexcept;
-		Tensor& operator=(const Tensor& other) noexcept;
-		Tensor& operator=(Tensor&& other) noexcept;
 		explicit Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator);
 		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);
+
+		// New
+		Tensor(std::shared_ptr<Impl> impl);
+
+		Tensor Clone() const;
+		Tensor Detach() const; // For performance's sake (viewing instead of creating)
 
 		const Utils::Shape& GetShape() const;
 		size_t NumElements() const;
@@ -29,7 +59,7 @@ namespace MLCore::TensorCore {
 		const std::vector<size_t>& Dims() const;
 
 		Memory::ArenaAllocator& GetAllocator();
-		const Memory::ArenaAllocator& GetAllocator() const;
+		std::shared_ptr<Impl> GetImpl() const;
 
 		// Added these to use iterators (that's the reason for the difference in style from the rest of the code)
 		T* begin();
@@ -56,30 +86,25 @@ namespace MLCore::TensorCore {
 		bool RequiresGrad() const;
 		bool HasGrad() const;
 		void ZeroGrad();
-		bool IsLeaf() const;
 		void SetRequiresGrad(bool require);
 
-		Tensor<T>* Grad();
-		const Tensor<T>* Grad() const;
-		Tensor<T> Detach();
+		Tensor<T> Grad();
+		const Tensor<T> Grad() const;
 
-		AutoGrad::GradFn<T>* GradFn();
-		const AutoGrad::GradFn<T>* GradFn() const;
+		std::shared_ptr<AutoGrad::GradFn<T>> GradFn();
+		const std::shared_ptr<AutoGrad::GradFn<T>> GradFn() const;
 
-		void SetGradFn(AutoGrad::GradFn<T>* gradFn);
+		void SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn);
 		void AccumulateGrad(const Tensor<T>& gradInput);
 
+		void Backward();
 		void Backward(const Tensor<T>& gradOutput);
-		void Backward(Memory::ArenaAllocator& allocator);
+
+		// Static fillers
+		// static Tensor Zero();
 
 	private:
-		Utils::Shape m_Shape;
-		Memory::ArenaAllocator* m_Allocator;
-		Memory::Storage<T> m_Storage;
-		bool m_RequiresGrad = false;
-		bool m_Visited = false;
-		std::unique_ptr<Tensor<T>> m_Grad = nullptr;
-		std::unique_ptr<AutoGrad::GradFn<T>> m_GradFn = nullptr;
+		std::shared_ptr<Impl> m_Impl;
 	};
 }
 

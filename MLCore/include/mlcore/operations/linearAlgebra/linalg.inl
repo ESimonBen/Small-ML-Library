@@ -1,17 +1,7 @@
 // linalg.inl
 #include <vector>
 #include <stdexcept>
-
-namespace MLCore::AutoGrad {
-	template <typename T>
-	class MatMulGradFn;
-
-	template <typename T>
-	class DotGradFn;
-
-	template <typename T>
-	class TransposeGradFn;
-}
+#include <mlCore/autograd/functions/linearAlgebra/linalgGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -42,7 +32,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::MatMulGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::MatMulGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;
@@ -65,9 +55,9 @@ namespace MLCore::Operations {
 			}
 		}
 
-		if (A.RequiresGrad() || B.RequiresGrad()) {
+		if (A.RequiresGrad()) {
 			B.SetRequiresGrad(true);
-			B.SetGradFn(new AutoGrad::TransposeGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+			B.SetGradFn(std::make_shared<AutoGrad::TransposeGradFn<T>>(A.GetImpl()));
 		}
 
 		return B;
@@ -79,7 +69,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Dot: Only 1D tensors of the same size supported");
 		}
 
-		T sum = T{};
+		T sum = static_cast<T>(0);
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
 			sum += A[i] * B[i];
@@ -90,7 +80,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {
 			C.SetRequiresGrad(true);
-			C.SetGradFn(new AutoGrad::DotGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), const_cast<TensorCore::Tensor<T>*>(&B)));
+			C.SetGradFn(std::make_shared<AutoGrad::DotGradFn<T>>(A.GetImpl(), B.GetImpl()));
 		}
 
 		return C;

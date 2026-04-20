@@ -40,4 +40,8 @@ namespace MLCore::Memory {
 	size_t ArenaAllocator::Remaining() const {
 		return m_ArenaCapacity - m_Offset;
 	}
+
+	bool ArenaAllocator::IsInitialized() const {
+		return m_Arena != nullptr;
+	}
 }

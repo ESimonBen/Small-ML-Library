@@ -7,7 +7,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class SumGradFn : public GradFn<T> {
 	public:
-		SumGradFn(TensorCore::Tensor<T>* a);
+		SumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
 
@@ -15,23 +15,10 @@ namespace MLCore::AutoGrad {
 		Utils::Shape inputShape;
 	};
 
-	// Might remove this later
-	template <typename T>
-	class MeanGradFn : public GradFn<T> {
-	public:
-		MeanGradFn(TensorCore::Tensor<T>* a);
-
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
-
-	private:
-		Utils::Shape inputShape;
-		size_t numElements;
-	};
-
 	template <typename T>
 	class MaxGradFn : public GradFn<T> {
 	public:
-		MaxGradFn(TensorCore::Tensor<T>* a, T maxValue);
+		MaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T maxValue);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
@@ -43,7 +30,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class MinGradFn : public GradFn<T> {
 	public:
-		MinGradFn(TensorCore::Tensor<T>* a, T minValue);
+		MinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T minValue);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
@@ -55,7 +42,7 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class AxisSumGradFn : public GradFn<T> {
 	public:
-		AxisSumGradFn(TensorCore::Tensor<T>* a, size_t axis);
+		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 

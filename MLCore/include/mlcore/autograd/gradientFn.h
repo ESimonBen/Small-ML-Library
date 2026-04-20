@@ -1,5 +1,6 @@
 // gradientFn.h
 #pragma once
+#include <memory>
 #include <vector>
 
 // To avoid cirular dependencies
@@ -12,20 +13,35 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class GradFn {
 	public:
-		using Tensor = TensorCore::Tensor<T>;
+		using Impl = TensorCore::Tensor<T>::Impl;
 
 		GradFn() = default;
 
-		explicit GradFn(Tensor* gradInput);
+		explicit GradFn(std::shared_ptr<Impl> impl);
+		explicit GradFn(std::vector<std::shared_ptr<Impl>> gradInput);
 
-		explicit GradFn(const std::vector<Tensor*>& gradInput);
-
-		virtual void Backward(const Tensor& gradOutput) = 0;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) = 0;
 
 		virtual ~GradFn() = default;
 
 	protected:
-		std::vector<Tensor*> inputs;
+		std::shared_ptr<Impl> Input(size_t i) {
+			return inputs[i];
+		}
+
+		const std::vector<std::shared_ptr<Impl>>& Inputs() const {
+			return inputs;
+		}
+
+		void PropogateToInput(size_t index, const TensorCore::Tensor<T>& grad) {
+			TensorCore::Tensor<T> input{ inputs[index] };
+			input.Backward(grad);
+		}
+
+	protected:
+		std::vector<std::shared_ptr<Impl>> inputs;
+
+		// May add something to store outputs at some point
 	};
 }
 

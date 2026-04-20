@@ -2,6 +2,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
+#include <mlCore/autograd/functions/loss/lossGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -14,12 +15,17 @@ namespace MLCore::Operations {
 
 		size_t count = predictions.NumElements();
 		for (size_t i = 0; i < count; ++i) {
-			T diff = predictions[i] - targets[i];
+			T diff = targets[i] - predictions[i];
 			sum += diff * diff;
 		}
 
 		TensorCore::Tensor<T> result{ {1}, allocator };
 		result[0] = sum / predictions.NumElements();
+
+		if (predictions.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::MSEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
+		}
 
 		return result;
 	}
@@ -34,11 +40,16 @@ namespace MLCore::Operations {
 
 		size_t count = predictions.NumElements();
 		for (size_t i = 0; i < count; ++i) {
-			sum += std::abs(predictions[i] - targets[i]);
+			sum += std::abs(targets[i] - predictions[i]);
 		}
 
 		TensorCore::Tensor<T> result{ {1}, allocator };
 		result[0] = sum / predictions.NumElements();
+
+		if (predictions.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::MAEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
+		}
 
 		return result;
 	}
@@ -59,15 +70,53 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = sum / predictions.NumElements();
+		result[0] = sum /*/ predictions.NumElements()*/;
+
+		if (predictions.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::BCEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
+		}
 
 		return result;
 	}
 
 	template <typename T>
+	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+		if (logits.GetShape() != targets.GetShape()) {
+			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Tensor shape mismatch");
+		}
+
+		T sum = static_cast<T>(0);
+		size_t size = logits.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			T logit = logits[i];
+			T target = targets[i];
+
+			T max = std::max(logit, static_cast<T>(0));
+			T logTerm = std::log(std::exp(-std::abs(logit)) + static_cast<T>(1));
+
+			sum += max - logit * target + logTerm;
+		}
+
+		TensorCore::Tensor<T> result{ {1}, allocator };
+
+		result[0] = sum / size;
+
+		if (logits.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::BCEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl()));
+		}
+
+		return result;
+	}
+
+	// This assumes that the result of Softmax is being passed in
+	// (Softmax returns the probabilities of each element of the prediction)
+	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
-			throw std::runtime_error("ERROR: CrossEntropy: Tensor size mismatch");
+			throw std::runtime_error("ERROR: CrossEntropy: Tensor shape mismatch");
 		}
 
 		T sum = T{};
@@ -76,11 +125,54 @@ namespace MLCore::Operations {
 		size_t count = predictions.NumElements();
 		for (size_t i = 0; i < count; ++i) {
 			T p = std::clamp(predictions[i], epsilon, 1 - epsilon);
-			sum += -targets[i] * std::log(p);
+			sum += -targets[i] * std::log(p); // std::log should have been named std::ln, but WHAT DO I KNOW
 		}
 
 		TensorCore::Tensor<T> result{ {1}, allocator };
 		result[0] = sum / predictions.NumElements();
+
+		if (predictions.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::CEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
+		}
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+		if (logits.GetShape() != targets.GetShape()) {
+			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
+		}
+
+		size_t size = logits.NumElements();
+
+		T maxLogit = logits[0];
+		for (size_t i = 1; i < size; ++i) {
+			if (logits[i] > maxLogit) {
+				maxLogit = logits[i];
+			}
+		}
+
+		T sumExp = static_cast<T>(0);
+		for (size_t i = 0; i < size; ++i) {
+			sumExp += std::exp(logits[i] - maxLogit);
+		}
+
+		T logSumExp = std::log(sumExp) + maxLogit;
+
+		T loss = static_cast<T>(0);
+		for (size_t i = 0; i < size; ++i) {
+			loss += -targets[i] * (logits[i] - logSumExp);
+		}
+
+		TensorCore::Tensor<T> result{ {1}, allocator };
+		result[0] = loss / size;
+
+		if (logits.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::CEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl()));
+		}
 
 		return result;
 	}

@@ -7,45 +7,67 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class MSEGradFn : public GradFn<T> {
 	public:
-		MSEGradFn(TensorCore::Tensor<T>* pred, TensorCore::Tensor<T>* target);
+		MSEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* targetTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
 	};
 
 	template <typename T>
 	class MAEGradFn : public GradFn<T> {
 	public:
-		MAEGradFn(TensorCore::Tensor<T>* pred, TensorCore::Tensor<T>* target);
+		MAEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* targetTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
 	};
 
 	template <typename T>
 	class BCEGradFn : public GradFn<T> {
 	public:
-		BCEGradFn(TensorCore::Tensor<T>* pred, TensorCore::Tensor<T>* target);
+		BCEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* targetTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
+	};
+
+	template <typename T>
+	class BCEWithLogitsGradFn : public GradFn<T> {
+	public:
+		BCEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+
+	private:
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
 	};
 
 	template <typename T>
 	class CEGradFn : public GradFn<T> {
 	public:
-		CEGradFn(TensorCore::Tensor<T>* pred, TensorCore::Tensor<T>* target);
+		CEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		TensorCore::Tensor<T>* targetTensor;
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
+	};
+
+	template <typename T>
+	class CEWithLogitsGradFn : public GradFn<T> {
+	public:
+		CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+
+	private:
+		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
 	};
 }
 

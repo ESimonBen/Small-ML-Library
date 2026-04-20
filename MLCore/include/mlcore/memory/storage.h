@@ -12,6 +12,19 @@ namespace MLCore::Memory {
 			assert(data != nullptr || size == 0);
 		}
 
+		Storage(const Storage& other) noexcept
+			: m_Data(other.m_Data), m_Size(other.m_Size)
+		{}
+
+		Storage& operator=(const Storage& other) noexcept {
+			if (this != &other) {
+				m_Data = other.m_Data;
+				m_Size = other.m_Size;
+			}
+
+			return *this;
+		}
+
 		Storage(Storage&& other) noexcept
 			: m_Data(other.m_Data), m_Size(other.m_Size) {
 			other.m_Data = nullptr;
@@ -43,12 +56,13 @@ namespace MLCore::Memory {
 
 	private:
 		T* m_Data;
+		/*T* m_Data;*/
 		size_t m_Size; // Number of elements (NOT size in bytes)
 	};
 
 	template <typename T>
 	inline Storage<T> MakeStorage(ArenaAllocator& allocator, size_t size) {
-		T* ptr = allocator.Allocate<T>(size);
-		return Storage<T>(ptr, size);
+		T* raw = allocator.Allocate<T>(size);
+		return Storage<T>(raw, size);
 	}
 }

@@ -2,12 +2,12 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	GradFn<T>::GradFn(Tensor* gradInput) {
-		inputs.push_back(gradInput);
-	}
+	GradFn<T>::GradFn(std::shared_ptr<Impl> impl) 
+		: inputs {std::move(impl)}
+	{}
 
 	template <typename T>
-	GradFn<T>::GradFn(const std::vector<Tensor*>& gradInput)
-		: inputs(gradInput)
+	GradFn<T>::GradFn(std::vector<std::shared_ptr<Impl>> gradInput)
+		: inputs(std::move(gradInput))
 	{}
 }

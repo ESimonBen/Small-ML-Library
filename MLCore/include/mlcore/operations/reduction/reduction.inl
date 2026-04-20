@@ -2,23 +2,7 @@
 #include <concepts>
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>
-
-namespace MLCore::AutoGrad {
-	template <typename T>
-	class SumGradFn;
-
-	template <typename T>
-	class MeanGradFn;
-
-	template <typename T>
-	class MaxGradFn;
-
-	template <typename T>
-	class MinGradFn;
-
-	template <typename T>
-	class AxisSumGradFn;
-}
+#include <mlCore/autograd/functions/reduction/reductionGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -43,7 +27,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(new SumGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
+			result.SetGradFn(std::make_shared<AutoGrad::SumGradFn<T>>(A.GetImpl()));
 		}
 
 		return result;
@@ -59,13 +43,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Mean: Tensor was empty");
 		}
 
-		auto sum = Sum(A, allocator);
-		TensorCore::Tensor<T> result = DivideScalarRight(sum, static_cast<T>(size), allocator);
-
-		/*if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-			result.SetGradFn(new MeanGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A)));
-		}*/
+		TensorCore::Tensor<T> result = DivideScalar(Sum(A, allocator), static_cast<T>(size), allocator, false);
 
 		return result;
 	}
@@ -91,7 +69,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(new MaxGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), max));
+			result.SetGradFn(std::make_shared<AutoGrad::MaxGradFn<T>>(A.GetImpl(), max));
 		}
 
 		return result;
@@ -118,7 +96,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(new MinGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), min));
+			result.SetGradFn(std::make_shared<AutoGrad::MinGradFn<T>>(A.GetImpl(), min));
 		}
 
 		return result;
@@ -154,7 +132,7 @@ namespace MLCore::Operations {
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(new AxisSumGradFn<T>(const_cast<TensorCore::Tensor<T>*>(&A), axis));
+			result.SetGradFn(std::make_shared<AutoGrad::AxisSumGradFn<T>>(A.GetImpl(), axis));
 		}
 
 		return result;
