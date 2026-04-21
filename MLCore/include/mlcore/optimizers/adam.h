@@ -12,7 +12,6 @@ namespace MLCore::Optimizers {
 		virtual void Step() override;
 
 	private:
-		T m_LearningRate;
 		T m_Beta1;
 		T m_Beta2;
 		T m_BetaPow1;
@@ -33,7 +32,6 @@ namespace MLCore::Optimizers {
 		virtual void Step() override;
 
 	private:
-		T m_LearningRate;
 		T m_Beta1;
 		T m_Beta2;
 		T m_BetaPow1;

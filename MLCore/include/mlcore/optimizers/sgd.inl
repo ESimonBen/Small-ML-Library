@@ -3,11 +3,13 @@
 namespace MLCore::Optimizers {
 	template <typename T>
 	SGD<T>::SGD(std::vector<Parameter<T>>& params, T learningRate, T weightDecay)
-		: Optimizer<T>(params), m_LearningRate(learningRate), m_WeightDecay(weightDecay)
+		: Optimizer<T>(params, learningRate), m_WeightDecay(weightDecay)
 	{}
 
 	template <typename T>
 	void SGD<T>::Step() {
+		this->ClipGradients();
+
 		for (Parameter<T>& p : this->m_Params) {
 			TensorCore::Tensor<T>& param = p.Data();
 
@@ -25,14 +27,14 @@ namespace MLCore::Optimizers {
 					gradScalar += m_WeightDecay * param[i];
 				}
 
-				param[i] -= m_LearningRate * gradScalar;
+				param[i] -= this->m_LearningRate * gradScalar;
 			}
 		}
 	}
 
 	template <typename T>
 	SGDMomentum<T>::SGDMomentum(std::vector<Parameter<T>>& params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
-		: Optimizer<T>(params), m_LearningRate(learningRate), m_Momentum(momentum), m_WeightDecay(weightDecay), m_Dampening(dampening), m_Nesterov(nesterov) {
+		: Optimizer<T>(params, learningRate), m_Momentum(momentum), m_WeightDecay(weightDecay), m_Dampening(dampening), m_Nesterov(nesterov) {
 		for (Parameter<T>& p : this->m_Params) {
 			TensorCore::Tensor<T>& param = p.Data();
 			TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
@@ -43,6 +45,7 @@ namespace MLCore::Optimizers {
 
 	template <typename T>
 	void SGDMomentum<T>::Step() {
+		this->ClipGradients();
 		size_t sizeParams = this->m_Params.size();
 
 		for (size_t i = 0; i < sizeParams; ++i) {
@@ -69,10 +72,10 @@ namespace MLCore::Optimizers {
 
 				// Nesterov or standard stochastic gradient descent
 				if (m_Nesterov) {
-					param[j] -= m_LearningRate * (m_Momentum * velocity[j] + gradScalar);
+					param[j] -= this->m_LearningRate * (m_Momentum * velocity[j] + gradScalar);
 				}
 				else {
-					param[j] -= m_LearningRate * velocity[j];
+					param[j] -= this->m_LearningRate * velocity[j];
 				}
 			}
 		}

@@ -12,7 +12,6 @@ namespace MLCore::Optimizers {
 		virtual void Step() override;
 
 	private:
-		T m_LearningRate;
 		T m_WeightDecay;
 	};
 
@@ -25,7 +24,6 @@ namespace MLCore::Optimizers {
 		virtual void Step() override;
 
 	private:
-		T m_LearningRate;
 		T m_Momentum;
 		T m_WeightDecay;
 		T m_Dampening;

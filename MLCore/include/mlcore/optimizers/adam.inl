@@ -4,7 +4,7 @@
 namespace MLCore::Optimizers {
 	template <typename T>
 	Adam<T>::Adam(std::vector<Parameter<T>>& params, T learningRate, T beta1, T beta2, T epsilon, T weightDecay)
-		: Optimizer<T>(params), m_LearningRate(learningRate), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(beta1), m_BetaPow2(beta2),
+		: Optimizer<T>(params, learningRate), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(beta1), m_BetaPow2(beta2),
 		  m_Epsilon(epsilon), m_WeightDecay(weightDecay), m_Timestep(0) {
 		for (Parameter<T>& p : this->m_Params) {
 			TensorCore::Tensor<T>& param = p.Data();
@@ -23,6 +23,7 @@ namespace MLCore::Optimizers {
 	template <typename T>
 	void Adam<T>::Step() {
 		m_Timestep++;
+		this->ClipGradients();
 
 		m_BetaPow1 *= m_Beta1;
 		m_BetaPow2 *= m_Beta2;
@@ -60,14 +61,14 @@ namespace MLCore::Optimizers {
 				T m_hat = m[j] / bias1;
 				T v_hat = v[j] / bias2;
 
-				param[j] -= m_LearningRate * (m_hat / (std::sqrt(v_hat) + m_Epsilon));
+				param[j] -= this->m_LearningRate * (m_hat / (std::sqrt(v_hat) + m_Epsilon));
 			}
 		}
 	}
 
 	template <typename T>
 	AdamW<T>::AdamW(std::vector<Parameter<T>>& params, T learningRate, T beta1, T beta2, T epsilon, T weightDecay)
-		: Optimizer<T>(params), m_LearningRate(learningRate), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(beta1), m_BetaPow2(beta2),
+		: Optimizer<T>(params, learningRate), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(beta1), m_BetaPow2(beta2),
 		  m_Epsilon(epsilon), m_WeightDecay(weightDecay), m_Timestep(0) {
 		for (Parameter<T>& p : this->m_Params) {
 			TensorCore::Tensor<T>& param = p.Data();
@@ -86,6 +87,7 @@ namespace MLCore::Optimizers {
 	template <typename T>
 	void AdamW<T>::Step() {
 		m_Timestep++;
+		this->ClipGradients();
 
 		m_BetaPow1 *= m_Beta1;
 		m_BetaPow2 *= m_Beta2;
@@ -112,7 +114,7 @@ namespace MLCore::Optimizers {
 
 				// Weight decay
 				if (m_WeightDecay != static_cast<T>(0)) {
-					param[j] -= m_LearningRate * m_WeightDecay * param[j];
+					param[j] -= this->m_LearningRate * m_WeightDecay * param[j];
 				}
 
 				// Update biased moments
@@ -123,7 +125,7 @@ namespace MLCore::Optimizers {
 				T m_hat = m[j] / bias1;
 				T v_hat = v[j] / bias2;
 
-				param[j] -= m_LearningRate * (m_hat / (std::sqrt(v_hat) + m_Epsilon));
+				param[j] -= this->m_LearningRate * (m_hat / (std::sqrt(v_hat) + m_Epsilon));
 			}
 		}
 	}
