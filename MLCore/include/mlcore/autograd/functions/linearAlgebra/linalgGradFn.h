@@ -11,7 +11,7 @@ namespace MLCore::AutoGrad {
 	public:
 		DotGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 	};
 
 	template <typename T>
@@ -19,7 +19,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MatMulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 	};
 
 	template <typename T>
@@ -27,7 +27,7 @@ namespace MLCore::AutoGrad {
 	public:
 		TransposeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 	};
 }
 

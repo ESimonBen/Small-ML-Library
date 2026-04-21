@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void ReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void ReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input {this->inputs[0]};
 
 		if (gradOutput.GetShape() != input.GetShape()) {
@@ -21,8 +21,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 
 
@@ -40,7 +38,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void LeakyReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void LeakyReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input {this->inputs[0]};
 
 		if (gradOutput.GetShape() != input.GetShape()) {
@@ -52,8 +50,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 
 		size_t size = gradInput.NumElements();
@@ -71,7 +67,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void SigmoidGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void SigmoidGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "Sigmoid requires floating point type");
 
 		TensorCore::Tensor<T> input {this->inputs[0]};
@@ -85,8 +81,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{outputImpl}.Detach();
 
@@ -108,7 +102,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void TanhGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void TanhGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "Tanh requires floating point type");
 
 		TensorCore::Tensor<T> input {this->inputs[0]};
@@ -122,8 +116,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{ outputImpl }.Detach();
 
@@ -145,7 +137,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void SoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void SoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "Softmax requires floating point type");
 
 		TensorCore::Tensor<T> input {this->inputs[0]};
@@ -159,8 +151,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{outputImpl}.Detach();
 
 		size_t size = input.NumElements();
@@ -183,16 +173,16 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
 			return;
 		}
 
-		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
+		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
+		
 
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 

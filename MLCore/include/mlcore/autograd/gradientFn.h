@@ -20,7 +20,7 @@ namespace MLCore::AutoGrad {
 		explicit GradFn(std::shared_ptr<Impl> impl);
 		explicit GradFn(std::vector<std::shared_ptr<Impl>> gradInput);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) = 0;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) = 0;
 
 		virtual ~GradFn() = default;
 

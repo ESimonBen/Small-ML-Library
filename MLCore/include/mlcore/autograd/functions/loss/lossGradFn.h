@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MSEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
@@ -20,7 +20,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MAEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
@@ -31,7 +31,7 @@ namespace MLCore::AutoGrad {
 	public:
 		BCEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
@@ -42,7 +42,7 @@ namespace MLCore::AutoGrad {
 	public:
 		BCEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
@@ -53,7 +53,7 @@ namespace MLCore::AutoGrad {
 	public:
 		CEGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;
@@ -64,7 +64,7 @@ namespace MLCore::AutoGrad {
 	public:
 		CEWithLogitsGradFn(std::shared_ptr<typename GradFn<T>::Impl> pred, std::shared_ptr<typename GradFn<T>::Impl> target, size_t axis);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> targetImpl;

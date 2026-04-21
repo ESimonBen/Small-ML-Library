@@ -234,9 +234,15 @@ namespace MLCore::TensorCore {
 
 	template <typename T>
 	void Tensor<T>::ZeroGrad() {
+		if (!m_Impl->grad) {
+			return;
+		}
+
 		Tensor<T> gradTensor{ m_Impl->grad };
+
 		if (m_Impl->grad) {
-			for (size_t i = 0; i < m_Impl->grad->NumElements(); ++i) {
+			size_t size = gradTensor.NumElements();
+			for (size_t i = 0; i < size; ++i) {
 				gradTensor[i] = static_cast<T>(0);
 			}
 		}
@@ -250,7 +256,10 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	Tensor<T> Tensor<T>::Grad() {
 		if (!m_Impl->grad) {
-			throw std::runtime_error("ERROR: Gradient doesn't exist");
+			/*throw std::runtime_error("ERROR: Gradient doesn't exist");*/
+			Tensor<T> zero{ m_Impl->shape, *(m_Impl->allocator) };
+			zero.Fill(static_cast<T>(0));
+			return zero;
 		}
 
 		return Tensor<T>{m_Impl->grad};
@@ -330,7 +339,7 @@ namespace MLCore::TensorCore {
 		/*m_Visited = true;*/
 
 		if (m_Impl->gradFn) {
-			m_Impl->gradFn->Backward(gradOutput);
+			m_Impl->gradFn->Backward(gradOutput, *(m_Impl->allocator));
 		}
 	}
 }

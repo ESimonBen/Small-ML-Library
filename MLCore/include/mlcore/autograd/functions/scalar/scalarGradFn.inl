@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void AddScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void AddScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -25,7 +25,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void SubScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput)  {
+	void SubScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator)  {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -33,7 +33,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ? Operations::Negate(gradientOut, allocator) : gradientOut;
 
@@ -46,15 +45,13 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MulScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MulScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
 			return;
 		}
 
-		TensorCore::Tensor<T> grad = gradOutput.Detach();
-		auto& allocator = grad.GetAllocator();
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		TensorCore::Tensor<T> gradInput = Operations::MultiplyScalar(gradientOut, scalar, allocator);
@@ -68,7 +65,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void DivScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void DivScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -76,7 +73,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
+		
 
 		// Must create a detached version of the input to make sure another
 		// computation graph is not created while backpropogating

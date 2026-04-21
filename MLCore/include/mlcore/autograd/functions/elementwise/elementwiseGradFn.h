@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	public:
 		AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 	};
 
 	template <typename T>
@@ -17,7 +17,7 @@ namespace MLCore::AutoGrad {
 	public:
 		SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator);
 	};
 
 	template <typename T>
@@ -25,7 +25,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 		// Maybe store the saved forward values of the tensors (needed for multiply and divide)
 	};
@@ -35,7 +35,7 @@ namespace MLCore::AutoGrad {
 	public:
 		DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 		// Maybe store the saved forward values of the tensors (needed for multiply and divide)
 	};
@@ -45,7 +45,7 @@ namespace MLCore::AutoGrad {
 	public:
 		PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		T exponent;

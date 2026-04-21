@@ -1,48 +1,48 @@
 // main.cpp
 #include <iostream>
-#include <mlCore/operations/loss/loss.h>
-#include <mlCore/operations/reduction/reduction.h>
-#include <mlCore/operations/linearAlgebra/linalg.h>
-#include <mlCore/operations/activations/activation.h>
-#include <mlCore/operations/elementwise/elementwise.h>
+#include <mlCore/optimizers/sgd.h>
+#include <mlCore/operations/operations.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
 using namespace MLCore::AutoGrad;
 using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
+using namespace MLCore::Optimizers;
 
 int main() {
     ArenaAllocator allocator;
 
-    Tensor<float> predict({ 2, 2 }, allocator);
-    predict.Fill(1.0f);
-    predict[0] = 4.0f;
-    predict.SetRequiresGrad(true);
+    Tensor<float> weight{ {1}, allocator };
+    weight[0] = 0.0f;
+    weight.SetRequiresGrad(true);
 
-    Tensor<float> target({ 2, 2 }, allocator);
-    target.Fill(0.0f);
-    target[0] = 1.0f;
+    Tensor<float> input{ {1}, allocator };
+    input[0] = 2.0f;
 
-    auto result = CrossEntropyWithLogits(predict, target, 0, allocator);
+    Tensor<float> target{ {1}, allocator };
+    target[0] = 4.0f;
 
-    for (auto& v : result) {
-        std::cout << v << " ";
-    }
+    std::vector<Parameter<float>> params{ Parameter<float>{weight} };
+    SGDMomentum<float> optimizer{ params, .09f, .05f };
 
-    std::cout << std::endl << std::endl;
+    for (int epoch = 0; epoch < 20; ++epoch) {
+        // Forward: prediction = weight * input;
+        auto predict = Multiply(weight, input, allocator);
 
-    result.Backward();
+        // Loss: mean squared error
+        auto loss = MeanSquaredError(predict, target, allocator);
 
-    auto grad1 = predict.Grad();
+        std::cout << "Epoch " << epoch << " | Loss: " << loss[0] << " | w: " << weight[0] << std::endl;
 
-    std::cout << "Add Gradient: Grad1" << std::endl;
-    for (auto& v : grad1) {
-        std::cout << v << " ";
+        optimizer.ZeroGrad();
+        loss.Backward();
+
+        auto grad = weight.Grad();
+        std::cout << "Grad: " << grad[0] << std::endl;
+
+        optimizer.Step();
     }
 
 	return 0;
 }
-
-/*Tensor<float> gradient{ {2}, allocator };
-    gradient.Fill(1.0f);*/

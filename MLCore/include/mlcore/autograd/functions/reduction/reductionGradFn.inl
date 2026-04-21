@@ -10,7 +10,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void SumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void SumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: SumGradFn: Expected scalar tensor");
 		}
@@ -34,7 +34,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MaxGradFn: Expected a 1D tensor");
 		}
@@ -46,8 +46,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ inputShape, allocator };
 
 		T gradScalar = gradOutput[0];
@@ -76,7 +74,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MinGradFn: Expected a 1D tensor");
 		}
@@ -88,8 +86,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ inputShape, allocator };
 
 		T gradScalar = gradOutput[0];
@@ -119,7 +115,7 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	void AxisSumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void AxisSumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -127,7 +123,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> grad = gradOutput.Detach();
-		auto& allocator = grad.GetAllocator();
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 

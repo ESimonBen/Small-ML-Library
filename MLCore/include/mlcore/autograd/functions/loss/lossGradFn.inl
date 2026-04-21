@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MSEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MSEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MSEGradFn: Expected a scalar tensor");
 		}
@@ -22,8 +22,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ predict.GetShape(), allocator };
 
 		size_t size = gradInput.NumElements();
@@ -45,7 +43,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MAEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MAEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MAEGradFn: Expected a scalar tensor");
 		}
@@ -58,8 +56,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ predict.GetShape(), allocator };
 
 		size_t size = gradInput.NumElements();
@@ -81,7 +77,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void BCEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void BCEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: BCEGradFn: Expected a scalar tensor");
 		}
@@ -93,8 +89,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ predict.GetShape(), allocator };
 		TensorCore::Tensor<T> targetTensor{ targetImpl };
 
@@ -121,7 +115,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void BCEWithLogitsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void BCEWithLogitsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: BCEWithLogitsGradFn: expected scalar grad");
 		}
@@ -155,7 +149,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void CEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void CEGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: CEGradFn: Expected a scalar tensor");
 		}
@@ -167,8 +161,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
-
 		TensorCore::Tensor<T> gradInput{ predict.GetShape(), allocator };
 		TensorCore::Tensor<T> targetTensor{ targetImpl };
 
@@ -195,7 +187,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void CEWithLogitsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void CEWithLogitsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: CEWithLogitsGradFn: Expected a scalar tensor");
 		}

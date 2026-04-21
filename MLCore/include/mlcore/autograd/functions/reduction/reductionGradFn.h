@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	public:
 		SumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator);
 
 	private:
 		Utils::Shape inputShape;
@@ -20,7 +20,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T maxValue);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		Utils::Shape inputShape;
@@ -32,7 +32,7 @@ namespace MLCore::AutoGrad {
 	public:
 		MinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T minValue);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		Utils::Shape inputShape;
@@ -44,7 +44,7 @@ namespace MLCore::AutoGrad {
 	public:
 		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
 
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		Utils::Shape inputShape;

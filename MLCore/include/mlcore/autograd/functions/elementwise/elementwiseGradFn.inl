@@ -10,7 +10,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		#ifdef ML_CORE_DEBUG
 			if (!this->inputs[0] || !this->inputs[1]) {
 				throw std::runtime_error("ERROR: AddGradFn: Null input");
@@ -37,7 +37,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		#ifdef ML_CORE_DEBUG
 			if (!this->inputs[0] || !this->inputs[1]) {
 				throw std::runtime_error("ERROR: SubGradFn: Null input");
@@ -66,7 +66,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		#ifdef ML_CORE_DEBUG
 			if (!this->inputs[0] || !this->inputs[1]) {
 				throw std::runtime_error("ERROR: MulGradFn: Null input");
@@ -77,7 +77,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> b{ this->inputs[1] };
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
+		
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
@@ -98,7 +98,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		#ifdef ML_CORE_DEBUG
 			if (!this->inputs[0] || !this->inputs[1]) {
 				throw std::runtime_error("ERROR: DivGradFn: Null input");
@@ -110,7 +110,6 @@ namespace MLCore::AutoGrad {
 
 		
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
@@ -136,7 +135,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		#ifdef ML_CORE_DEBUG
 			if (!this->inputs[0]) {
 				throw std::runtime_error("ERROR: PowerGradFn: Null input");
@@ -152,7 +151,6 @@ namespace MLCore::AutoGrad {
 		auto base = input.Detach();
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		auto coeff = Operations::MultiplyScalar(gradientOut, exponent, allocator);
 		auto expMinus1 = Operations::Power(base, exponent - static_cast<T>(1), allocator);

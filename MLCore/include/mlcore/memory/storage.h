@@ -56,7 +56,6 @@ namespace MLCore::Memory {
 
 	private:
 		T* m_Data;
-		/*T* m_Data;*/
 		size_t m_Size; // Number of elements (NOT size in bytes)
 	};
 

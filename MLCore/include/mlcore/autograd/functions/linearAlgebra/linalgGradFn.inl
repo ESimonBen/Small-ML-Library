@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void DotGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput){
+	void DotGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator){
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: DotGradFn: gradOutput shape mismatch");
 		}
@@ -24,7 +24,6 @@ namespace MLCore::AutoGrad {
 		T gradScalar = gradOutput[0];
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
@@ -45,7 +44,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void MatMulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void MatMulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> a{this->inputs[0]};
 		TensorCore::Tensor<T> b{this->inputs[1]};
 
@@ -54,7 +53,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
@@ -79,7 +77,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void TransposeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	void TransposeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -91,7 +89,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		auto& allocator = gradientOut.GetAllocator();
 
 		auto gradInput = Operations::Transpose(gradientOut, allocator);
 
