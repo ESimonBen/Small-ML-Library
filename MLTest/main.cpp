@@ -1,6 +1,7 @@
 // main.cpp
 #include <iostream>
 #include <mlCore/optimizers/sgd.h>
+#include <mlCore/optimizers/adam.h>
 #include <mlCore/operations/operations.h>
 
 using namespace MLCore;
@@ -24,7 +25,7 @@ int main() {
     target[0] = 4.0f;
 
     std::vector<Parameter<float>> params{ Parameter<float>{weight} };
-    SGDMomentum<float> optimizer{ params, .09f, .05f };
+    Adam<float> optimizer{ params, .1f };
 
     for (int epoch = 0; epoch < 20; ++epoch) {
         // Forward: prediction = weight * input;
