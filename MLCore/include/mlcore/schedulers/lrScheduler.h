@@ -7,8 +7,11 @@ namespace MLCore::Schedulers {
 	class LRScheduler {
 	public:
 		LRScheduler(Optimizers::Optimizer<T>& opt)
-			: m_Opt(opt), m_LastLR(opt.LearningRate())
-		{}
+			: m_Opt(opt) {
+			for (Optimizers::ParameterGroup<T>& paramGroup : opt.ParamGroups()) {
+				m_LastLRs.push_back(paramGroup.learningRate);
+			}
+		}
 
 		virtual ~LRScheduler() = default;
 
@@ -16,6 +19,6 @@ namespace MLCore::Schedulers {
 
 	protected:
 		Optimizers::Optimizer<T>& m_Opt;
-		T m_LastLR;
+		std::vector<T> m_LastLRs;
 	};
 }

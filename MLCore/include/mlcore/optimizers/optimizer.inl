@@ -4,40 +4,37 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<Parameter<T>>& params, T learningRate)
-		: m_Params(params), m_LearningRate(learningRate)
+	Optimizer<T>::Optimizer(std::vector<Parameter<T>>& params, T learningRate, T weightDecay) {
+		m_ParamGroups.emplace_back(params, learningRate, weightDecay);
+	}
+
+	template <typename T>
+	Optimizer<T>::Optimizer(std::vector<ParameterGroup<T>> groups)
+		: m_ParamGroups(std::move(groups))
 	{}
 
 	template <typename T>
 	void Optimizer<T>::ZeroGrad() {
-		for (Parameter<T>& p : m_Params) {
-			TensorCore::Tensor<T> param = p.Data();
+		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
+			for (Parameter<T>* p : paramGroup.params) {
+				TensorCore::Tensor<T> param = p->Data();
 
-			if (param.RequiresGrad()) {
-				param.ZeroGrad();
+				if (param.RequiresGrad()) {
+					param.ZeroGrad();
+				}
 			}
 		}
 	}
 
 	template<typename T>
-	std::vector<TensorCore::Tensor<T>>& MLCore::Optimizers::Optimizer<T>::Params() {
-		return m_Params;
+	std::vector<ParameterGroup<T>>& MLCore::Optimizers::Optimizer<T>::ParamGroups() {
+		return m_ParamGroups;
 	}
 
 	template <typename T>
 	void Optimizer<T>::SetClipGradNorm(T maxNorm) {
 		m_UseClip = true;
 		m_MaxNorm = maxNorm;
-	}
-
-	template <typename T>
-	T Optimizer<T>::LearningRate() {
-		return m_LearningRate;
-	}
-
-	template <typename T>
-	void Optimizer<T>::SetLearningRate(T learningRate) {
-		m_LearningRate = learningRate;
 	}
 
 	template <typename T>
@@ -48,17 +45,19 @@ namespace MLCore::Optimizers {
 
 		T totalNorm = static_cast<T>(0);
 
-		for (Parameter<T>& p : m_Params) {
-			TensorCore::Tensor<T>& param = p.Data();
-			if (!param.HasGrad()) {
-				continue;
-			}
+		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
+			for (Parameter<T>* p : paramGroup.params) {
+				TensorCore::Tensor<T>& param = p->Data();
+				if (!param.HasGrad()) {
+					continue;
+				}
 
-			TensorCore::Tensor<T> grad = param.Grad();
-			size_t size = grad.NumElements();
+				TensorCore::Tensor<T> grad = param.Grad();
+				size_t size = grad.NumElements();
 
-			for (size_t i = 0; i < size; ++i) {
-				totalNorm += grad[i] * grad[i];
+				for (size_t i = 0; i < size; ++i) {
+					totalNorm += grad[i] * grad[i];
+				}
 			}
 		}
 
@@ -70,17 +69,19 @@ namespace MLCore::Optimizers {
 
 		T scale = m_MaxNorm / (totalNorm + static_cast<T>(1e-6));
 
-		for (Parameter<T>& p : m_Params) {
-			TensorCore::Tensor<T>& param = p.Data();
-			if (!param.HasGrad()) {
-				continue;
-			}
+		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
+			for (Parameter<T>* p : paramGroup.params) {
+				TensorCore::Tensor<T>& param = p->Data();
+				if (!param.HasGrad()) {
+					continue;
+				}
 
-			TensorCore::Tensor<T> grad = param.Grad();
-			size_t size = grad.NumElements();
+				TensorCore::Tensor<T> grad = param.Grad();
+				size_t size = grad.NumElements();
 
-			for (size_t i = 0; i < size; ++i) {
-				grad[i] *= scale;
+				for (size_t i = 0; i < size; ++i) {
+					grad[i] *= scale;
+				}
 			}
 		}
 	}
