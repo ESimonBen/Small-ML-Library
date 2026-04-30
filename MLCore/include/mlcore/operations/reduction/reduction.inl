@@ -1,4 +1,5 @@
 // reduction.inl
+#include <limits>
 #include <concepts>
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>
@@ -44,6 +45,10 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> result = DivideScalar(Sum(A, allocator), static_cast<T>(size), allocator, false);
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+		}
 
 		return result;
 	}
@@ -108,26 +113,43 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
 		}
 
-		std::vector<size_t> dims = A.Dims();
-		dims.erase(dims.begin() + axis);
+		const std::vector<size_t>& dims = A.Dims();
+		size_t rank = A.Rank();
 
-		if (dims.empty()) {
-			dims.push_back(1);
+		std::vector<size_t> outDims = dims;
+		outDims.erase(outDims.begin() + axis);
+
+		if (outDims.empty()) {
+			outDims.push_back(1);
 		}
 
-		TensorCore::Tensor<T> result{ dims, allocator };
+		TensorCore::Tensor<T> result{ outDims, allocator };
 
-		for (size_t i = 0; i < result.NumElements(); ++i) {
-			std::vector<size_t> indices = result.GetShape().UnflattenIndex(i); // Can be optimized later
-			T sum = T{};
+		// Outer and inner size calculation
+		size_t outer = 1;
+		for (size_t i = 0; i < axis; ++i) {
+			outer *= dims[i];
+		}
 
-			for (size_t j = 0; j < A.Dims()[axis]; ++j) {
-				std::vector<size_t> fullIndices = indices; // Can be optimized later
-				fullIndices.insert(fullIndices.begin() + axis, j);
-				sum += A[A.GetShape().FlattenIndex(fullIndices)];
+		size_t inner = 1;
+		for (size_t i = 0; i < rank; ++i) {
+			inner *= dims[i];
+		}
+
+		size_t axisSize = dims[axis];
+
+		for (size_t o = 0; o < outer; ++o) {
+			for (size_t i = 0; i < inner; ++i) {
+				size_t base = o * axisSize * inner + i;
+
+				T sum = static_cast<T>(0);
+
+				for (size_t j = 0; j < axisSize; ++j) {
+					sum += A[base + j * inner];
+				}
+
+				result[o * inner + i] = sum;
 			}
-
-			result[i] = sum;
 		}
 
 		if (A.RequiresGrad()) {
@@ -147,6 +169,114 @@ namespace MLCore::Operations {
 		size_t axisSize = A.Dims()[axis];
 
 		TensorCore::Tensor<T> result = DivideScalar(AxisSum(A, axis, allocator), static_cast<T>(axisSize), allocator, false);
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisMax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (axis >= A.Rank()) {
+			throw std::out_of_range("ERROR: AxisMax: Axis out of bounds");
+		}
+
+		const std::vector<size_t>& dims = A.Dims();
+		size_t rank = A.Rank();
+
+		std::vector<size_t> outDims = dims;
+		outDims.erase(outDims.begin() + axis);
+
+		if (outDims.empty()) {
+			outDims.push_back(1);
+		}
+
+		TensorCore::Tensor<T> result{ outDims, allocator };
+
+		// Outer and inner size calculation
+		size_t outer = 1;
+		for (size_t i = 0; i < axis; ++i) {
+			outer *= dims[i];
+		}
+
+		size_t inner = 1;
+		for (size_t i = 0; i < rank; ++i) {
+			inner *= dims[i];
+		}
+
+		size_t axisSize = dims[axis];
+		
+		for (size_t o = 0; o < outer; ++o) {
+			for (size_t i = 0; i < inner; ++i) {
+				size_t base = o * axisSize * inner + i;
+
+				T max = -std::numeric_limits<T>::infinity();
+
+				for (size_t j = 0; j < axisSize; ++j) {
+					T testVal = A[base + j * inner];
+					max = (max > testVal) ? max : testVal;
+				}
+
+				result[o * inner + i] = max;
+			}
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::AxisMaxGradFn<T>>(A.GetImpl(), axis));
+		}
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisMin(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (axis >= A.Rank()) {
+			throw std::out_of_range("ERROR: AxisMin: Axis out of bounds");
+		}
+
+		const std::vector<size_t>& dims = A.Dims();
+		size_t rank = A.Rank();
+
+		std::vector<size_t> outDims = dims;
+		outDims.erase(outDims.begin() + axis);
+
+		if (outDims.empty()) {
+			outDims.push_back(1);
+		}
+
+		TensorCore::Tensor<T> result{ outDims, allocator };
+
+		// Outer and inner size calculation
+		size_t outer = 1;
+		for (size_t i = 0; i < axis; ++i) {
+			outer *= dims[i];
+		}
+
+		size_t inner = 1;
+		for (size_t i = 0; i < rank; ++i) {
+			inner *= dims[i];
+		}
+
+		size_t axisSize = dims[axis];
+
+		for (size_t o = 0; o < outer; ++o) {
+			for (size_t i = 0; i < inner; ++i) {
+				size_t base = o * axisSize * inner + i;
+
+				T min = std::numeric_limits<T>::infinity();
+
+				for (size_t j = 0; j < axisSize; ++j) {
+					T testVal = A[base + j * inner];
+					min = (min < testVal) ? min : testVal;
+				}
+
+				result[o * inner + i] = min;
+			}
+		}
+
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::AxisMinGradFn<T>>(A.GetImpl(), axis));
+		}
 
 		return result;
 	}

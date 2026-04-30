@@ -49,6 +49,28 @@ namespace MLCore::AutoGrad {
 	private:
 		Utils::Shape inputShape;
 	};
+
+	template <typename T>
+	class AxisMaxGradFn : public GradFn<T> {
+	public:
+		AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	private:
+		size_t m_Axis;
+	};
+
+	template <typename T>
+	class AxisMinGradFn : public GradFn<T> {
+	public:
+		AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	private:
+		size_t m_Axis;
+	};
 }
 
 #include "reductionGradFn.inl"

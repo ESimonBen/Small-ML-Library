@@ -10,10 +10,6 @@ namespace MLCore::Optimizers {
 		TensorCore::Tensor<T> data;
 
 		Parameter() = default;
-		Parameter(const Parameter&) = delete;
-		Parameter& operator=(const Parameter&) = delete;
-		/*Parameter(Parameter&&) = delete;
-		Parameter& operator=(Parameter&&) = delete;*/
 
 		explicit Parameter(const TensorCore::Tensor<T>& tensor)
 			: data(tensor)

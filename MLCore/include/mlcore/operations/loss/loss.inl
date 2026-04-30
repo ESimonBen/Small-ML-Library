@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
-#include <mlCore/autograd/functions/loss/lossGradFn.h>
+#include <mlCore/operations/operations.h>
 
 namespace MLCore::Operations {
 	template <typename T>
@@ -11,20 +11,14 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MeanSquaredError: Tensor size mismatch");
 		}
 
-		T sum = T{};
-
-		size_t count = predictions.NumElements();
-		for (size_t i = 0; i < count; ++i) {
-			T diff = targets[i] - predictions[i];
-			sum += diff * diff;
-		}
-
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = sum / predictions.NumElements();
+		size_t axis = predictions.Rank() - 1;
+		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
+		TensorCore::Tensor<T> square = Operations::Square(diff, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(square, axis, allocator);
+		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
 
 		if (predictions.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::MSEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
 		}
 
 		return result;
@@ -36,19 +30,15 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MeanAbsoluteError: Tensor size mismatch");
 		}
 
-		T sum = T{};
+		size_t axis = predictions.Rank() - 1;
 
-		size_t count = predictions.NumElements();
-		for (size_t i = 0; i < count; ++i) {
-			sum += std::abs(targets[i] - predictions[i]);
-		}
-
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = sum / predictions.NumElements();
+		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
+		TensorCore::Tensor<T> abs = Operations::Abs(diff, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(abs, axis, allocator);
+		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
 
 		if (predictions.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::MAEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
 		}
 
 		return result;
@@ -60,21 +50,22 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: BinaryCrossEntropy: Tensor size mismatch");
 		}
 
-		T sum = T{};
 		const T epsilon = static_cast<T>(1e-7);
 
-		size_t count = predictions.NumElements();
-		for (size_t i = 0; i < count; ++i) {
-			T p = std::clamp(predictions[i], epsilon, 1 - epsilon);
-			sum += -(targets[i] * std::log(p) + (1 - targets[i]) * std::log(1 - p));
-		}
+		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
+		TensorCore::Tensor<T> logP = Operations::Log(predictions, allocator);
+		TensorCore::Tensor<T> term1 = Operations::Multiply(clamp, logP, allocator);
 
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = sum /*/ predictions.NumElements()*/;
+		TensorCore::Tensor<T> oneMinusT = Operations::SubtractScalar(targets, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> oneMinusP = Operations::SubtractScalar(predictions, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> logOneMinusP = Operations::Log(oneMinusP, allocator);
+		TensorCore::Tensor<T> term2 = Operations::Multiply(oneMinusT, logOneMinusP, allocator);
+
+		TensorCore::Tensor<T> addition = Operations::Add(term1, term2, allocator);
+		TensorCore::Tensor<T> result = Operations::Negate(addition, allocator);
 
 		if (predictions.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::BCEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
 		}
 
 		return result;
@@ -86,26 +77,24 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Tensor shape mismatch");
 		}
 
-		T sum = static_cast<T>(0);
-		size_t size = logits.NumElements();
+		TensorCore::Tensor<T> max = Operations::ReLU(logits, allocator);
+		TensorCore::Tensor<T> abs = Operations::Abs(max, allocator);
+		TensorCore::Tensor<T> negateAbs = Operations::Negate(abs, allocator);
+		TensorCore::Tensor<T> exp = Operations::Exp(negateAbs, allocator);
+		TensorCore::Tensor<T> sum = Operations::AddScalar(exp, static_cast<T>(1), allocator);
+		TensorCore::Tensor<T> term1 = Operations::Log(sum, allocator);
 
-		for (size_t i = 0; i < size; ++i) {
-			T logit = logits[i];
-			T target = targets[i];
+		TensorCore::Tensor<T> mul = Operations::Multiply(logits, targets, allocator);
+		TensorCore::Tensor<T> sub = Operations::Subtract(max, mul, allocator);
 
-			T max = std::max(logit, static_cast<T>(0));
-			T logTerm = std::log(std::exp(-std::abs(logit)) + static_cast<T>(1));
+		TensorCore::Tensor<T> loss = Operations::Add(sub, term1, allocator);
 
-			sum += max - logit * target + logTerm;
-		}
-
-		TensorCore::Tensor<T> result{ {1}, allocator };
-
-		result[0] = sum / size;
+		size_t axis = logits.Rank() - 1;
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator);
+		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
 
 		if (logits.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::BCEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl()));
 		}
 
 		return result;
@@ -119,21 +108,20 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: CrossEntropy: Tensor shape mismatch");
 		}
 
-		T sum = T{};
+		size_t axis = predictions.Rank() - 1;
 		const T epsilon = static_cast<T>(1e-7);
 
-		size_t count = predictions.NumElements();
-		for (size_t i = 0; i < count; ++i) {
-			T p = std::clamp(predictions[i], epsilon, 1 - epsilon);
-			sum += -targets[i] * std::log(p); // std::log should have been named std::ln, but WHAT DO I KNOW
-		}
+		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
+		TensorCore::Tensor<T> logClamp = Operations::Log(clamp, allocator);
 
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = sum / predictions.NumElements();
+		TensorCore::Tensor<T> negate = Operations::Negate(targets, allocator);
+		TensorCore::Tensor<T> loss = Operations::Multiply(negate, logClamp, allocator);
+
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator);
+		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
 
 		if (predictions.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::CEGradFn<T>>(predictions.GetImpl(), targets.GetImpl()));
 		}
 
 		return result;
@@ -149,55 +137,17 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
 		}
 
-		auto shape = logits.GetShape();
-		size_t axisSize = logits.Dims()[axis];
-		size_t outerSize = logits.NumElements() / axisSize;
+		TensorCore::Tensor<T> axisSoftmax = Operations::AxisSoftmax(logits, axis, allocator);
+		TensorCore::Tensor<T> logSoftmax = Operations::Log(axisSoftmax, allocator); // May cause possible overflow, but I don't care currently
 
-		T totalLoss = static_cast<T>(0);
+		TensorCore::Tensor<T> mul = Operations::Multiply(targets, logSoftmax, allocator);
+		TensorCore::Tensor<T> neg = Operations::Negate(mul, allocator);
 
-		for (size_t i = 0; i < outerSize; ++i) {
-			std::vector<size_t> baseIndex{ shape.Rank(), 0 };
-			size_t temp = i;
-			
-			for (size_t j = shape.Rank(); j-- > 0;) {
-				if (j == axis) {
-					baseIndex[j] = 0;
-				}
-
-				baseIndex[j] = temp % shape.Dims()[j];
-				temp /= shape.Dims()[j];
-			}
-
-			T max = -std::numeric_limits<T>::infinity();
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				max = std::max(max, logits[shape.FlattenIndex(baseIndex)]);
-			}
-
-			T sumExp = static_cast<T>(0);
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				sumExp += std::exp(logits[shape.FlattenIndex(baseIndex)] - max);
-			}
-
-			T logSumExp = std::log(sumExp) + max;
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				size_t idx = shape.FlattenIndex(baseIndex);
-				T target = targets[idx];
-				totalLoss += -target * (logits[idx] - logSumExp);
-			}
-		}
-
-		TensorCore::Tensor<T> result{ {1}, allocator };
-		result[0] = totalLoss / outerSize;
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(neg, axis, allocator);
+		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
 
 		if (logits.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			result.SetGradFn(std::make_shared<AutoGrad::CEWithLogitsGradFn<T>>(logits.GetImpl(), targets.GetImpl(), axis));
 		}
 
 		return result;

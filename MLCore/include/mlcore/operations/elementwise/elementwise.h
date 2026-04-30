@@ -19,10 +19,28 @@ namespace MLCore::Operations {
 	[[nodiscard]] TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator);
 
 	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+
+	template <typename T>
+	[[nodiscard]] TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 }
 
 #include "elementwise.inl"

@@ -62,76 +62,6 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	SigmoidGradFn<T>::SigmoidGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
-		: GradFn<T>(a), outputImpl(b)
-	{}
-
-	template <typename T>
-	void SigmoidGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		static_assert(std::is_floating_point_v<T>, "Sigmoid requires floating point type");
-
-		TensorCore::Tensor<T> input {this->inputs[0]};
-
-		if (gradOutput.GetShape() != input.GetShape()) {
-			throw std::runtime_error("Activation backward shape mismatch");
-		}
-
-		if (!input.RequiresGrad()) {
-			return;
-		}
-
-		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
-		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{outputImpl}.Detach();
-
-
-		size_t size = gradInput.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			T sigX = output[i];
-			
-			gradInput[i] = gradientOut[i] * sigX * (static_cast<T>(1) - sigX);
-		}
-
-		input.Backward(gradInput);
-	}
-
-	template <typename T>
-	TanhGradFn<T>::TanhGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
-		: GradFn<T>(a), outputImpl(b)
-	{}
-
-	template <typename T>
-	void TanhGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		static_assert(std::is_floating_point_v<T>, "Tanh requires floating point type");
-
-		TensorCore::Tensor<T> input {this->inputs[0]};
-
-		if (gradOutput.GetShape() != input.GetShape()) {
-			throw std::runtime_error("Activation backward shape mismatch");
-		}
-
-		if (!input.RequiresGrad()) {
-			return;
-		}
-
-		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
-		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{ outputImpl }.Detach();
-
-
-		size_t size = gradInput.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			T tanhX = output[i];
-
-			gradInput[i] = gradientOut[i] * (static_cast<T>(1) - (tanhX * tanhX));
-		}
-
-		input.Backward(gradInput);
-	}
-
-	template <typename T>
 	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>(a), outputImpl(b)
 	{}
@@ -169,7 +99,7 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis)
-		: GradFn<T>({ a, b }), axis(axis)
+		: GradFn<T>(a), outputImpl(b), axis(axis)
 	{}
 
 	template <typename T>
@@ -182,29 +112,40 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
-		
 
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
 
-		size_t axisSize = input.Dims()[axis];
-		size_t outerSize = input.NumElements() / axisSize;
-		auto shape = input.GetShape();
+		const std::vector<size_t>& dims = input.Dims();
+		size_t rank = input.Rank();
 
-		for (size_t i = 0; i < outerSize; ++i) {
-			auto baseIndex = shape.UnflattenIndex(i);
-			baseIndex.insert(baseIndex.begin() + axis, 0);
+		// Outer and inner size calculation
+		size_t outer = 1;
+		for (size_t i = 0; i < axis; ++i) {
+			outer *= dims[i];
+		}
 
-			T sum = static_cast<T>(0);
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				size_t idx = shape.FlattenIndex(baseIndex);
-				sum += gradientOut[idx] * y[idx];
-			}
+		size_t inner = 1;
+		for (size_t i = 0; i < rank; ++i) {
+			inner *= dims[i];
+		}
 
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				size_t idx = shape.FlattenIndex(baseIndex);
-				gradInput[idx] = y[idx] * (gradientOut[idx] - sum);
+		size_t axisSize = dims[axis];
+
+		for (size_t o = 0; o < outer; ++o) {
+			for (size_t i = 0; i < inner; ++i) {
+				size_t base = o * axisSize * inner + i;
+
+				T dot = static_cast<T>(0);
+
+				for (size_t j = 0; j < axisSize; ++j) {
+					T idx = base + j * inner;
+					dot += gradientOut[idx] * y[idx];
+				}
+
+				for (size_t j = 0; j < axisSize; ++j) {
+					T idx = base + j * inner;
+					gradInput[idx] += y[idx] * (gradientOut[idx] - dot);
+				}
 			}
 		}
 

@@ -37,8 +37,11 @@ int main() {
     Parameter<float> p1{ w1 };
     Parameter<float> p2{ w2 };
 
-    std::vector<Parameter<float>> params1{ p1 };
-    std::vector<Parameter<float>> params2{ p2 };
+    std::vector<Parameter<float>> params1;
+    params1.emplace_back(p1);
+
+    std::vector<Parameter<float>> params2;
+    params2.emplace_back(p2);
 
     // Two parameter groups with different LRs
     ParameterGroup<float> group1{ params1, 0.1f };   // fast
@@ -46,10 +49,10 @@ int main() {
 
     std::vector<ParameterGroup<float>> groups{ group1, group2 };
 
-    SGDMomentum<float> optimizer{ groups, .1f};
+    SGD<float> optimizer{ groups};
 
     // Scheduler (decays every 5 steps)
-    ExponentialLR<float> scheduler{ optimizer, 0.5f };
+    ExponentialLR<float> scheduler{ optimizer, 0.99f };
 
     for (int epoch = 0; epoch < 100; ++epoch) {
         // Forward: (w1 + w2) * input

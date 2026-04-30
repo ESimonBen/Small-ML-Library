@@ -37,9 +37,6 @@ namespace MLCore::Utils{
 
 		size_t operator[](size_t i) const;
 
-		// Possible function to be added
-		/*static Shape Broadcast(const Shape& a, const Shape& b);*/
-
 	private:
 		void ComputeStrides();
 

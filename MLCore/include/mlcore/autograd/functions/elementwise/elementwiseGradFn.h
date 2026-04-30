@@ -50,6 +50,45 @@ namespace MLCore::AutoGrad {
 	private:
 		T exponent;
 	};
+
+	template <typename T>
+	class AbsGradFn : public GradFn<T> {
+	public:
+		AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	};
+
+	template <typename T>
+	class ClampGradFn : public GradFn<T> {
+	public:
+		ClampGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, T min, T max);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	private:
+		T m_Min;
+		T m_Max;
+	};
+
+	template <typename T>
+	class LogGradFn : public GradFn<T> {
+	public:
+		LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	};
+
+	template <typename T>
+	class ExpGradFn : public GradFn<T> {
+	public:
+		ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	};
 }
 
 #include "elementwiseGradFn.inl"

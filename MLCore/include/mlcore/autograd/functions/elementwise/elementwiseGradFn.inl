@@ -159,4 +159,130 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
+
+	template <typename T>
+	AbsGradFn<T>::AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+		: GradFn<T>(input)
+	{}
+
+	template <typename T>
+	void AbsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		#ifdef ML_CORE_DEBUG
+			if (!this->inputs[0]) {
+				throw std::runtime_error("ERROR: AbsGradFn: Null input");
+			}
+		#endif
+
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+
+		size_t size = gradInput.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			T inp = input[i];
+
+			T sign = (inp < static_cast<T>(0)) ? static_cast<T>(-1) : ((inp > static_cast<T>(0)) ? static_cast<T>(1) : static_cast<T>(0));
+			gradInput[i] = gradOutput[i] * sign;
+		}
+
+		input.Backward(gradInput);
+	}
+
+	template <typename T>
+	ClampGradFn<T>::ClampGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, T min, T max)
+		: GradFn<T>(input), m_Min(min), m_Max(max)
+	{}
+
+	template <typename T>
+	void ClampGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		#ifdef ML_CORE_DEBUG
+			if (!this->inputs[0]) {
+				throw std::runtime_error("ERROR: ClampGradFn: Null input");
+			}
+		#endif
+
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+
+		size_t size = gradInput.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			T inp = input[i];
+
+			if (inp > m_Min && inp < m_Max) {
+				gradInput[i] *= gradOutput[i];
+			}
+			else {
+				gradInput[i] *= static_cast<T>(0);
+			}
+		}
+
+		input.Backward(gradInput);
+	}
+
+	template <typename T>
+	LogGradFn<T>::LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+		: GradFn<T>(input)
+	{}
+
+	template <typename T>
+	void LogGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		#ifdef ML_CORE_DEBUG
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: LogGradFn: Null input");
+		}
+		#endif
+
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor inp = input.Detach();
+		TensorCore::Tensor gradientOut = gradOutput.Detach();
+
+		TensorCore::Tensor<T> reciprocal = Operations::DivideScalar(inp, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(gradientOut, reciprocal, allocator);
+
+		input.Backward(gradInput);
+	}
+
+	template <typename T>
+	ExpGradFn<T>::ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+		: GradFn<T>(input)
+	{}
+
+	template <typename T>
+	void ExpGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		#ifdef ML_CORE_DEBUG
+			if (!this->inputs[0]) {
+				throw std::runtime_error("ERROR: LogGradFn: Null input");
+			}
+		#endif
+
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor inp = input.Detach();
+		TensorCore::Tensor gradientOut = gradOutput.Detach();
+
+		TensorCore::Tensor<T> exponential = Operations::Exp(inp, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(exponential, gradientOut, allocator);
+
+		input.Backward(gradInput);
+	}
 }
