@@ -68,7 +68,7 @@ namespace MLCore::Operations {
 			size_t targetDim = target[i];
 
 			if (smallDim != targetDim && smallDim != 1) {
-				throw std::runtime_error("ERROR: BroadcastToShape mismatch");
+				throw std::runtime_error("ERROR: ComputeBroadcastTo mismatch");
 			}
 
 			info.strideA[i] = (i < offset || smallDim == 1) ? 0 : smallStrides[i - offset];

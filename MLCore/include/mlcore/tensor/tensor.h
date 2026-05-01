@@ -28,11 +28,14 @@ namespace MLCore::TensorCore {
 			allocator(allocator),
 			requiresGrad(requiresGrad),
 			grad(std::move(grad)),
-			gradFn(std::move(gradFn)) 
-		{}
+			gradFn(std::move(gradFn))
+		{
+		}
 	};
 
-	// Tensor wrapper (gives acces to actual tensor node while not BEING the node)
+	// Tensor wrapper (gives acces to actual tensor node in the computation graph while not BEING the node)
+	// Tensor layout convention: Axis 0 is the batch dimension (if batch exists)
+	// All reductions must explicitly decide whether to keep or reduce the batch axis
 	template <typename T>
 	class Tensor {
 	public:

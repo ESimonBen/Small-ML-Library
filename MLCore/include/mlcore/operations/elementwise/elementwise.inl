@@ -262,7 +262,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Equal: Tensors are not the same shape");
 		}
 		
-		TensorCore::Tensor<T> C{ A.GetShape, allocator };
+		TensorCore::Tensor<T> C{ A.GetShape(), allocator};
 
 		size_t size = A.NumElements();
 

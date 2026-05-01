@@ -6,11 +6,12 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	ReLUGradFn<T>::ReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a)
-	{}
+	{
+	}
 
 	template <typename T>
 	void ReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> input {this->inputs[0]};
+		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (gradOutput.GetShape() != input.GetShape()) {
 			throw std::runtime_error("Activation backward shape mismatch");
@@ -35,11 +36,12 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	LeakyReLUGradFn<T>::LeakyReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T alpha)
 		: GradFn<T>(a), alpha(alpha)
-	{}
+	{
+	}
 
 	template <typename T>
 	void LeakyReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> input {this->inputs[0]};
+		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (gradOutput.GetShape() != input.GetShape()) {
 			throw std::runtime_error("Activation backward shape mismatch");
@@ -64,13 +66,14 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>(a), outputImpl(b)
-	{}
+	{
+	}
 
 	template <typename T>
 	void SoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "Softmax requires floating point type");
 
-		TensorCore::Tensor<T> input {this->inputs[0]};
+		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (gradOutput.GetShape() != input.GetShape()) {
 			throw std::runtime_error("Activation backward shape mismatch");
@@ -81,7 +84,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{outputImpl}.Detach();
+		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{ outputImpl }.Detach();
 
 		size_t size = input.NumElements();
 
@@ -100,7 +103,8 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis)
 		: GradFn<T>(a), outputImpl(b), axis(axis)
-	{}
+	{
+	}
 
 	template <typename T>
 	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
@@ -125,7 +129,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		size_t inner = 1;
-		for (size_t i = 0; i < rank; ++i) {
+		for (size_t i = axis + 1; i < rank; ++i) {
 			inner *= dims[i];
 		}
 

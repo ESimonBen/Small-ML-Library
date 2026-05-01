@@ -109,8 +109,8 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
-		: GradFn<T>(a), inputShape(a->shape) {
+	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+		: GradFn<T>(a), inputShape(a->shape), m_Axis(axis), m_KeepDims(keepDims) {
 		assert(axis < inputShape.Rank());
 	}
 
@@ -124,14 +124,18 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
+		if (!m_KeepDims) {
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+		}
+
 		TensorCore::Tensor<T> gradInput = ExpandToShape(gradientOut, inputShape);
 
 		input.Backward(gradInput);
 	}
 
 	template <typename T>
-	AxisMaxGradFn<T>::AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
-		: GradFn<T>(a), m_Axis(axis)
+	AxisMaxGradFn<T>::AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+		: GradFn<T>(a), m_Axis(axis), m_KeepDims(keepDims)
 	{}
 
 	template <typename T>
@@ -145,14 +149,18 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> inp = input.Detach();
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> axisMax = Operations::AxisMax(inp, m_Axis, allocator); // Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
+		if (!m_KeepDims) {
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+		}
+
+		TensorCore::Tensor<T> axisMax = Operations::AxisMax(inp, m_Axis, allocator, true); // Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
 		TensorCore::Tensor<T> maxExpanded = ExpandToShape(axisMax, inp.GetShape());
 
 		TensorCore::Tensor<T> gradExpanded = ExpandToShape(gradientOut, input.GetShape());
 
 		TensorCore::Tensor<T> mask = Operations::Equal(input, maxExpanded, allocator);
 
-		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator);
+		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
 		TensorCore::Tensor<T> countExpanded = ExpandToShape(count, inp.GetShape());
 
 		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);
@@ -162,10 +170,9 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	AxisMinGradFn<T>::AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
-		: GradFn<T>(a), m_Axis(axis)
-	{
-	}
+	AxisMinGradFn<T>::AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+		: GradFn<T>(a), m_Axis(axis), m_KeepDims(keepDims)
+	{}
 
 	template <typename T>
 	void AxisMinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
@@ -178,14 +185,18 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> inp = input.Detach();
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> axisMin = Operations::AxisMin(inp, m_Axis, allocator); // Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
+		if (!m_KeepDims) {
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+		}
+
+		TensorCore::Tensor<T> axisMin = Operations::AxisMin(inp, m_Axis, allocator, true); // Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
 		TensorCore::Tensor<T> minExpanded = ExpandToShape(axisMin, inp.GetShape());
 
 		TensorCore::Tensor<T> gradExpanded = ExpandToShape(gradientOut, input.GetShape());
 
 		TensorCore::Tensor<T> mask = Operations::Equal(input, minExpanded, allocator);
 
-		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator);
+		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
 		TensorCore::Tensor<T> countExpanded = ExpandToShape(count, inp.GetShape());
 
 		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);

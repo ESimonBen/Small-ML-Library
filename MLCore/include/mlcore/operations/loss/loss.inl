@@ -6,75 +6,127 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: MeanSquaredError: Tensor size mismatch");
 		}
 
-		size_t axis = predictions.Rank() - 1;
-		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
-		TensorCore::Tensor<T> square = Operations::Square(diff, allocator);
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(square, axis, allocator);
-		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
-
-		if (predictions.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		if (axis >= predictions.Rank()) {
+			throw std::out_of_range("ERROR: MeanSquaredError: Axis out of bounds");
 		}
 
-		return result;
+		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
+		TensorCore::Tensor<T> square = Operations::Square(diff, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(square, axis, allocator, true);
+
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
+		}
+
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: MeanAbsoluteError: Tensor size mismatch");
 		}
 
-		size_t axis = predictions.Rank() - 1;
+		if (axis >= predictions.Rank()) {
+			throw std::out_of_range("ERROR: MeanAbsoluteError: Axis out of bounds");
+		}
 
 		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
 		TensorCore::Tensor<T> abs = Operations::Abs(diff, allocator);
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(abs, axis, allocator);
-		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(abs, axis, allocator, true);
 
-		if (predictions.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
 		}
 
-		return result;
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropy: Tensor size mismatch");
+		}
+
+		if (axis >= predictions.Rank()) {
+			throw std::out_of_range("ERROR: BinaryCrossEntropy: Axis out of bounds");
 		}
 
 		const T epsilon = static_cast<T>(1e-7);
 
 		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
-		TensorCore::Tensor<T> logP = Operations::Log(predictions, allocator);
-		TensorCore::Tensor<T> term1 = Operations::Multiply(clamp, logP, allocator);
+		TensorCore::Tensor<T> logP = Operations::Log(clamp, allocator);
+		TensorCore::Tensor<T> term1 = Operations::Multiply(targets, logP, allocator);
 
 		TensorCore::Tensor<T> oneMinusT = Operations::SubtractScalar(targets, static_cast<T>(1), allocator, true);
-		TensorCore::Tensor<T> oneMinusP = Operations::SubtractScalar(predictions, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> oneMinusP = Operations::SubtractScalar(clamp, static_cast<T>(1), allocator, true);
 		TensorCore::Tensor<T> logOneMinusP = Operations::Log(oneMinusP, allocator);
 		TensorCore::Tensor<T> term2 = Operations::Multiply(oneMinusT, logOneMinusP, allocator);
 
 		TensorCore::Tensor<T> addition = Operations::Add(term1, term2, allocator);
-		TensorCore::Tensor<T> result = Operations::Negate(addition, allocator);
+		TensorCore::Tensor<T> loss = Operations::Negate(addition, allocator);
 
-		if (predictions.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
+
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
 		}
 
-		return result;
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Tensor shape mismatch");
+		}
+
+		if (axis >= logits.Rank()) {
+			throw std::out_of_range("ERROR: BinaryCrossEntropyWithLogits: Axis out of bounds");
 		}
 
 		TensorCore::Tensor<T> max = Operations::ReLU(logits, allocator);
@@ -89,26 +141,40 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> loss = Operations::Add(sub, term1, allocator);
 
-		size_t axis = logits.Rank() - 1;
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator);
-		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
 
-		if (logits.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
 		}
 
-		return result;
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
 	}
 
 	// This assumes that the result of Softmax is being passed in
 	// (Softmax returns the probabilities of each element of the prediction)
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropy: Tensor shape mismatch");
 		}
 
-		size_t axis = predictions.Rank() - 1;
+		if (axis >= predictions.Rank()) {
+			throw std::out_of_range("ERROR: CrossEntropy: Axis out of bounds");
+		}
+
 		const T epsilon = static_cast<T>(1e-7);
 
 		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
@@ -117,44 +183,94 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> negate = Operations::Negate(targets, allocator);
 		TensorCore::Tensor<T> loss = Operations::Multiply(negate, logClamp, allocator);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator);
-		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
 
-		if (predictions.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
 		}
 
-		return result;
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
 		}
 
 		if (axis >= logits.Rank()) {
-			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
+			throw std::out_of_range("ERROR: CrossEntropyWithLogits: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> axisSoftmax = Operations::AxisSoftmax(logits, axis, allocator);
-		TensorCore::Tensor<T> logSoftmax = Operations::Log(axisSoftmax, allocator); // May cause possible overflow, but I don't care currently
+		TensorCore::Tensor<T> logSoftmax = Operations::AxisLogSoftmax(logits, axis, allocator);
 
 		TensorCore::Tensor<T> mul = Operations::Multiply(targets, logSoftmax, allocator);
 		TensorCore::Tensor<T> neg = Operations::Negate(mul, allocator);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(neg, axis, allocator);
-		TensorCore::Tensor<T> result = Operations::Mean(perSample, allocator);
+		TensorCore::Tensor<T> perSample = Operations::AxisMean(neg, axis, allocator, true);
 
-		if (logits.RequiresGrad()) {
-			result.SetRequiresGrad(true);
+		switch (config) {
+		case Reduction::None:
+		{
+			return perSample;
+		}
+		case Reduction::Mean:
+		{
+			return Operations::MeanAll(perSample, allocator);
 		}
 
-		return result;
+		case Reduction::Sum:
+		{
+			return Operations::SumAll(perSample, allocator);
+		}
+
+		default:
+			throw std::runtime_error("ERROR: Invalid reduction option/type");
+		}
+	}
+
+	// Assuming axis = last axis here
+
+	template <typename T>
+	TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return MeanSquaredError(predictions, targets, predictions.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Memory::ArenaAllocator& allocator) {
-		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, allocator);
+	TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return MeanAbsoluteError(predictions, targets, predictions.Rank() - 1, config, allocator);
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return BinaryCrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return BinaryCrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
 	}
 }

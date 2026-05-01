@@ -42,34 +42,38 @@ namespace MLCore::AutoGrad {
 	template <typename T>
 	class AxisSumGradFn : public GradFn<T> {
 	public:
-		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
+		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		Utils::Shape inputShape;
+		size_t m_Axis;
+		bool m_KeepDims;
 	};
 
 	template <typename T>
 	class AxisMaxGradFn : public GradFn<T> {
 	public:
-		AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
+		AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		size_t m_Axis;
+		bool m_KeepDims;
 	};
 
 	template <typename T>
 	class AxisMinGradFn : public GradFn<T> {
 	public:
-		AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
+		AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
 
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
 
 	private:
 		size_t m_Axis;
+		bool m_KeepDims;
 	};
 }
 

@@ -14,10 +14,124 @@ using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::Schedulers;
 
-int main() {
-    ArenaAllocator allocator;
+void TestMultiFeature(ArenaAllocator& allocator) {
+    std::cout << "\n=== Test: Multi-feature batch ===\n";
 
-    // Two parameters (simulate different layers)
+    size_t B = 4;
+    size_t F = 3;
+
+    Tensor<float> input{ {B, F}, allocator };
+    Tensor<float> weights{ {F, 1}, allocator };
+    weights.Fill(0.0f);
+
+    weights.SetRequiresGrad(true);
+
+    // Fill input
+    for (size_t i = 0; i < B * F; ++i)
+        input[i] = static_cast<float>(i + 1);
+
+    // Target = sum of features * 2
+    Tensor<float> target{ {B, 1}, allocator };
+    for (size_t b = 0; b < B; ++b) {
+        float sum = 0;
+        for (size_t f = 0; f < F; ++f)
+            sum += input[b * F + f];
+        target[b] = 2.0f * sum;
+    }
+
+
+    // Forward
+    auto pred = MatMultiply(input, weights, allocator);
+    std::cout << "Predictions:\n";
+    for (auto& v : pred) std::cout << v << " ";
+    std::cout << std::endl;
+
+    std::cout << "Targets:\n";
+    for (auto& v : target) std::cout << v << " ";
+    std::cout << std::endl;
+
+    auto loss = MeanSquaredError(pred, target, Reduction::Mean, allocator);
+
+    std::cout << "Loss: " << loss[0] << std::endl;
+
+    loss.Backward();
+
+    std::cout << "Gradients:\n";
+    for (auto& v : weights.Grad())
+        std::cout << v << " ";
+    std::cout << std::endl;
+}
+
+void TestSoftmaxCrossEntropy(ArenaAllocator& allocator) {
+    std::cout << "\n=== Test: Softmax + CrossEntropy ===\n";
+
+    size_t B = 3;
+    size_t C = 4;
+
+    Tensor<float> logits{ {B, C}, allocator };
+    Tensor<float> targets{ {B, C}, allocator };
+
+    logits.SetRequiresGrad(true);
+
+    // Fill logits
+    for (size_t i = 0; i < B * C; ++i)
+        logits[i] = static_cast<float>(static_cast<int>(i % C) - 1);
+
+    // One-hot targets
+    for (size_t b = 0; b < B; ++b) {
+        for (size_t c = 0; c < C; ++c) {
+            targets[b * C + c] = (c == (b % C)) ? 1.0f : 0.0f;
+        }
+    }
+
+    auto loss = CrossEntropyWithLogits(logits, targets, Reduction::Mean, allocator);
+
+    std::cout << "Loss: " << loss[0] << std::endl;
+
+    loss.Backward();
+
+    std::cout << "Gradient sample: " << logits.Grad()[0] << std::endl;
+}
+
+void TestGradientCheck(ArenaAllocator& allocator) {
+    std::cout << "\n=== Test: Gradient Check ===\n";
+
+    float epsilon = 1e-4f;
+
+    Tensor<float> w{ {1}, allocator };
+    w[0] = 1.5f;
+    w.SetRequiresGrad(true);
+
+    Tensor<float> x{ {1}, allocator };
+    x[0] = 3.0f;
+
+    Tensor<float> y{ {1}, allocator };
+    y[0] = 6.0f;
+
+    // Forward
+    auto pred = Multiply(w, x, allocator);
+    auto loss = MeanSquaredError(pred, y, Reduction::Mean, allocator);
+
+    loss.Backward();
+
+    float autogradGrad = w.Grad()[0];
+
+    // Numerical gradient
+    w[0] += epsilon;
+    auto loss1 = MeanSquaredError(Multiply(w, x, allocator), y, Reduction::Mean, allocator);
+
+    w[0] -= 2 * epsilon;
+    auto loss2 = MeanSquaredError(Multiply(w, x, allocator), y, Reduction::Mean, allocator);
+
+    float numericalGrad = (loss1[0] - loss2[0]) / (2 * epsilon);
+
+    std::cout << "Autograd:   " << autogradGrad << std::endl;
+    std::cout << "Numerical:  " << numericalGrad << std::endl;
+}
+
+void TestBalancedLR(ArenaAllocator& allocator) {
+    std::cout << "\n=== Test: Balanced LR ===\n";
+
     Tensor<float> w1{ {1}, allocator };
     Tensor<float> w2{ {1}, allocator };
 
@@ -27,58 +141,43 @@ int main() {
     w1.SetRequiresGrad(true);
     w2.SetRequiresGrad(true);
 
-    Tensor<float> input{ {1}, allocator };
-    input[0] = 2.0f;
+    Tensor<float> x{ {1}, allocator };
+    x[0] = 2.0f;
 
-    Tensor<float> target{ {1}, allocator };
-    target[0] = 4.0f;
+    Tensor<float> y{ {1}, allocator };
+    y[0] = 4.0f;
 
-    // Wrap parameters
     Parameter<float> p1{ w1 };
     Parameter<float> p2{ w2 };
 
-    std::vector<Parameter<float>> params1;
-    params1.emplace_back(p1);
+    std::vector<Parameter<float>> params1{ p1 };
+    std::vector<Parameter<float>> params2{ p2 };
 
-    std::vector<Parameter<float>> params2;
-    params2.emplace_back(p2);
+    ParameterGroup<float> g1{ {params1}, 0.1f };
+    ParameterGroup<float> g2{ {params2}, 0.1f };
 
-    // Two parameter groups with different LRs
-    ParameterGroup<float> group1{ params1, 0.1f };   // fast
-    ParameterGroup<float> group2{ params2, 0.01f };  // slow
+    SGD<float> opt{ {g1, g2} };
 
-    std::vector<ParameterGroup<float>> groups{ group1, group2 };
-
-    SGD<float> optimizer{ groups};
-
-    // Scheduler (decays every 5 steps)
-    ExponentialLR<float> scheduler{ optimizer, 0.99f };
-
-    for (int epoch = 0; epoch < 100; ++epoch) {
-        // Forward: (w1 + w2) * input
+    for (int i = 0; i < 50; ++i) {
         auto sum = Add(w1, w2, allocator);
-        auto predict = Multiply(sum, input, allocator);
+        auto pred = Multiply(sum, x, allocator);
+        auto loss = MeanSquaredError(pred, y, Reduction::Mean, allocator);
 
-        auto loss = MeanSquaredError(predict, target, allocator);
-
-        std::cout << "Epoch " << epoch
-            << " | Loss: " << loss[0]
-            << " | w1: " << w1[0]
-            << " | w2: " << w2[0]
-            << std::endl;
-
-        optimizer.ZeroGrad();
+        opt.ZeroGrad();
         loss.Backward();
-
-        optimizer.Step();
-        scheduler.UpdateLR();
-
-        // Debug: print group learning rates
-        auto& groupsRef = optimizer.ParamGroups();
-        std::cout << "  LR group1: " << groupsRef[0].learningRate
-            << " | LR group2: " << groupsRef[1].learningRate
-            << std::endl;
+        opt.Step();
     }
+
+    std::cout << "w1: " << w1[0] << " | w2: " << w2[0] << std::endl;
+}
+
+int main() {
+    ArenaAllocator allocator;
+
+    TestMultiFeature(allocator); // failed
+    TestSoftmaxCrossEntropy(allocator); // failed
+    TestGradientCheck(allocator);
+    TestBalancedLR(allocator);
 
     return 0;
 }

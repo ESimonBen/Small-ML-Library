@@ -21,7 +21,7 @@ namespace MLCore::AutoGrad {
 		size_t targetRank = targetShape.Rank();
 
 		while (gradRank > targetRank) {
-			result = std::move(Operations::AxisSum(result, 0, allocator));
+			result = std::move(Operations::AxisSum(result, 0, allocator, true));
 			--gradRank;
 		}
 
@@ -31,7 +31,7 @@ namespace MLCore::AutoGrad {
 			size_t targetDim = targetShape.Dims()[i];
 
 			if (targetDim == 1 && gradDim > 1) {
-				result = std::move(Operations::AxisSum(result, i, allocator));
+				result = std::move(Operations::AxisSum(result, i, allocator, true));
 			}
 		}
 

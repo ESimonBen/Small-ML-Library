@@ -1,6 +1,7 @@
 // activation.inl
 #include <cmath>
 #include <algorithm>
+#include <mlCore/autograd/gradientUtils.h>
 #include <mlCore/autograd/functions/activations/activationGradFn.h>
 
 namespace MLCore::Operations {
@@ -9,7 +10,8 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
-			result[i] = std::max(static_cast<T>(0), A[i]);
+			T testVal = A[i];
+			result[i] = (testVal > static_cast<T>(0)) ? testVal : static_cast<T>(0);
 		}
 
 		if (A.RequiresGrad()) {
@@ -25,7 +27,8 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		for (size_t i = 0; i < A.NumElements(); ++i) {
-			result[i] = (A[i] > 0) ? A[i] : alpha * A[i];
+			T testVal = A[i];
+			result[i] = (testVal > static_cast<T>(0)) ? testVal : alpha * testVal;
 		}
 
 		if (A.RequiresGrad()) {
@@ -38,40 +41,16 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		//TensorCore::Tensor<T> result{ A.GetShape(), allocator };
-
-		//// If the value x was >= 0, then result = 1/(1 + exp(-x))
-		//for (size_t i = 0; i < A.NumElements(); ++i) {
-		//	if (A[i] >= 0) {
-		//		result[i] = static_cast<T>(1) / (static_cast<T>(1) + std::exp(-A[i]));
-		//	}
-		//	else {
-		//		// Otherwise, result = exp(x)/(1 + exp(x))
-		//		result[i] = std::exp(A[i]) / (static_cast<T>(1) + std::exp(A[i]));
-		//	}
-		//}
-
 		TensorCore::Tensor<T> exp = Operations::Exp(A, allocator);
 		TensorCore::Tensor<T> expPlusOne = Operations::AddScalar(exp, static_cast<T>(1), allocator);
 
 		TensorCore::Tensor<T> result = Operations::Divide(exp, expPlusOne, allocator);
-
-		if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-			/*result.SetGradFn(std::make_shared<AutoGrad::SigmoidGradFn<T>>(A.GetImpl(), result.GetImpl()));*/
-		}
 
 		return result;
 	}
 
 	template <typename T>
 	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		/*TensorCore::Tensor<T> result{ A.GetShape(), allocator };
-
-		for (size_t i = 0; i < A.NumElements(); ++i) {
-			result[i] = std::tanh(A[i]);
-		}*/
-
 		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
 
 		TensorCore::Tensor<T> expPos = Operations::Exp(A, allocator); // exp(x)
@@ -82,14 +61,10 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> result = Operations::Divide(diff, sum, allocator);
 
-		if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-			/*result.SetGradFn(std::make_shared<AutoGrad::TanhGradFn<T>>(A.GetImpl(), result.GetImpl()));*/
-		}
-
 		return result;
 	}
 
+	// Should not be used in actual machine learning contexts, debugging / teaching moment for me only
 	template <typename T>
 	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -131,6 +106,7 @@ namespace MLCore::Operations {
 		size_t rank = A.Rank();
 
 		TensorCore::Tensor<T> result{ dims, allocator };
+		result.Fill(static_cast<T>(0));
 
 		// Outer and inner size calculation
 		size_t outer = 1;
@@ -139,8 +115,8 @@ namespace MLCore::Operations {
 		}
 
 		size_t inner = 1;
-		for (size_t i = 0; i < rank; ++i) {
-			inner *= dims[i];	
+		for (size_t i = axis + 1; i < rank; ++i) {
+			inner *= dims[i];
 		}
 
 		size_t axisSize = dims[axis];
@@ -169,45 +145,57 @@ namespace MLCore::Operations {
 			}
 		}
 
-		/*for (size_t i = 0; i < outerSize; ++i) {
-			std::vector<size_t> baseIndex{ shape.Rank(), 0 };
-			size_t temp = i;
-
-			for (size_t j = shape.Rank(); j-- > 0;) {
-				if (j == axis) {
-					baseIndex[j] = 0;
-				}
-
-				baseIndex[j] = temp % shape.Dims()[j];
-				temp /= shape.Dims()[j];
-			}
-
-			T max = A[shape.FlattenIndex(baseIndex)];
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				max = std::max(max, A[shape.FlattenIndex(baseIndex)]);
-			}
-
-			T sumExp = static_cast<T>(0);
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				T exp = std::exp(A[shape.FlattenIndex(baseIndex)] - max);
-				result[shape.FlattenIndex(baseIndex)] = exp;
-				sumExp += exp;
-			}
-
-			for (size_t j = 0; j < axisSize; ++j) {
-				baseIndex[axis] = j;
-				result[shape.FlattenIndex(baseIndex)] /= sumExp;
-			}
-		}*/
-
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
 			result.SetGradFn(std::make_shared<AutoGrad::AxisSoftmaxGradFn<T>>(A.GetImpl(), result.GetImpl(), axis));
 		}
+
+		return result;
+	}
+
+	template <typename T>
+	TensorCore::Tensor<T> AxisLogSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+		if (axis >= A.Rank()) {
+			throw std::out_of_range("ERROR: AxisLogSoftmax: Axis out of bounds");
+		}
+
+		TensorCore::Tensor<T> axisMax = Operations::AxisMax(A, axis, allocator, true); // For "numerical stability"
+		TensorCore::Tensor<T> maxExpanded = AutoGrad::ExpandToShape(axisMax, A.GetShape());
+
+		TensorCore::Tensor<T> sub = Operations::Subtract(A, maxExpanded, allocator);
+
+		/*std::cout << "Sub values:\n";
+		for (auto& v : sub) {
+			std::cout << v << " ";
+		}*/
+		std::cout << std::endl;
+
+		TensorCore::Tensor<T> exp = Operations::Exp(sub, allocator);
+
+		/*std::cout << "Exp shape: ";
+		for (auto d : exp.Dims()) {
+			std::cout << d << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "Exp values:\n";
+		for (auto& v : exp) {
+			std::cout << v << " ";
+		}
+		std::cout << std::endl;*/
+
+		TensorCore::Tensor<T> sum = Operations::AxisSum(exp, axis, allocator, true);
+
+		/*std::cout << "AxisSum result:\n";
+		for (auto& v : sum) {
+			std::cout << v << " ";
+		}
+		std::cout << std::endl;*/
+
+		TensorCore::Tensor<T> log = Operations::Log(sum, allocator);
+
+		TensorCore::Tensor<T> logExpanded = AutoGrad::ExpandToShape(log, A.GetShape());
+		TensorCore::Tensor<T> result = Operations::Subtract(sub, logExpanded, allocator);
 
 		return result;
 	}
