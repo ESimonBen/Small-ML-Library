@@ -86,7 +86,7 @@ The library is structured to clearly separate responsibilities:
 
 ### Requirements
 
--   C++17 or later
+-   C++23 or later (This uses mostly C++23 right now)
 -   CMake
 
 ### Build
@@ -123,67 +123,67 @@ The library is structured to clearly separate responsibilities:
     int main() {
         ArenaAllocator allocator;
 
-    size_t batchSize = 4;
+        size_t batchSize = 4;
 
-    // Parameters
-    Tensor<float> w1{ {1}, allocator };
-    Tensor<float> w2{ {1}, allocator };
+        // Parameters
+        Tensor<float> w1{ {1}, allocator };
+        Tensor<float> w2{ {1}, allocator };
 
-    w1[0] = 0.0f;
-    w2[0] = 0.0f;
+        w1[0] = 0.0f;
+        w2[0] = 0.0f;
 
-    w1.SetRequiresGrad(true);
-    w2.SetRequiresGrad(true);
+        w1.SetRequiresGrad(true);
+        w2.SetRequiresGrad(true);
 
-    // Batched input
-    Tensor<float> input{ {batchSize, 1}, allocator };
-    Tensor<float> target{ {batchSize, 1}, allocator };
+        // Batched input
+        Tensor<float> input{ {batchSize, 1}, allocator };
+        Tensor<float> target{ {batchSize, 1}, allocator };
 
-    for (size_t i = 0; i < batchSize; ++i) {
-        input[i] = static_cast<float>(i + 1);   // 1,2,3,4
-        target[i] = 2.0f * input[i];            // ideal: y = 2x
+        for (size_t i = 0; i < batchSize; ++i) {
+            input[i] = static_cast<float>(i + 1);   // 1,2,3,4
+            target[i] = 2.0f * input[i];            // ideal: y = 2x
+        }
+
+        // Parameters
+        Parameter<float> p1{ w1 };
+        Parameter<float> p2{ w2 };
+
+        std::vector<Parameter<float>> params1{ p1 };
+        std::vector<Parameter<float>> params2{ p2 };
+
+        ParameterGroup<float> group1{ params1, 0.1f };
+        ParameterGroup<float> group2{ params2, 0.01f };
+
+        SGD<float> optimizer{ {group1, group2} };
+        ExponentialLR<float> scheduler{ optimizer, 0.99f };
+
+        for (int epoch = 0; epoch < 100; ++epoch) {
+
+            // Forward
+            auto sum = Add(w1, w2, allocator);                  // scalar
+            auto predict = Multiply(sum, input, allocator);     // broadcast over batch
+
+            auto loss = MeanSquaredError(
+                predict,
+                target,
+                Reduction::Mean,
+                allocator
+            );
+
+            std::cout << "Epoch " << epoch
+                << " | Loss: " << loss[0]
+                << " | w1: " << w1[0]
+                << " | w2: " << w2[0]
+                << std::endl;
+
+            optimizer.ZeroGrad();
+            loss.Backward();
+            optimizer.Step();
+            scheduler.UpdateLR();
+        }
+
+        return 0;
     }
-
-    // Parameters
-    Parameter<float> p1{ w1 };
-    Parameter<float> p2{ w2 };
-
-    std::vector<Parameter<float>> params1{ p1 };
-    std::vector<Parameter<float>> params2{ p2 };
-
-    ParameterGroup<float> group1{ params1, 0.1f };
-    ParameterGroup<float> group2{ params2, 0.01f };
-
-    SGD<float> optimizer{ {group1, group2} };
-    ExponentialLR<float> scheduler{ optimizer, 0.99f };
-
-    for (int epoch = 0; epoch < 100; ++epoch) {
-
-        // Forward
-        auto sum = Add(w1, w2, allocator);                  // scalar
-        auto predict = Multiply(sum, input, allocator);     // broadcast over batch
-
-        auto loss = MeanSquaredError(
-            predict,
-            target,
-            Reduction::Mean,
-            allocator
-        );
-
-        std::cout << "Epoch " << epoch
-            << " | Loss: " << loss[0]
-            << " | w1: " << w1[0]
-            << " | w2: " << w2[0]
-            << std::endl;
-
-        optimizer.ZeroGrad();
-        loss.Backward();
-        optimizer.Step();
-        scheduler.UpdateLR();
-    }
-
-    return 0;
-}
 
 * * *
 

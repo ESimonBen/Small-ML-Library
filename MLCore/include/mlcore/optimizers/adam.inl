@@ -3,12 +3,14 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Adam<T>::Adam(std::vector<Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	Adam<T>::Adam(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		  m_Epsilon(epsilon), m_Timestep(0) {
 			  for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-				  for (Parameter<T>* p : paramGroup.params) {
-					  TensorCore::Tensor<T>& param = p->Data();
+				  for (auto& ref : paramGroup.params) {
+					  NN::Parameter<T>& p = ref.get();
+					  TensorCore::Tensor<T>& param = p.Data();
+					  TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 					  TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
 					  TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
@@ -16,8 +18,8 @@ namespace MLCore::Optimizers {
 					  m.Fill(static_cast<T>(0));
 					  v.Fill(static_cast<T>(0));
 
-					  m_FirstMoment.try_emplace(p, m);
-					  m_SecondMoment.try_emplace(p, v);
+					  m_FirstMoment.try_emplace(paramPtr, m);
+					  m_SecondMoment.try_emplace(paramPtr, v);
 				  }
 			  }
 	}
@@ -27,8 +29,10 @@ namespace MLCore::Optimizers {
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-			for (Parameter<T>* p : paramGroup.params) {
-				TensorCore::Tensor<T>& param = p->Data();
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+				TensorCore::Tensor<T>& param = p.Data();
+				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 				TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
 				TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
@@ -36,8 +40,8 @@ namespace MLCore::Optimizers {
 				m.Fill(static_cast<T>(0));
 				v.Fill(static_cast<T>(0));
 
-				m_FirstMoment.try_emplace(p, m);
-				m_SecondMoment.try_emplace(p, v);
+				m_FirstMoment.try_emplace(paramPtr, m);
+				m_SecondMoment.try_emplace(paramPtr, v);
 			}
 		}
 	}
@@ -56,9 +60,13 @@ namespace MLCore::Optimizers {
 			T learningRate = paramGroup.learningRate;
 			T weightDecay = paramGroup.weightDecay;
 
-			for (Parameter<T>* p : paramGroup.params) {
-				auto mIt = m_FirstMoment.find(p);
-				auto vIt = m_SecondMoment.find(p);
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+				TensorCore::Tensor<T>& param = p.Data();
+				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
+
+				auto mIt = m_FirstMoment.find(paramPtr);
+				auto vIt = m_SecondMoment.find(paramPtr);
 
 				if (mIt == m_FirstMoment.end() || vIt == m_SecondMoment.end()) {
 					throw std::runtime_error("ERROR: Step: Missing optimizer state");
@@ -67,7 +75,6 @@ namespace MLCore::Optimizers {
 				TensorCore::Tensor<T>& m = mIt->second;
 				TensorCore::Tensor<T>& v = vIt->second;
 
-				TensorCore::Tensor<T>& param = p->Data();
 
 				if (!param.RequiresGrad() || !param.HasGrad()) {
 					continue;
@@ -110,12 +117,14 @@ namespace MLCore::Optimizers {
 	}
 
 	template <typename T>
-	AdamW<T>::AdamW(std::vector<Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	AdamW<T>::AdamW(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		  m_Epsilon(epsilon), m_Timestep(0) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-				for (Parameter<T>* p : paramGroup.params) {
-					TensorCore::Tensor<T>& param = p->Data();
+				for (auto& ref : paramGroup.params) {
+					NN::Parameter<T>& p = ref.get();
+					TensorCore::Tensor<T>& param = p.Data();
+					TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 					TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
 					TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
@@ -123,8 +132,8 @@ namespace MLCore::Optimizers {
 					m.Fill(static_cast<T>(0));
 					v.Fill(static_cast<T>(0));
 
-					m_FirstMoment.try_emplace(p, m);
-					m_SecondMoment.try_emplace(p, v);
+					m_FirstMoment.try_emplace(paramPtr, m);
+					m_SecondMoment.try_emplace(paramPtr, v);
 				}
 			}
 	}
@@ -134,8 +143,9 @@ namespace MLCore::Optimizers {
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-			for (Parameter<T>* p : paramGroup.params) {
-				TensorCore::Tensor<T>& param = p->Data();
+			for (NN::Parameter<T>& p : paramGroup.params) {
+				TensorCore::Tensor<T>& param = p.Data();
+				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 				TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
 				TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
@@ -143,8 +153,8 @@ namespace MLCore::Optimizers {
 				m.Fill(static_cast<T>(0));
 				v.Fill(static_cast<T>(0));
 
-				m_FirstMoment.try_emplace(p, m);
-				m_SecondMoment.try_emplace(p, v);
+				m_FirstMoment.try_emplace(paramPtr, m);
+				m_SecondMoment.try_emplace(paramPtr, v);
 			}
 		}
 	}
@@ -163,9 +173,13 @@ namespace MLCore::Optimizers {
 			T learningRate = paramGroup.learningRate;
 			T weightDecay = paramGroup.weightDecay;
 
-			for (Parameter<T>* p : paramGroup.params) {
-				auto mIt = m_FirstMoment.find(p);
-				auto vIt = m_SecondMoment.find(p);
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+				TensorCore::Tensor<T>& param = p.Data();
+				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
+
+				auto mIt = m_FirstMoment.find(paramPtr);
+				auto vIt = m_SecondMoment.find(paramPtr);
 
 				if (mIt == m_FirstMoment.end() || vIt == m_SecondMoment.end()) {
 					throw std::runtime_error("ERROR: Step: Missing optimizer state");
@@ -174,7 +188,6 @@ namespace MLCore::Optimizers {
 				TensorCore::Tensor<T>& m = mIt->second;
 				TensorCore::Tensor<T>& v = vIt->second;
 
-				TensorCore::Tensor<T>& param = p->Data();
 
 				if (!param.RequiresGrad() || !param.HasGrad()) {
 					continue;

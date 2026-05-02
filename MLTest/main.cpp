@@ -13,6 +13,8 @@ using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::Schedulers;
+using namespace MLCore::NN;
+
 
 void TestMultiFeature(ArenaAllocator& allocator) {
     std::cout << "\n=== Test: Multi-feature batch ===\n";
@@ -150,11 +152,8 @@ void TestBalancedLR(ArenaAllocator& allocator) {
     Parameter<float> p1{ w1 };
     Parameter<float> p2{ w2 };
 
-    std::vector<Parameter<float>> params1{ p1 };
-    std::vector<Parameter<float>> params2{ p2 };
-
-    ParameterGroup<float> g1{ {params1}, 0.1f };
-    ParameterGroup<float> g2{ {params2}, 0.1f };
+    ParameterGroup<float> g1{ {p1}, 0.1f };
+    ParameterGroup<float> g2{ {p2}, 0.1f };
 
     SGD<float> opt{ {g1, g2} };
 

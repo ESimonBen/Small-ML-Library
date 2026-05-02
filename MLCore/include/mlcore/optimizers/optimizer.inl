@@ -4,7 +4,7 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<Parameter<T>>& params, T learningRate, T weightDecay) {
+	Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
 		m_ParamGroups.emplace_back(params, learningRate, weightDecay);
 	}
 
@@ -16,8 +16,9 @@ namespace MLCore::Optimizers {
 	template <typename T>
 	void Optimizer<T>::ZeroGrad() {
 		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
-			for (Parameter<T>* p : paramGroup.params) {
-				TensorCore::Tensor<T> param = p->Data();
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+				TensorCore::Tensor<T> param = p.Data();
 
 				if (param.RequiresGrad()) {
 					param.ZeroGrad();
@@ -46,8 +47,10 @@ namespace MLCore::Optimizers {
 		T totalNorm = static_cast<T>(0);
 
 		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
-			for (Parameter<T>* p : paramGroup.params) {
-				TensorCore::Tensor<T>& param = p->Data();
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+				TensorCore::Tensor<T>& param = p.Data();
+
 				if (!param.HasGrad()) {
 					continue;
 				}
@@ -70,8 +73,10 @@ namespace MLCore::Optimizers {
 		T scale = m_MaxNorm / (totalNorm + static_cast<T>(1e-6));
 
 		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
-			for (Parameter<T>* p : paramGroup.params) {
-				TensorCore::Tensor<T>& param = p->Data();
+			for (auto& ref : paramGroup.params) {
+				NN::Parameter<T>& p = ref.get();
+
+				TensorCore::Tensor<T>& param = p.Data();
 				if (!param.HasGrad()) {
 					continue;
 				}
