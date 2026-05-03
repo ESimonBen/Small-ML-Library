@@ -9,6 +9,7 @@ namespace MLCore::Optimizers {
 	template <typename T>
 	class Optimizer {
 	public:
+		Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay = static_cast<T>(0));
 		Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay = static_cast<T>(0));
 		Optimizer(std::vector<ParameterGroup<T>> groups);
 

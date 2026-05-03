@@ -9,12 +9,6 @@ namespace MLCore::NN {
 		void Add(std::shared_ptr<Module<T>> mod);
 
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
-
-	/*protected:
-		virtual void Parameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const override;*/
-
-	/*private:
-		std::vector<std::shared_ptr<Module<T>>> m_Layers;*/
 	};
 }
 

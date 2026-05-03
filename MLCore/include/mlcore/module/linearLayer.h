@@ -11,7 +11,7 @@ namespace MLCore::NN {
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const override;
+		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
 
 	private:
 		Parameter<T> m_Weight;

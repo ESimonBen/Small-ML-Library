@@ -2,6 +2,11 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
+	SGD<T>::SGD(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay)
+		: Optimizer<T>(params, learningRate, weightDecay)
+	{}
+
+	template <typename T>
 	SGD<T>::SGD(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay)
 		: Optimizer<T>(params, learningRate, weightDecay)
 	{}
@@ -44,17 +49,33 @@ namespace MLCore::Optimizers {
 	}
 
 	template <typename T>
-	SGDMomentum<T>::SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T momentum, T dampening, bool nesterov)
+	SGDMomentum<T>::SGDMomentum(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
 					NN::Parameter<T>& p = ref.get();
+					NN::ParamID paramID = p.id;
 					TensorCore::Tensor<T>& param = p.Data();
-					TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 					TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
 					velocity.Fill(static_cast<T>(0));
-					m_Velocities.try_emplace(paramPtr, velocity);
+					m_Velocities.try_emplace(paramID, velocity);
+				}
+			}
+	}
+
+	template <typename T>
+	SGDMomentum<T>::SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
+		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
+			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
+				for (auto& ref : paramGroup.params) {
+					NN::Parameter<T>& p = ref.get();
+					NN::ParamID paramID = p.id;
+					TensorCore::Tensor<T>& param = p.Data();
+
+					TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
+					velocity.Fill(static_cast<T>(0));
+					m_Velocities.try_emplace(paramID, velocity);
 				}
 			}
 	}
@@ -65,12 +86,12 @@ namespace MLCore::Optimizers {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
+				NN::ParamID paramID = p.id;
 				TensorCore::Tensor<T>& param = p.Data();
-				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
 				TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
 				velocity.Fill(static_cast<T>(0));
-				m_Velocities.try_emplace(paramPtr, velocity);
+				m_Velocities.try_emplace(paramID, velocity);
 			}
 		}
 	}
@@ -85,10 +106,10 @@ namespace MLCore::Optimizers {
 
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
+				NN::ParamID paramID = p.id;
 				TensorCore::Tensor<T>& param = p.Data();
-				TensorCore::TensorImpl<T>* paramPtr = param.GetImpl().get();
 
-				auto velocityIt = m_Velocities.find(paramPtr);
+				auto velocityIt = m_Velocities.find(paramID);
 
 				if (velocityIt == m_Velocities.end()) {
 					throw std::runtime_error("ERROR: Step: Missing optimizer state");

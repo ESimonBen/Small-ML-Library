@@ -62,6 +62,8 @@ namespace MLCore::TensorCore {
 		const std::vector<size_t>& Dims() const;
 
 		Memory::ArenaAllocator& GetAllocator();
+		Memory::ArenaAllocator& GetAllocator() const;
+
 		std::shared_ptr<Impl> GetImpl() const;
 
 		// Added these to use iterators (that's the reason for the difference in style from the rest of the code)

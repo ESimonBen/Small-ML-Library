@@ -94,6 +94,11 @@ namespace MLCore::TensorCore {
 	}
 
 	template <typename T>
+	Memory::ArenaAllocator& Tensor<T>::GetAllocator() const {
+		return *(m_Impl->allocator);
+	}
+
+	template <typename T>
 	std::shared_ptr<TensorImpl<T>> Tensor<T>::GetImpl() const {
 		return m_Impl;
 	}

@@ -4,8 +4,20 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
+	Optimizer<T>::Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay) {
 		m_ParamGroups.emplace_back(params, learningRate, weightDecay);
+	}
+
+	template <typename T>
+	Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
+		std::vector<std::reference_wrapper<NN::Parameter<T>>> refs;
+		refs.reserve(params.size());
+
+		for (NN::Parameter<T>& p : params) {
+			refs.emplace_back(p);
+		}
+
+		m_ParamGroups.emplace_back(refs, learningRate, weightDecay);
 	}
 
 	template <typename T>
@@ -18,7 +30,7 @@ namespace MLCore::Optimizers {
 		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				TensorCore::Tensor<T> param = p.Data();
+				TensorCore::Tensor<T>& param = p.Data();
 
 				if (param.RequiresGrad()) {
 					param.ZeroGrad();

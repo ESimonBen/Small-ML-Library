@@ -7,7 +7,7 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
-	std::vector<std::reference_wrapper<NN::Parameter<T>>> Module<T>::GetParameters() const {
+	std::vector<std::reference_wrapper<NN::Parameter<T>>> Module<T>::GetParameters(){
 		std::vector<std::reference_wrapper<NN::Parameter<T>>> out;
 		CollectParameters(out);
 
@@ -15,7 +15,7 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
-	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const {
+	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out){
 		// Don't need an implementation here
 	}
 

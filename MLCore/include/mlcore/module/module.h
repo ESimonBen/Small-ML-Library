@@ -13,10 +13,10 @@ namespace MLCore::NN {
 
 		void Add(std::shared_ptr<Module<T>> mod);
 
-		virtual std::vector<std::reference_wrapper<NN::Parameter<T>>> GetParameters() const;
+		virtual std::vector<std::reference_wrapper<NN::Parameter<T>>> GetParameters();
 
 	protected:
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const;
+		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out);
 
 		void CollectSubmoduleParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const;
 

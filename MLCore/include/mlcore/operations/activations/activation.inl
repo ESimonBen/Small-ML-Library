@@ -164,33 +164,9 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> sub = Operations::Subtract(A, maxExpanded, allocator);
 
-		/*std::cout << "Sub values:\n";
-		for (auto& v : sub) {
-			std::cout << v << " ";
-		}*/
-		std::cout << std::endl;
-
 		TensorCore::Tensor<T> exp = Operations::Exp(sub, allocator);
 
-		/*std::cout << "Exp shape: ";
-		for (auto d : exp.Dims()) {
-			std::cout << d << " ";
-		}
-		std::cout << std::endl;
-
-		std::cout << "Exp values:\n";
-		for (auto& v : exp) {
-			std::cout << v << " ";
-		}
-		std::cout << std::endl;*/
-
 		TensorCore::Tensor<T> sum = Operations::AxisSum(exp, axis, allocator, true);
-
-		/*std::cout << "AxisSum result:\n";
-		for (auto& v : sum) {
-			std::cout << v << " ";
-		}
-		std::cout << std::endl;*/
 
 		TensorCore::Tensor<T> log = Operations::Log(sum, allocator);
 
