@@ -6,9 +6,17 @@ namespace MLCore::NN {
 	template <typename T>
 	class Sequential : public Module<T> {
 	public:
-		void Add(std::shared_ptr<Module<T>> mod);
+		Sequential() = default;
 
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
+		/*template <typename... Modules>
+		Sequential(Modules&&... mods);*/
+
+		template <typename ModuleType, typename... Args>
+		void Emplace(Args&&... args);
+
+		void Add(std::unique_ptr<Module<T>> mod);
+
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
 	};
 }
 

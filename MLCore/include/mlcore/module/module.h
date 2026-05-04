@@ -1,6 +1,5 @@
 // module.h
 #pragma once
-#include <mlCore/tensor/tensor.h>
 #include <mlCore/parameters/parameter.h>
 
 namespace MLCore::NN {
@@ -9,19 +8,21 @@ namespace MLCore::NN {
 	public:
 		virtual ~Module() = default;
 
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) = 0;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const = 0;
 
-		void Add(std::shared_ptr<Module<T>> mod);
+		void Add(std::unique_ptr<Module<T>> mod);
 
 		virtual std::vector<std::reference_wrapper<NN::Parameter<T>>> GetParameters();
+
+		TensorCore::Tensor<T> operator()(const TensorCore::Tensor<T>& input);
 
 	protected:
 		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out);
 
-		void CollectSubmoduleParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) const;
+		void CollectSubmoduleParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out);
 
 	protected:
-		std::vector<std::shared_ptr<Module<T>>> m_Submodules;
+		std::vector<std::unique_ptr<Module<T>>> m_Submodules;
 	};
 }
 

@@ -4,6 +4,8 @@
 #include <mlCore/optimizers/sgd.h>
 #include <mlCore/operations/operations.h>
 #include <mlCore/module/linearLayer.h>
+#include <mlCore/module/sequential.h>
+#include <mlCore/module/tanhLayer.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
@@ -15,7 +17,7 @@ using namespace MLCore::NN;
 
 
 void TestXOR(ArenaAllocator& allocator) {
-    std::cout << "Test With SGD (More Iteration)" << std::endl;
+    std::cout << "Test With Adam" << std::endl;
     std::cout << "=== XOR Nonlinear Test ===\n";
 
     // -----------------------------
@@ -47,28 +49,25 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     // 2. Model (2-layer MLP)
     // -----------------------------
-    LinearLayer<float> l1(2, 4, allocator);
-    LinearLayer<float> l2(4, 1, allocator);
+    Sequential<float> model;
+
+    model.Emplace<LinearLayer<float>>(2, 4, allocator);
+    model.Emplace<TanhLayer<float>>();
+    model.Emplace<LinearLayer<float>>(4, 1, allocator);
 
     // Collect parameters manually
-    auto p1 = l1.GetParameters();
-    auto p2 = l2.GetParameters();
+    auto params = model.GetParameters();
 
-    std::vector<std::reference_wrapper<NN::Parameter<float>>> params;
-    params.insert(params.end(), p1.begin(), p1.end());
-    params.insert(params.end(), p2.begin(), p2.end());
-
-    /*Adam<float> opt{ params, 0.01f };*/
-    SGD<float> opt{ params, 0.1f };
+    Adam<float> opt{ params, 0.01f };
+    /*SGD<float> opt{ params, 0.1f };*/
 
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-    for (int epoch = 0; epoch < 20000; ++epoch) {
+    for (int epoch = 0; epoch < 5000; ++epoch) {
 
         // Forward
-        auto h = Tanh(l1.Forward(x), allocator);
-        auto logits = l2.Forward(h);
+        auto logits = model(x);
 
         // Loss
         auto loss = BinaryCrossEntropyWithLogits(logits, y, Reduction::Mean, allocator);
@@ -87,8 +86,7 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     // 4. Evaluation
     // -----------------------------
-    auto h = Tanh(l1.Forward(x), allocator);
-    auto logits = l2.Forward(h);
+    auto logits = model(x);
 
     size_t correct = 0;
 

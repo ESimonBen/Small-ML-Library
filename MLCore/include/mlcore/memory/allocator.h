@@ -4,7 +4,7 @@
 namespace MLCore::Memory {
 	class ArenaAllocator {
 	public:
-		ArenaAllocator(size_t arenaSize = 1024 * 1024 * 1024); // Allocate a default size of 1024 MiB
+		ArenaAllocator(size_t arenaSize = 1024 * 1024 * 1024); // Allocate a default size of 1 GiB
 		~ArenaAllocator();
 		ArenaAllocator(const ArenaAllocator&) = delete;
 		ArenaAllocator& operator=(const ArenaAllocator&) = delete;

@@ -8,7 +8,7 @@ namespace MLCore::NN {
 	template <typename T>
 	struct Parameter {
 		TensorCore::Tensor<T> data;
-		ParamID id;
+		const ParamID id;
 
 		Parameter()
 			: id(NextID())
@@ -45,10 +45,16 @@ namespace MLCore::NN {
 			return data.Data();
 		}
 
-		Parameter Clone() const {
-			Parameter copy = *this;
-			copy.id = NextID();
-			return copy;
-		}
+		//Parameter Clone() const {
+		//	Parameter copy = *this;
+		//	copy.id = NextID();
+		//	return copy;
+		//}
+
+		//Parameter CloneFrom(const Parameter& other) {
+		//	Parameter clone; // New ID
+		//	clone.data = other.data;
+		//	return clone;
+		//}
 	};
 }
