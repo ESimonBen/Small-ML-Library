@@ -3,9 +3,11 @@
 #include <mlCore/optimizers/adam.h>
 #include <mlCore/optimizers/sgd.h>
 #include <mlCore/operations/operations.h>
-#include <mlCore/module/linearLayer.h>
+#include <mlCore/module/layers/linearLayer.h>
 #include <mlCore/module/sequential.h>
-#include <mlCore/module/tanhLayer.h>
+#include <mlCore/module/layers/tanhLayer.h>
+#include <mlCore/module/layers/reluLayer.h>
+#include <mlCore/module/layers/leakyReluLayer.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
@@ -14,6 +16,7 @@ using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::NN;
+using namespace MLCore::Init;
 
 
 void TestXOR(ArenaAllocator& allocator) {
@@ -51,20 +54,20 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     Sequential<float> model;
 
-    model.Emplace<LinearLayer<float>>(2, 4, allocator);
-    model.Emplace<TanhLayer<float>>();
-    model.Emplace<LinearLayer<float>>(4, 1, allocator);
+    model.Emplace<LinearLayer<float>>(2, 8, allocator, InitType::HeUniform);
+    model.Emplace<LeakyReLULayer<float>>();
+    model.Emplace<LinearLayer<float>>(8, 1, allocator, InitType::HeUniform);
 
     // Collect parameters manually
     auto params = model.GetParameters();
 
-    Adam<float> opt{ params, 0.01f };
+    Adam<float> opt{ params, 0.005f };
     /*SGD<float> opt{ params, 0.1f };*/
 
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-    for (int epoch = 0; epoch < 5000; ++epoch) {
+    for (int epoch = 0; epoch < 10000; ++epoch) {
 
         // Forward
         auto logits = model(x);
