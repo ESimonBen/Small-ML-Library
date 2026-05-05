@@ -8,6 +8,7 @@
 #include <mlCore/module/layers/tanhLayer.h>
 #include <mlCore/module/layers/reluLayer.h>
 #include <mlCore/module/layers/leakyReluLayer.h>
+#include <mlCore/module/layers/sigmoidLayer.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
@@ -50,30 +51,31 @@ void TestXOR(ArenaAllocator& allocator) {
     y[3] = 0;
 
     // -----------------------------
-    // 2. Model (2-layer MLP)
+    // 2. Model (3-layer MLP)
     // -----------------------------
     Sequential<float> model;
 
     model.Emplace<LinearLayer<float>>(2, 8, allocator, InitType::HeUniform);
     model.Emplace<LeakyReLULayer<float>>();
     model.Emplace<LinearLayer<float>>(8, 1, allocator, InitType::HeUniform);
+    model.Emplace<SigmoidLayer<float>>();
 
-    // Collect parameters manually
+    // Collect parameters
     auto params = model.GetParameters();
 
-    Adam<float> opt{ params, 0.005f };
-    /*SGD<float> opt{ params, 0.1f };*/
+    /*Adam<float> opt{ params, 0.01f };*/
+    SGD<float> opt{ params, 0.1f };
 
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-    for (int epoch = 0; epoch < 10000; ++epoch) {
+    for (int epoch = 0; epoch < 20000; ++epoch) {
 
         // Forward
-        auto logits = model(x);
+        auto pred = model(x);
 
         // Loss
-        auto loss = BinaryCrossEntropyWithLogits(logits, y, Reduction::Mean, allocator);
+        auto loss = BinaryCrossEntropy(pred, y, Reduction::Mean, allocator);
 
         // Backprop
         opt.ZeroGrad();
@@ -89,13 +91,12 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     // 4. Evaluation
     // -----------------------------
-    auto logits = model(x);
+    auto pred = model(x);
 
     size_t correct = 0;
 
     for (size_t i = 0; i < 4; ++i) {
-        float logit = logits[i];
-        float prob = 1.0f / (1.0f + std::exp(-logit));
+        float prob = pred[i];
 
         int pred = (prob > 0.5f) ? 1 : 0;
         int actual = (y[i] > 0.5f) ? 1 : 0;
@@ -108,7 +109,7 @@ void TestXOR(ArenaAllocator& allocator) {
 
     std::cout << "Final logits:\n";
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << logits[i] << " ";
+        std::cout << pred[i] << " ";
     }
     std::cout << std::endl;
 }

@@ -220,10 +220,10 @@ namespace MLCore::AutoGrad {
 			T inp = input[i];
 
 			if (inp > m_Min && inp < m_Max) {
-				gradInput[i] *= gradOutput[i];
+				gradInput[i] = gradOutput[i];
 			}
 			else {
-				gradInput[i] *= static_cast<T>(0);
+				gradInput[i] = static_cast<T>(0);
 			}
 		}
 

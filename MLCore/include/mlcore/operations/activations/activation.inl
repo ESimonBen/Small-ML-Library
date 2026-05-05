@@ -9,7 +9,9 @@ namespace MLCore::Operations {
 	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
-		for (size_t i = 0; i < A.NumElements(); ++i) {
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
 			T testVal = A[i];
 			result[i] = (testVal > static_cast<T>(0)) ? testVal : static_cast<T>(0);
 		}
@@ -26,7 +28,9 @@ namespace MLCore::Operations {
 	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
-		for (size_t i = 0; i < A.NumElements(); ++i) {
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
 			T testVal = A[i];
 			result[i] = (testVal > static_cast<T>(0)) ? testVal : alpha * testVal;
 		}
@@ -41,10 +45,11 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> exp = Operations::Exp(A, allocator);
-		TensorCore::Tensor<T> expPlusOne = Operations::AddScalar(exp, static_cast<T>(1), allocator);
+		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
+		TensorCore::Tensor<T> exp = Operations::Exp(neg, allocator);
 
-		TensorCore::Tensor<T> result = Operations::Divide(exp, expPlusOne, allocator);
+		TensorCore::Tensor<T> sum = Operations::AddScalar(exp, static_cast<T>(1), allocator);
+		TensorCore::Tensor<T> result = Operations::DivideScalar(sum, static_cast<T>(1), allocator, true);
 
 		return result;
 	}

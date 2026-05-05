@@ -209,7 +209,7 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			T inp = A[i];
-			result[i] = std::min(std::max(inp, max), max);
+			result[i] = std::min(std::max(inp, min), max);
 		}
 
 		if (A.RequiresGrad()) {
