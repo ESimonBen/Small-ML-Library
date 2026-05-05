@@ -130,7 +130,7 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> max = Operations::ReLU(logits, allocator);
-		TensorCore::Tensor<T> abs = Operations::Abs(max, allocator);
+		TensorCore::Tensor<T> abs = Operations::Abs(logits, allocator);
 		TensorCore::Tensor<T> negateAbs = Operations::Negate(abs, allocator);
 		TensorCore::Tensor<T> exp = Operations::Exp(negateAbs, allocator);
 		TensorCore::Tensor<T> sum = Operations::AddScalar(exp, static_cast<T>(1), allocator);

@@ -9,6 +9,7 @@
 #include <mlCore/module/layers/reluLayer.h>
 #include <mlCore/module/layers/leakyReluLayer.h>
 #include <mlCore/module/layers/sigmoidLayer.h>
+#include <mlCore/training/trainer.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
@@ -18,10 +19,11 @@ using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::NN;
 using namespace MLCore::Init;
+using namespace MLCore::Training;
 
 
 void TestXOR(ArenaAllocator& allocator) {
-    std::cout << "Test With Adam" << std::endl;
+    std::cout << "Test With Adam (No Sigmoid + BCE With Logits)" << std::endl;
     std::cout << "=== XOR Nonlinear Test ===\n";
 
     // -----------------------------
@@ -63,55 +65,26 @@ void TestXOR(ArenaAllocator& allocator) {
     // Collect parameters
     auto params = model.GetParameters();
 
-    /*Adam<float> opt{ params, 0.01f };*/
     SGD<float> opt{ params, 0.1f };
 
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-    for (int epoch = 0; epoch < 20000; ++epoch) {
 
-        // Forward
-        auto pred = model(x);
+    Trainer<float> trainer{ model, opt,
+        [&](const auto& pred, const auto& target) {
+            return BinaryCrossEntropy(pred, target, Reduction::Mean, allocator);
+        }
+    };
 
-        // Loss
-        auto loss = BinaryCrossEntropy(pred, y, Reduction::Mean, allocator);
-
-        // Backprop
-        opt.ZeroGrad();
-        loss.Backward();
-        opt.Step();
-
+    trainer.OnEpochEnd = [](int epoch, float loss) {
         if (epoch % 500 == 0) {
             std::cout << "Epoch " << epoch
-                << " | Loss: " << loss[0] << std::endl;
+            << " | Loss: " << loss << std::endl;
         }
-    }
+    };
 
-    // -----------------------------
-    // 4. Evaluation
-    // -----------------------------
-    auto pred = model(x);
-
-    size_t correct = 0;
-
-    for (size_t i = 0; i < 4; ++i) {
-        float prob = pred[i];
-
-        int pred = (prob > 0.5f) ? 1 : 0;
-        int actual = (y[i] > 0.5f) ? 1 : 0;
-
-        if (pred == actual)
-            correct++;
-    }
-
-    std::cout << "Accuracy: " << (float)correct / 4 << std::endl;
-
-    std::cout << "Final logits:\n";
-    for (size_t i = 0; i < 4; ++i) {
-        std::cout << pred[i] << " ";
-    }
-    std::cout << std::endl;
+    trainer.Fit(x, y, 20000);
 }
 
 int main() {
