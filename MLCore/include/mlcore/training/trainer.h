@@ -15,10 +15,12 @@ namespace MLCore::Training {
 	public:
 		Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn);
 
-		void Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs);
+		void Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize);
 
-		// Optional hook for debugging
-		std::function<void(int epoch, T loss)> OnEpochEnd;
+		// Optional hooks for debugging
+
+		std::function<void(int epoch, const TensorCore::Tensor<T>& loss)> OnEpochEnd;
+		std::function<void(int epoch, const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& targets)> OnEpochEval;
 
 	private:
 		NN::Module<T>& m_Model;

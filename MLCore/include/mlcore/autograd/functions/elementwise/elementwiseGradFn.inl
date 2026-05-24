@@ -11,11 +11,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0] || !this->inputs[1]) {
-				throw std::runtime_error("ERROR: AddGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0] || !this->inputs[1]) {
+			throw std::runtime_error("ERROR: AddGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> a{ this->inputs[0] };
 		TensorCore::Tensor<T> b{ this->inputs[1] };
@@ -38,11 +36,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0] || !this->inputs[1]) {
-				throw std::runtime_error("ERROR: SubGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0] || !this->inputs[1]) {
+			throw std::runtime_error("ERROR: SubGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> a{ this->inputs[0] };
 		TensorCore::Tensor<T> b{ this->inputs[1] };
@@ -67,11 +63,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0] || !this->inputs[1]) {
-				throw std::runtime_error("ERROR: MulGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0] || !this->inputs[1]) {
+			throw std::runtime_error("ERROR: MulGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> a{ this->inputs[0] };
 		TensorCore::Tensor<T> b{ this->inputs[1] };
@@ -99,11 +93,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0] || !this->inputs[1]) {
-				throw std::runtime_error("ERROR: DivGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0] || !this->inputs[1]) {
+			throw std::runtime_error("ERROR: DivGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> a{ this->inputs[0] };
 		TensorCore::Tensor<T> b{ this->inputs[1] };
@@ -136,11 +128,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0]) {
-				throw std::runtime_error("ERROR: PowerGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: PowerGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
@@ -167,11 +157,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void AbsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0]) {
-				throw std::runtime_error("ERROR: AbsGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: AbsGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
@@ -200,11 +188,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void ClampGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0]) {
-				throw std::runtime_error("ERROR: ClampGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: ClampGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
@@ -237,11 +223,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void LogGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: LogGradFn: Null input");
 		}
-		#endif
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
@@ -265,11 +249,9 @@ namespace MLCore::AutoGrad {
 
 	template <typename T>
 	void ExpGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
-		#ifdef ML_CORE_DEBUG
-			if (!this->inputs[0]) {
-				throw std::runtime_error("ERROR: LogGradFn: Null input");
-			}
-		#endif
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: LogGradFn: Null input");
+		}
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 

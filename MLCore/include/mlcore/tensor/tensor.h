@@ -13,6 +13,7 @@ namespace MLCore::TensorCore {
 		Utils::Shape shape;
 		Memory::Storage<T> storage;
 		Memory::ArenaAllocator* allocator;
+		size_t offset;
 		bool requiresGrad;
 		std::shared_ptr<TensorImpl<T>> grad;
 		std::shared_ptr<AutoGrad::GradFn<T>> gradFn;
@@ -20,17 +21,18 @@ namespace MLCore::TensorCore {
 		TensorImpl(const Utils::Shape& shape,
 			Memory::Storage<T> storage,
 			Memory::ArenaAllocator* allocator,
+			size_t offset = 0,
 			bool requiresGrad = false,
 			std::shared_ptr<TensorImpl<T>> grad = nullptr,
 			std::shared_ptr<AutoGrad::GradFn<T>> gradFn = nullptr)
 			: shape(shape),
 			storage(std::move(storage)),
 			allocator(allocator),
+			offset(offset),
 			requiresGrad(requiresGrad),
 			grad(std::move(grad)),
 			gradFn(std::move(gradFn))
-		{
-		}
+		{}
 	};
 
 	// Tensor wrapper (gives acces to actual tensor node in the computation graph while not BEING the node)
@@ -105,8 +107,8 @@ namespace MLCore::TensorCore {
 		void Backward();
 		void Backward(const Tensor<T>& gradOutput);
 
-		// Static fillers
-		// static Tensor Zero();
+		// Slicing / Views
+		Tensor<T> SliceRows(size_t start, size_t end) const;
 
 	private:
 		std::shared_ptr<Impl> m_Impl;

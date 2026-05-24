@@ -7,20 +7,44 @@ namespace MLCore::Training {
 	{}
 
 	template <typename T>
-	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs) {
+	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize) {
+		size_t numSamples = inputs.Dims()[0];
+
 		for (int epoch = 0; epoch < epochs; ++epoch) {
-			 // Forward propogation
-			auto pred = m_Model(inputs);
+			T epochLoss = 0;
+			size_t batchCount = 0;
 
-			// Backpropogation
-			auto loss = m_LossFn(pred, targets);
+			for (size_t i = 0; i < numSamples; i += batchSize) {
+				size_t end = std::min(i + batchSize, numSamples);
 
-			m_Optimizer.ZeroGrad();
-			loss.Backward();
-			m_Optimizer.Step();
+				TensorCore::Tensor<T> batchX = inputs.SliceRows(i, end);
+				TensorCore::Tensor<T> batchY = targets.SliceRows(i, end);
+
+				// Forward propogation
+				auto pred = m_Model.Forward(batchX);
+
+				// Loss
+				auto loss = m_LossFn(pred, batchY);
+
+				// Backward
+				m_Optimizer.ZeroGrad();
+				loss.Backward();
+				m_Optimizer.Step();
+
+				epochLoss += loss[0];
+				batchCount++;
+
+				if (OnEpochEval) {
+					OnEpochEval(epoch, pred, batchY);
+				}
+			}
+
+			epochLoss /= batchCount;
 
 			if (OnEpochEnd) {
-				OnEpochEnd(epoch, loss[0]);
+				TensorCore::Tensor<T> avgLoss{ {1}, inputs.GetAllocator() };
+				avgLoss[0] = epochLoss;
+				OnEpochEnd(epoch, avgLoss);
 			}
 		}
 	}

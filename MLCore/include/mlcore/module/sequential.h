@@ -8,9 +8,6 @@ namespace MLCore::NN {
 	public:
 		Sequential() = default;
 
-		/*template <typename... Modules>
-		Sequential(Modules&&... mods);*/
-
 		template <typename ModuleType, typename... Args>
 		void Emplace(Args&&... args);
 

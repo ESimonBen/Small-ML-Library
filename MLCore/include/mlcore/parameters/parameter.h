@@ -44,17 +44,5 @@ namespace MLCore::NN {
 		const T* RawData() const {
 			return data.Data();
 		}
-
-		//Parameter Clone() const {
-		//	Parameter copy = *this;
-		//	copy.id = NextID();
-		//	return copy;
-		//}
-
-		//Parameter CloneFrom(const Parameter& other) {
-		//	Parameter clone; // New ID
-		//	clone.data = other.data;
-		//	return clone;
-		//}
 	};
 }

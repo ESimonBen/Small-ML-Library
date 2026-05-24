@@ -22,9 +22,8 @@ using namespace MLCore::Init;
 using namespace MLCore::Training;
 
 
-void TestXOR(ArenaAllocator& allocator) {
-    std::cout << "Test With Adam (No Sigmoid + BCE With Logits)" << std::endl;
-    std::cout << "=== XOR Nonlinear Test ===\n";
+void TestAND(ArenaAllocator& allocator) {
+    std::cout << "=== AND Nonlinear Test ===\n";
 
     // -----------------------------
     // 1. Dataset (XOR)
@@ -35,22 +34,22 @@ void TestXOR(ArenaAllocator& allocator) {
     // (0,0) -> 0
     x[0] = 0; 
     x[1] = 0; 
-    y[0] = 0;
+    y[0] = 1;
 
     // (0,1) -> 1
     x[2] = 0; 
     x[3] = 1; 
-    y[1] = 1;
+    y[1] = 0;
 
     // (1,0) -> 1
     x[4] = 1; 
     x[5] = 0; 
-    y[2] = 1;
+    y[2] = 0;
 
     // (1,1) -> 0
     x[6] = 1; 
     x[7] = 1;
-    y[3] = 0;
+    y[3] = 1;
 
     // -----------------------------
     // 2. Model (3-layer MLP)
@@ -60,12 +59,11 @@ void TestXOR(ArenaAllocator& allocator) {
     model.Emplace<LinearLayer<float>>(2, 8, allocator, InitType::HeUniform);
     model.Emplace<LeakyReLULayer<float>>();
     model.Emplace<LinearLayer<float>>(8, 1, allocator, InitType::HeUniform);
-    model.Emplace<SigmoidLayer<float>>();
 
     // Collect parameters
     auto params = model.GetParameters();
 
-    SGD<float> opt{ params, 0.1f };
+    SGDMomentum<float> opt{ params, 0.1f, 0.1f };
 
     // -----------------------------
     // 3. Training loop
@@ -73,24 +71,24 @@ void TestXOR(ArenaAllocator& allocator) {
 
     Trainer<float> trainer{ model, opt,
         [&](const auto& pred, const auto& target) {
-            return BinaryCrossEntropy(pred, target, Reduction::Mean, allocator);
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
         }
     };
 
-    trainer.OnEpochEnd = [](int epoch, float loss) {
+    trainer.OnEpochEnd = [](int epoch, const TensorCore::Tensor<float>& loss) {
         if (epoch % 500 == 0) {
             std::cout << "Epoch " << epoch
-            << " | Loss: " << loss << std::endl;
+            << " | Loss: " << loss[0] << std::endl;
         }
     };
 
-    trainer.Fit(x, y, 20000);
+    trainer.Fit(x, y, 10000, 4);
 }
 
 int main() {
     ArenaAllocator allocator;
 
-    TestXOR(allocator);
+    TestAND(allocator);
 
     return 0;
 }

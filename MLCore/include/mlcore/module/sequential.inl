@@ -3,12 +3,6 @@
 #include <type_traits>
 
 namespace MLCore::NN {
-	/*template <typename T>
-	template <typename... Modules>
-	Sequential<T>::Sequential(Modules&&... mods) {
-		(this->Add(std::make_unique<std::decay_t<Modules>>(std::forward<Modules>(mods))), ...);
-	}*/
-
 	template <typename T>
 	template <typename ModuleType, typename... Args>
 	void Sequential<T>::Emplace(Args&&... args) {

@@ -6,7 +6,7 @@ namespace MLCore::TensorCore {
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator) {
 		auto storage = Memory::MakeStorage<T>(allocator, shape.NumElements());
 
-		m_Impl = std::make_shared<Impl>(Impl{ shape, std::move(storage), &allocator, false, nullptr, nullptr });
+		m_Impl = std::make_shared<Impl>( shape, std::move(storage), &allocator, 0, false, nullptr, nullptr);
 	}
 
 	template <typename T>
@@ -42,6 +42,7 @@ namespace MLCore::TensorCore {
 			m_Impl->shape,
 			m_Impl->storage,              // shared storage (shallow copy OK)
 			m_Impl->allocator,
+			m_Impl->offset,
 			false,                        // requiresGrad = false
 			nullptr,
 			nullptr
@@ -63,19 +64,20 @@ namespace MLCore::TensorCore {
 
 	template <typename T>
 	inline void Tensor<T>::Fill(const T& value) {
-		for (size_t i = 0; i < NumElements(); ++i) {
-			m_Impl->storage.Data()[i] = value;
+		size_t size = NumElements();
+		for (size_t i = 0; i < size; ++i) {
+			m_Impl->storage.Data()[m_Impl->offset + i] = value;
 		}
 	}
 
 	template <typename T>
 	inline T* Tensor<T>::Data() {
-		return m_Impl->storage.Data();
+		return m_Impl->storage.Data() + m_Impl->offset;
 	}
 
 	template <typename T>
 	inline const T* Tensor<T>::Data() const {
-		return m_Impl->storage.Data();
+		return m_Impl->storage.Data() + m_Impl->offset;
 	}
 
 	template <typename T>
@@ -105,44 +107,40 @@ namespace MLCore::TensorCore {
 
 	template <typename T>
 	inline T* Tensor<T>::begin() {
-		return m_Impl->storage.Data();
+		return m_Impl->storage.Data() + m_Impl->offset;
 	}
 
 	template <typename T>
 	inline T* Tensor<T>::end() {
-		return m_Impl->storage.Data() + NumElements();
+		return m_Impl->storage.Data() + m_Impl->offset + NumElements();
 	}
 
 	template <typename T>
 	inline const T* Tensor<T>::begin() const {
-		return m_Impl->storage.Data();
+		return m_Impl->storage.Data() + m_Impl->offset;
 	}
 
 	template <typename T>
 	inline const T* Tensor<T>::end() const {
-		return m_Impl->storage.Data() + NumElements();
+		return m_Impl->storage.Data() + m_Impl->offset + NumElements();
 	}
 
 	template <typename T>
 	inline T& Tensor<T>::operator[](size_t i) {
-		#ifdef ML_CORE_DEBUG
-			if (i >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor linear index out of bounds");
-			}
-		#endif
+		if (i >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor linear index out of bounds");
+		}
 
-		return m_Impl->storage.Data()[i];
+		return m_Impl->storage.Data()[i + m_Impl->offset];
 	}
 
 	template <typename T>
 	inline const T& Tensor<T>::operator[](size_t i) const {
-		#ifdef ML_CORE_DEBUG
-			if (i >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor linear index out of bounds");
-			}
-		#endif
+		if (i >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor linear index out of bounds");
+		}
 
-		return m_Impl->storage.Data()[i];
+		return m_Impl->storage.Data()[i + m_Impl->offset];
 	}
 
 
@@ -150,36 +148,30 @@ namespace MLCore::TensorCore {
 	inline T& Tensor<T>::operator()(const std::vector<size_t>& indices) {
 		size_t offset = m_Impl->shape.FlattenIndex(indices);
 
-		#ifdef ML_CORE_DEBUG
-			if (offset >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor index out of bounds");
-			}
-		#endif
+		if (offset >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor index out of bounds");
+		}
 
-		return m_Impl->storage.Data()[offset];
+		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
 
 	template <typename T>
 	inline const T& Tensor<T>::operator()(const std::vector<size_t>& indices) const {
 		size_t offset = m_Impl->shape.FlattenIndex(indices);
 
-		#ifdef ML_CORE_DEBUG
-			if (offset >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor index out of bounds");
-			}
-		#endif
+		if (offset >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor index out of bounds");
+		}
 
-		return m_Impl->storage.Data()[offset];
+		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
 
 	template <typename T>
 	template <typename... Indices, typename>
 	inline T& Tensor<T>::operator()(Indices... indices) {
-		#ifdef ML_CORE_DEBUG
-			if (sizeof...(indices) != m_Impl->shape.Rank()) {
-				throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
-			}
-		#endif
+		if (sizeof...(indices) != m_Impl->shape.Rank()) {
+			throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
+		}
 
 		size_t idx[] = { static_cast<size_t>(indices)... };
 		size_t offset = 0;
@@ -189,24 +181,19 @@ namespace MLCore::TensorCore {
 			offset += idx[i] * strides[i];
 		}
 
-		#ifdef ML_CORE_DEBUG
-			if (offset >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor index out of bounds");
-			}
-		#endif
+		if (offset >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor index out of bounds");
+		}
 
-
-		return m_Impl->storage.Data()[offset];
+		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
 
 	template <typename T>
 	template <typename... Indices, typename>
 	inline const T& Tensor<T>::operator()(Indices... indices) const {
-		#ifdef ML_CORE_DEBUG
-			if (sizeof...(indices) != m_Impl->shape.Rank()) {
-				throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
-			}
-		#endif
+		if (sizeof...(indices) != m_Impl->shape.Rank()) {
+			throw std::runtime_error("ERROR: Tensor indexing dimension mismatch");
+		}
 
 		size_t idx[] = { static_cast<size_t>(indices)... };
 		size_t offset = 0;
@@ -216,14 +203,11 @@ namespace MLCore::TensorCore {
 			offset += idx[i] * strides[i];
 		}
 
-		#ifdef ML_CORE_DEBUG
-			if (offset >= m_Impl->storage.Size()) {
-				throw std::out_of_range("ERROR: Tensor index out of bounds");
-			}
-		#endif
+		if (offset >= NumElements()) {
+			throw std::out_of_range("ERROR: Tensor index out of bounds");
+		}
 
-
-		return m_Impl->storage.Data()[offset];
+		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
 
 	template <typename T>
@@ -260,7 +244,6 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	Tensor<T> Tensor<T>::Grad() {
 		if (!m_Impl->grad) {
-			/*throw std::runtime_error("ERROR: Gradient doesn't exist");*/
 			Tensor<T> zero{ m_Impl->shape, *(m_Impl->allocator) };
 			zero.Fill(static_cast<T>(0));
 			return zero;
@@ -345,5 +328,33 @@ namespace MLCore::TensorCore {
 		if (m_Impl->gradFn) {
 			m_Impl->gradFn->Backward(gradOutput, *(m_Impl->allocator));
 		}
+	}
+
+	template <typename T>
+	Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const{
+		if (Rank() < 1) {
+			throw std::runtime_error("Cannot slice scalar tensor");
+		}
+
+		size_t rows = Dims()[0];
+
+		if (start >= rows || end > rows || start >= end) {
+			throw std::out_of_range("Invalid slice range");
+		}
+
+		std::vector<size_t> newDims = Dims();
+		newDims[0] = end - start;
+
+		auto newImpl = std::make_shared<Impl>(
+			Utils::Shape{newDims},
+			m_Impl->storage,
+			m_Impl->allocator,
+			m_Impl->offset + start * m_Impl->shape.Strides()[0],
+			false,
+			nullptr,
+			nullptr
+		);
+
+		return Tensor<T>{newImpl};
 	}
 }

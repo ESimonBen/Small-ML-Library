@@ -5,11 +5,9 @@
 namespace MLCore::AutoGrad {
 	template <typename T>
 	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& gradient, const Utils::Shape& targetShape) {
-		#ifdef ML_CORE_DEBUG
-			if (!Operations::CanBroadcast(targetShape, gradient.GetShape())) {
-				throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
-			}
-		#endif
+		if (!Operations::CanBroadcast(targetShape, gradient.GetShape())) {
+			throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
+		}
 
 		const auto& gradShape = gradient.GetShape();
 		TensorCore::Tensor<T> grad = gradient.Detach();
