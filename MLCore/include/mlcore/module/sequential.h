@@ -14,6 +14,10 @@ namespace MLCore::NN {
 		void Add(std::unique_ptr<Module<T>> mod);
 
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+
+		virtual void Train() override;
+
+		virtual void Evaluate() override;
 	};
 }
 

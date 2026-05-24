@@ -4,11 +4,13 @@
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/module/module.h>
 #include <mlCore/optimizers/optimizer.h>
-//#include <mlCore/operations/loss/loss.h>
 
 namespace MLCore::Training {
 	template <typename T>
-	using LossFn = std::function<TensorCore::Tensor<T>(const TensorCore::Tensor<T>&, const TensorCore::Tensor<T>&/*, Operations::Reduction, Memory::ArenaAllocator&*/)>;
+	using LossFn = std::function<TensorCore::Tensor<T>(const TensorCore::Tensor<T>&, const TensorCore::Tensor<T>&)>;
+
+	template <typename T>
+	using MetricFn = std::function<T(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target)>;
 
 	template <typename T>
 	class Trainer {
@@ -16,16 +18,25 @@ namespace MLCore::Training {
 		Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn);
 
 		void Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize);
+		void Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize);
 
+		// Adding Metrics
+		void AddMetric(const std::string& name, MetricFn<T> metric);
+
+	public:
 		// Optional hooks for debugging
-
 		std::function<void(int epoch, const TensorCore::Tensor<T>& loss)> OnEpochEnd;
 		std::function<void(int epoch, const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& targets)> OnEpochEval;
+
+	private:
+		TensorCore::Tensor<T> Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize);
+		std::unordered_map<std::string, T> ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target);
 
 	private:
 		NN::Module<T>& m_Model;
 		Optimizers::Optimizer<T>& m_Optimizer;
 		LossFn<T> m_LossFn;
+		std::unordered_map<std::string, MetricFn<T>> m_Metrics;
 	};
 }
 

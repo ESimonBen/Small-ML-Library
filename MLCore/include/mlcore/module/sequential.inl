@@ -24,4 +24,22 @@ namespace MLCore::NN {
 
 		return inp;
 	}
+
+	template <typename T>
+	void Sequential<T>::Train() {
+		this->m_IsTraining = true;
+
+		for (const std::unique_ptr<Module<T>>& layer : this->m_Submodules) {
+			layer->Train();
+		}
+	}
+
+	template <typename T>
+	void Sequential<T>::Evaluate() {
+		this->m_IsTraining = false;
+
+		for (const std::unique_ptr<Module<T>>& layer : this->m_Submodules) {
+			layer->Evaluate();
+		}
+	}
 }

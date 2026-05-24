@@ -32,4 +32,19 @@ namespace MLCore::NN {
 	TensorCore::Tensor<T> Module<T>::operator()(const TensorCore::Tensor<T>& input) {
 		return Forward(input);
 	}
+
+	template <typename T>
+	void Module<T>::Train() {
+		m_IsTraining = true;
+	}
+
+	template <typename T>
+	void Module<T>::Evaluate() {
+		m_IsTraining = false;
+	}
+
+	template <typename T>
+	bool Module<T>::IsTraining() const {
+		return m_IsTraining;
+	}
 }

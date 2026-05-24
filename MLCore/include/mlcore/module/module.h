@@ -16,6 +16,12 @@ namespace MLCore::NN {
 
 		TensorCore::Tensor<T> operator()(const TensorCore::Tensor<T>& input);
 
+		virtual void Train();
+
+		virtual void Evaluate();
+
+		bool IsTraining() const;
+
 	protected:
 		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out);
 
@@ -23,6 +29,7 @@ namespace MLCore::NN {
 
 	protected:
 		std::vector<std::unique_ptr<Module<T>>> m_Submodules;
+		bool m_IsTraining = true;
 	};
 }
 
