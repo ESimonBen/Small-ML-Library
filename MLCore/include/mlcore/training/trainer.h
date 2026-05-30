@@ -13,6 +13,21 @@ namespace MLCore::Training {
 	using MetricFn = std::function<T(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target)>;
 
 	template <typename T>
+	struct EpochStats {
+		int epoch = 0;
+		T trainLoss = static_cast<T>(0);
+		T valLoss = static_cast<T>(0);
+		std::unordered_map<std::string, T> trainMetrics;
+		std::unordered_map<std::string, T> valMetrics;
+	};
+
+	template <typename T>
+	struct EvaluationResult {
+		T loss = static_cast<T>(0);
+		std::unordered_map<std::string, T> metrics;
+	};
+
+	template <typename T>
 	class Trainer {
 	public:
 		Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn);
@@ -25,11 +40,11 @@ namespace MLCore::Training {
 
 	public:
 		// Optional hooks for debugging
-		std::function<void(int epoch, const TensorCore::Tensor<T>& loss)> OnEpochEnd;
-		std::function<void(int epoch, const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& targets)> OnEpochEval;
+		std::function<void(/*int epoch, const TensorCore::Tensor<T>& loss*/ const EpochStats<T>&)> OnEpochEnd;
+		std::function<void(int epoch, const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& targets)> OnBatchEnd;
 
 	private:
-		TensorCore::Tensor<T> Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize);
+		EvaluationResult<T> Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize);
 		std::unordered_map<std::string, T> ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target);
 
 	private:

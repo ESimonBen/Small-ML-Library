@@ -1,4 +1,3 @@
-#include "trainer.h"
 // trainer.inl
 
 namespace MLCore::Training {
@@ -57,8 +56,8 @@ namespace MLCore::Training {
 				epochLoss += loss[0];
 				batchCount++;
 
-				if (OnEpochEval) {
-					OnEpochEval(epoch, pred, batchY);
+				if (OnBatchEnd) {
+					OnBatchEnd(epoch, pred, batchY);
 				}
 			}
 
@@ -69,27 +68,13 @@ namespace MLCore::Training {
 			}
 
 			if (OnEpochEnd) {
-				TensorCore::Tensor<T> avgLoss{ {1}, inputs.GetAllocator() };
-				avgLoss[0] = epochLoss;
-				OnEpochEnd(epoch, avgLoss);
+				EpochStats<T> stats;
 
-				if (epoch % 500 == 0) {
-					std::cout
-						<< "Epoch "
-						<< epoch
-						<< " | Train Loss: "
-						<< avgLoss[0];
+				stats.epoch = epoch;
+				stats.trainLoss = epochLoss;
+				stats.metrics = epochMetrics;
 
-					for (const auto& [name, value] : epochMetrics) {
-						std::cout
-							<< " | "
-							<< name
-							<< ": "
-							<< value;
-					}
-
-					std::cout << '\n';
-				}
+				OnEpochEnd(stats);
 			}
 		}
 	}
@@ -145,8 +130,8 @@ namespace MLCore::Training {
 				epochLoss += loss[0];
 				batchCount++;
 
-				if (OnEpochEval) {
-					OnEpochEval(epoch, pred, batchY);
+				if (OnBatchEnd) {
+					OnBatchEnd(epoch, pred, batchY);
 				}
 			}
 
@@ -156,31 +141,18 @@ namespace MLCore::Training {
 				value /= static_cast<T>(batchCount);
 			}
 
-			auto valLoss = Evaluate(valInputs, valTargets, batchSize);
+			auto valResult = Evaluate(valInputs, valTargets, batchSize);
 
 			if (OnEpochEnd) {
-				TensorCore::Tensor<T> avgTrainLoss{ {1}, trainInputs.GetAllocator() };
-				avgTrainLoss[0] = epochLoss;
+				EpochStats<T> stats;
 
-				OnEpochEnd(epoch, avgTrainLoss);
+				stats.epoch = epoch;
+				stats.trainLoss = epochLoss;
+				stats.valLoss = valResult.loss;
+				stats.trainMetrics = epochMetrics;
+				stats.valMetrics = valResult.metrics;
 
-				if (epoch % 500 == 0) {
-					std::cout
-						<< "Epoch "
-						<< epoch
-						<< " | Train Loss: "
-						<< avgTrainLoss[0];
-
-					for (const auto& [name, value] : epochMetrics) {
-						std::cout
-							<< " | "
-							<< name
-							<< ": "
-							<< value;
-					}
-
-					std::cout << '\n';
-				}
+				OnEpochEnd(stats);
 			}
 		}
 	}
@@ -191,7 +163,7 @@ namespace MLCore::Training {
 	}
 
 	template<typename T>
-	TensorCore::Tensor<T> Trainer<T>::Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize) {
+	EvaluationResult<T> Trainer<T>::Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize) {
 		m_Model.Evaluate();
 
 		T totalLoss = 0;
@@ -209,6 +181,8 @@ namespace MLCore::Training {
 			);
 		}
 
+		EvaluationResult<T> evalResult;
+
 		size_t numSamples = inputs.Dims()[0];
 
 		for (size_t i = 0; i < numSamples; i += batchSize) {
@@ -222,17 +196,29 @@ namespace MLCore::Training {
 
 			// Loss
 			auto loss = m_LossFn(pred, batchY);
+			evalResult.loss += loss[0];
 
-			totalLoss += loss[0];
+			// Metrics
+			auto metrics = ComputeMetrics(pred, batchY);
+
+			for (const auto& [name, value] : metrics) {
+				evalResult.metrics[name] += value;
+			}
+
 			batches++;
 		}
 
-		TensorCore::Tensor<T> avgLoss{ {1}, inputs.GetAllocator() };
-		avgLoss[0] = totalLoss / static_cast<T>(batches);
+		// Average loss
+		evalResult.loss /= static_cast<T>(batches);
+
+		// Average metrics
+		for (auto& [name, value] : evalResult.metrics) {
+			value /= static_cast<T>(batches);
+		}
 
 		m_Model.Train();
 
-		return avgLoss;
+		return evalResult;
 	}
 
 	template<typename T>

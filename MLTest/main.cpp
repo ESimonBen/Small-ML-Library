@@ -23,7 +23,7 @@ using namespace MLCore::Training;
 
 
 void TestAND(ArenaAllocator& allocator) {
-    std::cout << "=== AND Nonlinear Test ===\n";
+    std::cout << "=== AND Linear Test ===\n";
 
     // -----------------------------
     // 1. Dataset (AND)
@@ -46,7 +46,7 @@ void TestAND(ArenaAllocator& allocator) {
     x[5] = 0; 
     y[2] = 0;
 
-    // (1,1) -> 0
+    // (1,1) -> 1
     x[6] = 1; 
     x[7] = 1;
     y[3] = 1;
@@ -56,9 +56,7 @@ void TestAND(ArenaAllocator& allocator) {
     // -----------------------------
     Sequential<float> model;
 
-    model.Emplace<LinearLayer<float>>(2, 8, allocator, InitType::HeUniform);
-    model.Emplace<LeakyReLULayer<float>>();
-    model.Emplace<LinearLayer<float>>(8, 1, allocator, InitType::HeUniform);
+    model.Emplace<LinearLayer<float>>(2, 1, allocator, InitType::HeUniform);
 
     // Collect parameters
     auto params = model.GetParameters();
@@ -90,11 +88,24 @@ void TestAND(ArenaAllocator& allocator) {
         return static_cast<float>(correct) / size;
     });
 
-    trainer.OnEpochEnd = [](int epoch, const TensorCore::Tensor<float>& loss) {
-        return;
+    trainer.OnEpochEnd =
+        [](const EpochStats<float>& stats) {
+
+        if (stats.epoch % 500 == 0) {
+            std::cout
+                << "Epoch " << stats.epoch
+                << " | Train Loss: " << stats.trainLoss
+                << " | Train Accuracy: "
+                << stats.trainMetrics.at("Accuracy")
+                << " | Val Loss: "
+                << stats.valLoss
+                << " | Val Accuracy: "
+                << stats.valMetrics.at("Accuracy")
+                << '\n';
+        }
     };
 
-    trainer.Fit(x, y, /*x, y,*/ 10000, 4);
+    trainer.Fit(x, y, x, y, 10000, 4);
 }
 
 int main() {
