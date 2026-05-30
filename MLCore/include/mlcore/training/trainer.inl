@@ -1,4 +1,5 @@
 // trainer.inl
+#include <mlCore/data/tensorDataset.h>
 
 namespace MLCore::Training {
 	template <typename T>
@@ -7,42 +8,28 @@ namespace MLCore::Training {
 	{}
 
 	template <typename T>
-	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize) {
+	void Trainer<T>::Fit(Data::DataLoader<T>& dataLoader, int epochs) {
 		m_Model.Train();
 
-		if (inputs.Dims()[0] != targets.Dims()[0]) {
-			throw std::runtime_error(
-				"Input/target sample mismatch"
-			);
-		}
-
-		if (batchSize == 0) {
-			throw std::runtime_error(
-				"Batch size cannot be zero"
-			);
-		}
-
-		size_t numSamples = inputs.Dims()[0];
-
 		for (int epoch = 0; epoch < epochs; ++epoch) {
-			T epochLoss = 0;
+			dataLoader.Reset();
+
+			T epochLoss = static_cast<T>(0);
 			size_t batchCount = 0;
 			std::unordered_map<std::string, T> epochMetrics;
 
-			for (size_t i = 0; i < numSamples; i += batchSize) {
-				size_t end = std::min(i + batchSize, numSamples);
+			while (dataLoader.HasNext()) {
+				// Load data
+				auto [x, y] = dataLoader.Next();
 
-				TensorCore::Tensor<T> batchX = inputs.SliceRows(i, end);
-				TensorCore::Tensor<T> batchY = targets.SliceRows(i, end);
-
-				// Forward propogation
-				auto pred = m_Model.Forward(batchX);
+				// Forward
+				auto pred = m_Model.Forward(x);
 
 				// Loss
-				auto loss = m_LossFn(pred, batchY);
+				auto loss = m_LossFn(pred, y);
 
 				// Metrics
-				auto metrics = ComputeMetrics(pred, batchY);
+				auto metrics = ComputeMetrics(pred, y);
 
 				for (const auto& [name, value] : metrics) {
 					epochMetrics[name] += value;
@@ -57,7 +44,7 @@ namespace MLCore::Training {
 				batchCount++;
 
 				if (OnBatchEnd) {
-					OnBatchEnd(epoch, pred, batchY);
+					OnBatchEnd(epoch, pred, y);
 				}
 			}
 
@@ -72,7 +59,7 @@ namespace MLCore::Training {
 
 				stats.epoch = epoch;
 				stats.trainLoss = epochLoss;
-				stats.metrics = epochMetrics;
+				stats.metrics = std::move(epochMetrics);
 
 				OnEpochEnd(stats);
 			}
@@ -80,43 +67,107 @@ namespace MLCore::Training {
 	}
 
 	template <typename T>
-	void Trainer<T>::Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize) {
+	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize) {
+		//m_Model.Train();
+
+		//if (inputs.Dims()[0] != targets.Dims()[0]) {
+		//	throw std::runtime_error(
+		//		"Input/target sample mismatch"
+		//	);
+		//}
+
+		//if (batchSize == 0) {
+		//	throw std::runtime_error(
+		//		"Batch size cannot be zero"
+		//	);
+		//}
+
+		//size_t numSamples = inputs.Dims()[0];
+
+		//for (int epoch = 0; epoch < epochs; ++epoch) {
+		//	T epochLoss = 0;
+		//	size_t batchCount = 0;
+		//	std::unordered_map<std::string, T> epochMetrics;
+
+		//	for (size_t i = 0; i < numSamples; i += batchSize) {
+		//		size_t end = std::min(i + batchSize, numSamples);
+
+		//		TensorCore::Tensor<T> batchX = inputs.SliceRows(i, end);
+		//		TensorCore::Tensor<T> batchY = targets.SliceRows(i, end);
+
+		//		// Forward propogation
+		//		auto pred = m_Model.Forward(batchX);
+
+		//		// Loss
+		//		auto loss = m_LossFn(pred, batchY);
+
+		//		// Metrics
+		//		auto metrics = ComputeMetrics(pred, batchY);
+
+		//		for (const auto& [name, value] : metrics) {
+		//			epochMetrics[name] += value;
+		//		}
+
+		//		// Backward
+		//		m_Optimizer.ZeroGrad();
+		//		loss.Backward();
+		//		m_Optimizer.Step();
+
+		//		epochLoss += loss[0];
+		//		batchCount++;
+
+		//		if (OnBatchEnd) {
+		//			OnBatchEnd(epoch, pred, batchY);
+		//		}
+		//	}
+
+		//	epochLoss /= static_cast<T>(batchCount);
+
+		//	for (auto& [name, value] : epochMetrics) {
+		//		value /= static_cast<T>(batchCount);
+		//	}
+
+		//	if (OnEpochEnd) {
+		//		EpochStats<T> stats;
+
+		//		stats.epoch = epoch;
+		//		stats.trainLoss = epochLoss;
+		//		stats.metrics = epochMetrics;
+
+		//		OnEpochEnd(stats);
+		//	}
+		//}
+
+		Data::TensorDataset<T> dataset{ inputs, targets };
+
+		Data::DataLoader<T> dataLoader{ dataset, batchSize, true };
+
+		Fit(dataLoader, epochs);
+	}
+
+	template <typename T>
+	void Trainer<T>::Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs) {
 		m_Model.Train();
 
-		if ((trainInputs.Dims()[0] != trainTargets.Dims()[0]) || (valInputs.Dims()[0] != valTargets.Dims()[0])) {
-			throw std::runtime_error(
-				"Input/target sample mismatch"
-			);
-		}
-
-		if (batchSize == 0) {
-			throw std::runtime_error(
-				"Batch size cannot be zero"
-			);
-		}
-
-		size_t numSamples = trainInputs.Dims()[0];
-
 		for (int epoch = 0; epoch < epochs; ++epoch) {
-			T epochLoss = 0;
+			trainLoader.Reset();
+
+			T epochLoss = static_cast<T>(0);
 			size_t batchCount = 0;
 			std::unordered_map<std::string, T> epochMetrics;
 
-			// Training Loop
-			for (size_t i = 0; i < numSamples; i += batchSize) {
-				size_t end = std::min(i + batchSize, numSamples);
+			while (trainLoader.HasNext()) {
+				// Load data
+				auto [x, y] = trainLoader.Next();
 
-				TensorCore::Tensor<T> batchX = trainInputs.SliceRows(i, end);
-				TensorCore::Tensor<T> batchY = trainTargets.SliceRows(i, end);
-
-				// Forward propogation
-				auto pred = m_Model.Forward(batchX);
+				// Forward
+				auto pred = m_Model.Forward(x);
 
 				// Loss
-				auto loss = m_LossFn(pred, batchY);
+				auto loss = m_LossFn(pred, y);
 
 				// Metrics
-				auto metrics = ComputeMetrics(pred, batchY);
+				auto metrics = ComputeMetrics(pred, y);
 
 				for (const auto& [name, value] : metrics) {
 					epochMetrics[name] += value;
@@ -131,7 +182,7 @@ namespace MLCore::Training {
 				batchCount++;
 
 				if (OnBatchEnd) {
-					OnBatchEnd(epoch, pred, batchY);
+					OnBatchEnd(epoch, pred, y);
 				}
 			}
 
@@ -141,7 +192,7 @@ namespace MLCore::Training {
 				value /= static_cast<T>(batchCount);
 			}
 
-			auto valResult = Evaluate(valInputs, valTargets, batchSize);
+			auto valResult = Evaluate(valLoader);
 
 			if (OnEpochEnd) {
 				EpochStats<T> stats;
@@ -149,12 +200,24 @@ namespace MLCore::Training {
 				stats.epoch = epoch;
 				stats.trainLoss = epochLoss;
 				stats.valLoss = valResult.loss;
-				stats.trainMetrics = epochMetrics;
-				stats.valMetrics = valResult.metrics;
+				stats.trainMetrics = std::move(epochMetrics);
+				stats.valMetrics = std::move(valResult.metrics);
 
 				OnEpochEnd(stats);
 			}
 		}
+
+	}
+
+	template <typename T>
+	void Trainer<T>::Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize) {
+		Data::TensorDataset<T> trainSet{ trainInputs, trainTargets };
+		Data::TensorDataset<T> valSet{ valInputs, valTargets };
+
+		Data::DataLoader<T> trainLoader{ trainSet, batchSize, true };
+		Data::DataLoader<T> valLoader{ valSet, batchSize, true };
+
+		Fit(trainLoader, valLoader, epochs);
 	}
 
 	template<typename T>
@@ -162,44 +225,28 @@ namespace MLCore::Training {
 		m_Metrics[name] = std::move(metric);
 	}
 
-	template<typename T>
-	EvaluationResult<T> Trainer<T>::Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize) {
+	template <typename T>
+	EvaluationResult<T> Trainer<T>::Evaluate(Data::DataLoader<T>& dataLoader) {
 		m_Model.Evaluate();
 
-		T totalLoss = 0;
-		size_t batches = 0;
-
-		if (inputs.Dims()[0] != targets.Dims()[0]) {
-			throw std::runtime_error(
-				"Input/target sample mismatch"
-			);
-		}
-
-		if (batchSize == 0) {
-			throw std::runtime_error(
-				"Batch size cannot be zero"
-			);
-		}
+		dataLoader.Reset();
 
 		EvaluationResult<T> evalResult;
+		size_t batches = 0;
 
-		size_t numSamples = inputs.Dims()[0];
+		while (dataLoader.HasNext()) {
+			// Load data
+			auto [x, y] = dataLoader.Next();
 
-		for (size_t i = 0; i < numSamples; i += batchSize) {
-			size_t end = std::min(i + batchSize, numSamples);
-
-			TensorCore::Tensor<T> batchX = inputs.SliceRows(i, end);
-			TensorCore::Tensor<T> batchY = targets.SliceRows(i, end);
-
-			// Forward propogation
-			auto pred = m_Model.Forward(batchX);
+			// Forward
+			auto pred = m_Model.Forward(x);
 
 			// Loss
-			auto loss = m_LossFn(pred, batchY);
-			evalResult.loss += loss[0];
+			auto loss = m_LossFn(pred, y);
+			evalResult.loss = loss[0];
 
 			// Metrics
-			auto metrics = ComputeMetrics(pred, batchY);
+			auto metrics = ComputeMetrics(pred, y);
 
 			for (const auto& [name, value] : metrics) {
 				evalResult.metrics[name] += value;
@@ -208,10 +255,8 @@ namespace MLCore::Training {
 			batches++;
 		}
 
-		// Average loss
 		evalResult.loss /= static_cast<T>(batches);
 
-		// Average metrics
 		for (auto& [name, value] : evalResult.metrics) {
 			value /= static_cast<T>(batches);
 		}
@@ -219,6 +264,14 @@ namespace MLCore::Training {
 		m_Model.Train();
 
 		return evalResult;
+	}
+
+	template<typename T>
+	EvaluationResult<T> Trainer<T>::Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize) {
+		Data::TensorDataset<T> dataset{ inputs, targets };
+		Data::DataLoader<T> dataLoader{ dataset, batchSize, true };
+
+		return Evaluate(dataLoader);
 	}
 
 	template<typename T>

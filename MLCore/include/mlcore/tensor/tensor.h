@@ -110,6 +110,9 @@ namespace MLCore::TensorCore {
 		// Slicing / Views
 		Tensor<T> SliceRows(size_t start, size_t end) const;
 
+		// Concatenation
+		static Tensor<T> Concat(const std::vector<Tensor<T>>& tensors);
+
 	private:
 		std::shared_ptr<Impl> m_Impl;
 	};

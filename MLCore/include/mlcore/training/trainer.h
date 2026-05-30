@@ -3,6 +3,7 @@
 #include <functional>
 #include <mlCore/tensor/tensor.h>
 #include <mlCore/module/module.h>
+#include <mlCore/data/dataLoader.h>
 #include <mlCore/optimizers/optimizer.h>
 
 namespace MLCore::Training {
@@ -32,7 +33,10 @@ namespace MLCore::Training {
 	public:
 		Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn);
 
+		void Fit(Data::DataLoader<T>& dataLoader, int epochs);
 		void Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize);
+
+		void Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs);
 		void Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize);
 
 		// Adding Metrics
@@ -40,10 +44,11 @@ namespace MLCore::Training {
 
 	public:
 		// Optional hooks for debugging
-		std::function<void(/*int epoch, const TensorCore::Tensor<T>& loss*/ const EpochStats<T>&)> OnEpochEnd;
+		std::function<void(const EpochStats<T>&)> OnEpochEnd;
 		std::function<void(int epoch, const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& targets)> OnBatchEnd;
 
 	private:
+		EvaluationResult<T> Evaluate(Data::DataLoader<T>& dataLoader);
 		EvaluationResult<T> Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize);
 		std::unordered_map<std::string, T> ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target);
 

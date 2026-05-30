@@ -357,4 +357,66 @@ namespace MLCore::TensorCore {
 
 		return Tensor<T>{newImpl};
 	}
+
+	template <typename T>
+	Tensor<T> Tensor<T>::Concat(const std::vector<Tensor<T>>& tensors) {
+		if (tensors.empty()) {
+			throw std::runtime_error("ERROR: Cannot concatenate empty tensors");
+		}
+
+		// Reference tensor
+		const Tensor<T>& firstTensor = tensors[0];
+
+		const auto& baseDims = firstTensor.Dims();
+		size_t rank = firstTensor.Rank();
+
+		if (rank == 0) {
+			throw std::runtime_error("ERROR: Cannot concatenate scalar tensors");
+		}
+
+		for (size_t i = 1; i < tensors.size(); ++i) {
+			// Current Tensor
+			const Tensor<T>& currentTensor = tensors[i];
+
+			if (&currentTensor.GetAllocator() != &firstTensor.GetAllocator()) {
+				throw std::runtime_error("ERROR: Tensor allocator mismatch in concatenation");
+			}
+
+			if (currentTensor.Rank() != rank) {
+				throw std::runtime_error("ERROR: Tensor rank mismatch in concatenation");
+			}
+
+			const auto& dims = currentTensor.Dims();
+
+			for (size_t d = 1; d < rank; ++d) {
+				if (dims[d] != baseDims[d]) {
+					throw std::runtime_error("ERROR: Tensor shape mismatch in concatenation");
+				}
+			}
+		}
+
+		// Find output shape
+		std::vector<size_t> outDims = baseDims;
+		outDims[0] = 0;
+
+		for (const Tensor<T>& tensor : tensors) {
+			outDims[0] += tensor.Dims()[0];
+		}
+
+		// Copy data into output tensor
+		Tensor<T> result{ outDims, firstTensor.GetAllocator() };
+		size_t writeOffset = 0;
+
+		for (const Tensor<T>& tensor : tensors) {
+			size_t size = tensor.NumElements();
+
+			for (size_t i = 0; i < size; ++i) {
+				result[writeOffset + i] = tensor[i];
+			}
+
+			writeOffset += size;
+		}
+
+		return result;
+	}
 }
