@@ -6,7 +6,7 @@
 namespace MLCore::Optimizers {
 	template <typename T>
 	struct ParameterGroup {
-		std::vector<std::reference_wrapper<NN::Parameter<T>>> params; // I feel like this will cause problems soon
+		std::vector<std::reference_wrapper<NN::Parameter<T>>> params;
 
 		T learningRate;
 		T weightDecay;
