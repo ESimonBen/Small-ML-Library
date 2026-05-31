@@ -40,6 +40,10 @@ namespace MLCore::Training {
 				loss.Backward();
 				m_Optimizer.Step();
 
+				if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Batch) {
+					m_Scheduler->UpdateLR();
+				}
+
 				epochLoss += loss[0];
 				batchCount++;
 
@@ -59,87 +63,24 @@ namespace MLCore::Training {
 
 				stats.epoch = epoch;
 				stats.trainLoss = epochLoss;
-				stats.metrics = std::move(epochMetrics);
+				stats.trainMetrics = std::move(epochMetrics);
+
+				if (!m_Optimizer.ParamGroups().empty()) {
+					stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;
+				}
 
 				OnEpochEnd(stats);
+			}
+
+			if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Epoch) {
+				m_Scheduler->UpdateLR();
 			}
 		}
 	}
 
 	template <typename T>
 	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize) {
-		//m_Model.Train();
-
-		//if (inputs.Dims()[0] != targets.Dims()[0]) {
-		//	throw std::runtime_error(
-		//		"Input/target sample mismatch"
-		//	);
-		//}
-
-		//if (batchSize == 0) {
-		//	throw std::runtime_error(
-		//		"Batch size cannot be zero"
-		//	);
-		//}
-
-		//size_t numSamples = inputs.Dims()[0];
-
-		//for (int epoch = 0; epoch < epochs; ++epoch) {
-		//	T epochLoss = 0;
-		//	size_t batchCount = 0;
-		//	std::unordered_map<std::string, T> epochMetrics;
-
-		//	for (size_t i = 0; i < numSamples; i += batchSize) {
-		//		size_t end = std::min(i + batchSize, numSamples);
-
-		//		TensorCore::Tensor<T> batchX = inputs.SliceRows(i, end);
-		//		TensorCore::Tensor<T> batchY = targets.SliceRows(i, end);
-
-		//		// Forward propogation
-		//		auto pred = m_Model.Forward(batchX);
-
-		//		// Loss
-		//		auto loss = m_LossFn(pred, batchY);
-
-		//		// Metrics
-		//		auto metrics = ComputeMetrics(pred, batchY);
-
-		//		for (const auto& [name, value] : metrics) {
-		//			epochMetrics[name] += value;
-		//		}
-
-		//		// Backward
-		//		m_Optimizer.ZeroGrad();
-		//		loss.Backward();
-		//		m_Optimizer.Step();
-
-		//		epochLoss += loss[0];
-		//		batchCount++;
-
-		//		if (OnBatchEnd) {
-		//			OnBatchEnd(epoch, pred, batchY);
-		//		}
-		//	}
-
-		//	epochLoss /= static_cast<T>(batchCount);
-
-		//	for (auto& [name, value] : epochMetrics) {
-		//		value /= static_cast<T>(batchCount);
-		//	}
-
-		//	if (OnEpochEnd) {
-		//		EpochStats<T> stats;
-
-		//		stats.epoch = epoch;
-		//		stats.trainLoss = epochLoss;
-		//		stats.metrics = epochMetrics;
-
-		//		OnEpochEnd(stats);
-		//	}
-		//}
-
 		Data::TensorDataset<T> dataset{ inputs, targets };
-
 		Data::DataLoader<T> dataLoader{ dataset, batchSize, true };
 
 		Fit(dataLoader, epochs);
@@ -178,6 +119,10 @@ namespace MLCore::Training {
 				loss.Backward();
 				m_Optimizer.Step();
 
+				if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Batch) {
+					m_Scheduler->UpdateLR();
+				}
+
 				epochLoss += loss[0];
 				batchCount++;
 
@@ -203,7 +148,15 @@ namespace MLCore::Training {
 				stats.trainMetrics = std::move(epochMetrics);
 				stats.valMetrics = std::move(valResult.metrics);
 
+				if (!m_Optimizer.ParamGroups().empty()) {
+					stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;
+				}
+
 				OnEpochEnd(stats);
+			}
+
+			if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Epoch) {
+				m_Scheduler->UpdateLR();
 			}
 		}
 
@@ -215,9 +168,25 @@ namespace MLCore::Training {
 		Data::TensorDataset<T> valSet{ valInputs, valTargets };
 
 		Data::DataLoader<T> trainLoader{ trainSet, batchSize, true };
-		Data::DataLoader<T> valLoader{ valSet, batchSize, true };
+		Data::DataLoader<T> valLoader{ valSet, batchSize, false };
 
 		Fit(trainLoader, valLoader, epochs);
+	}
+
+	template <typename T>
+	void Trainer<T>::SetScheduler(Schedulers::LRScheduler<T>& scheduler, SchedulerStepMode schedulerMode) {
+		m_Scheduler = &scheduler;
+		m_SchedulerMode = schedulerMode;
+	}
+
+	template <typename T>
+	bool Trainer<T>::HasScheduler() const {
+		return m_Scheduler != nullptr;
+	}
+
+	template <typename T>
+	Schedulers::LRScheduler<T>* Trainer<T>::GetScheduler() const {
+		return m_Scheduler;
 	}
 
 	template<typename T>
@@ -227,6 +196,8 @@ namespace MLCore::Training {
 
 	template <typename T>
 	EvaluationResult<T> Trainer<T>::Evaluate(Data::DataLoader<T>& dataLoader) {
+		bool wasTraining = m_Model.IsTraining();
+
 		m_Model.Evaluate();
 
 		dataLoader.Reset();
@@ -243,7 +214,7 @@ namespace MLCore::Training {
 
 			// Loss
 			auto loss = m_LossFn(pred, y);
-			evalResult.loss = loss[0];
+			evalResult.loss += loss[0];
 
 			// Metrics
 			auto metrics = ComputeMetrics(pred, y);
@@ -261,7 +232,12 @@ namespace MLCore::Training {
 			value /= static_cast<T>(batches);
 		}
 
-		m_Model.Train();
+		if (wasTraining) {
+			m_Model.Train();
+		}
+		else {
+			m_Model.Evaluate();
+		}
 
 		return evalResult;
 	}

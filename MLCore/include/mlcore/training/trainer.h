@@ -5,6 +5,7 @@
 #include <mlCore/module/module.h>
 #include <mlCore/data/dataLoader.h>
 #include <mlCore/optimizers/optimizer.h>
+#include <mlCore/schedulers/lrScheduler.h>
 
 namespace MLCore::Training {
 	template <typename T>
@@ -18,6 +19,7 @@ namespace MLCore::Training {
 		int epoch = 0;
 		T trainLoss = static_cast<T>(0);
 		T valLoss = static_cast<T>(0);
+		T learningRate = static_cast<T>(0);
 		std::unordered_map<std::string, T> trainMetrics;
 		std::unordered_map<std::string, T> valMetrics;
 	};
@@ -26,6 +28,10 @@ namespace MLCore::Training {
 	struct EvaluationResult {
 		T loss = static_cast<T>(0);
 		std::unordered_map<std::string, T> metrics;
+	};
+
+	enum class SchedulerStepMode {
+		Epoch, Batch
 	};
 
 	template <typename T>
@@ -38,6 +44,10 @@ namespace MLCore::Training {
 
 		void Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs);
 		void Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize);
+
+		void SetScheduler(Schedulers::LRScheduler<T>& scheduler, SchedulerStepMode schedulerMode);
+		bool HasScheduler() const;
+		Schedulers::LRScheduler<T>* GetScheduler() const;
 
 		// Adding Metrics
 		void AddMetric(const std::string& name, MetricFn<T> metric);
@@ -57,6 +67,11 @@ namespace MLCore::Training {
 		Optimizers::Optimizer<T>& m_Optimizer;
 		LossFn<T> m_LossFn;
 		std::unordered_map<std::string, MetricFn<T>> m_Metrics;
+
+		// Optional scheduler handle
+		// Non-owning pointer (scheduler must outlive trainer)
+		Schedulers::LRScheduler<T>* m_Scheduler = nullptr;
+		SchedulerStepMode m_SchedulerMode = SchedulerStepMode::Epoch;
 	};
 }
 

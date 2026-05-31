@@ -8,8 +8,7 @@ namespace MLCore::Schedulers {
 	public:
 		StepLR(Optimizers::Optimizer<T>& opt, int stepSize, T gamma)
 			: LRScheduler<T>(opt), m_StepSize(stepSize), m_Gamma(gamma), m_Step(0)
-		{
-		}
+		{}
 
 		virtual void UpdateLR() override {
 			// LR is a piecewise constant

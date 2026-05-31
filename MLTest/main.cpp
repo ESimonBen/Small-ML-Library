@@ -3,6 +3,7 @@
 #include <mlCore/optimizers/sgd.h>
 #include <mlCore/optimizers/adam.h>
 #include <mlCore/training/trainer.h>
+#include <mlCore/schedulers/stepLR.h>
 #include <mlCore/module/sequential.h>
 #include <mlCore/module/layers/layers.h>
 #include <mlCore/operations/operations.h>
@@ -16,10 +17,10 @@ using namespace MLCore::Optimizers;
 using namespace MLCore::NN;
 using namespace MLCore::Init;
 using namespace MLCore::Training;
-
+using namespace MLCore::Schedulers;
 
 void TestXOR(ArenaAllocator& allocator) {
-    std::cout << "=== XOR Linear Test ===\n";
+    std::cout << "=== XOR Nonlinear Test ===\n";
 
     // -----------------------------
     // 1. Dataset (AND)
@@ -61,6 +62,8 @@ void TestXOR(ArenaAllocator& allocator) {
 
     SGDMomentum<float> opt{ params, 0.1f, 0.1f };
 
+    StepLR<float> scheduler{ opt, 1000, .99f };
+
     // -----------------------------
     // 3. Training loop
     // -----------------------------
@@ -70,6 +73,8 @@ void TestXOR(ArenaAllocator& allocator) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
         }
     };
+
+    trainer.SetScheduler(scheduler, SchedulerStepMode::Epoch);
 
     trainer.AddMetric("Accuracy", [](const TensorCore::Tensor<float>& pred, const TensorCore::Tensor<float>& target) -> float {
         size_t correct = 0;
@@ -99,6 +104,7 @@ void TestXOR(ArenaAllocator& allocator) {
                 << stats.valLoss
                 << " | Val Accuracy: "
                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                << " | LR: " << stats.learningRate
                 << '\n';
         }
     };

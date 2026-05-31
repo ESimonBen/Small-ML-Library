@@ -1,10 +1,15 @@
 // checkpoint.inl
 #include <fstream>
+#include <filesystem>
 
 namespace MLCore::Serialization {
 	template <typename T>
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path) {
-		std::ofstream out{ path, std::ios::binary };
+		// Create the file and the directories it's stored in
+		std::filesystem::path filePath = path;
+		std::filesystem::create_directories(filePath.parent_path());
+
+		std::ofstream out{ filePath, std::ios::binary };
 
 		if (!out) {
 			throw std::runtime_error("ERROR: Save: Failed to open checkpoint path");
