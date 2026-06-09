@@ -53,12 +53,29 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     Sequential<float> model;
 
-    model.Emplace<LinearLayer<float>>(2, 8, allocator, InitType::HeUniform);
-    model.Emplace<LeakyReLULayer<float>>();
-    model.Emplace<LinearLayer<float>>(8, 1, allocator, InitType::HeUniform);
+    model.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    model.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    model.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
 
     // Collect parameters
     auto params = model.GetParameters();
+    auto namedParams = model.GetNamedParameters();
+
+    for (auto& [name, p] : namedParams) {
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Values: " << std::endl;
+
+        auto& tensor = p.get().Data();
+        auto size = tensor.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            std::cout << tensor[i] << " ";
+
+            if (i == size - 1) {
+                std::cout << std::endl;
+            }
+        }
+    }
 
     SGDMomentum<float> opt{ params, 0.1f, 0.1f };
 
@@ -67,7 +84,6 @@ void TestXOR(ArenaAllocator& allocator) {
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-
     Trainer<float> trainer{ model, opt,
         [&](const auto& pred, const auto& target) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
@@ -104,12 +120,35 @@ void TestXOR(ArenaAllocator& allocator) {
                 << stats.valLoss
                 << " | Val Accuracy: "
                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
-                << " | LR: " << stats.learningRate
                 << '\n';
+
+            std::cout << "Learning Rates: ";
+
+            for (auto& lr : stats.learningRates) {
+                std::cout << lr << " ";
+            }
+
+            std::cout << std::endl;
         }
     };
 
-    trainer.Fit(x, y, x, y, 10000, 4);
+    trainer.Fit(x, y, x, y, 20000, 4);
+
+    for (auto& [name, p] : namedParams) {
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Values: " << std::endl;
+
+        auto& tensor = p.get().Data();
+        auto size = tensor.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            std::cout << tensor[i] << " ";
+
+            if (i == size - 1) {
+                std::cout << std::endl;
+            }
+        }
+    }
 }
 
 int main() {

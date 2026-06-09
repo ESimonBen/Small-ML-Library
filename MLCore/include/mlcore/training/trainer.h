@@ -19,7 +19,7 @@ namespace MLCore::Training {
 		int epoch = 0;
 		T trainLoss = static_cast<T>(0);
 		T valLoss = static_cast<T>(0);
-		T learningRate = static_cast<T>(0);
+		std::vector<T> learningRates;
 		std::unordered_map<std::string, T> trainMetrics;
 		std::unordered_map<std::string, T> valMetrics;
 	};

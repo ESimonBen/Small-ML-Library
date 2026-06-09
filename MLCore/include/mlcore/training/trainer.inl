@@ -52,6 +52,10 @@ namespace MLCore::Training {
 				}
 			}
 
+			if (batchCount <= 0) {
+				throw std::runtime_error("ERROR: No batches");
+			}
+
 			epochLoss /= static_cast<T>(batchCount);
 
 			for (auto& [name, value] : epochMetrics) {
@@ -65,8 +69,11 @@ namespace MLCore::Training {
 				stats.trainLoss = epochLoss;
 				stats.trainMetrics = std::move(epochMetrics);
 
-				if (!m_Optimizer.ParamGroups().empty()) {
-					stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;
+				const std::vector<Optimizers::ParameterGroup<T>>& paramGroups = m_Optimizer.ParamGroups();
+
+				for (const Optimizers::ParameterGroup<T>& group : paramGroups) {
+					/*stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;*/
+					stats.learningRates.push_back(group.learningRate);
 				}
 
 				OnEpochEnd(stats);
@@ -131,6 +138,10 @@ namespace MLCore::Training {
 				}
 			}
 
+			if (batchCount <= 0) {
+				throw std::runtime_error("ERROR: No batches");
+			}
+
 			epochLoss /= static_cast<T>(batchCount);
 
 			for (auto& [name, value] : epochMetrics) {
@@ -148,8 +159,10 @@ namespace MLCore::Training {
 				stats.trainMetrics = std::move(epochMetrics);
 				stats.valMetrics = std::move(valResult.metrics);
 
-				if (!m_Optimizer.ParamGroups().empty()) {
-					stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;
+				const std::vector<Optimizers::ParameterGroup<T>>& paramGroups = m_Optimizer.ParamGroups();
+
+				for (const Optimizers::ParameterGroup<T>&group : paramGroups) {
+					stats.learningRates.push_back(group.learningRate);
 				}
 
 				OnEpochEnd(stats);
@@ -200,7 +213,7 @@ namespace MLCore::Training {
 
 		m_Model.Evaluate();
 
-		dataLoader.Reset();
+		dataLoader.Reset(false);
 
 		EvaluationResult<T> evalResult;
 		size_t batches = 0;
@@ -224,6 +237,10 @@ namespace MLCore::Training {
 			}
 
 			batches++;
+		}
+
+		if (batches <= 0) {
+			throw std::runtime_error("ERROR: No batches");
 		}
 
 		evalResult.loss /= static_cast<T>(batches);

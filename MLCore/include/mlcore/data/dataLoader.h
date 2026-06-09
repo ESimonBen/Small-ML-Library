@@ -9,7 +9,7 @@ namespace MLCore::Data {
 	public:
 		DataLoader(const Dataset<T>& dataset, size_t batchSize, bool shuffle = true);
 
-		void Reset();
+		void Reset(bool reshuffle = true);
 
 		bool HasNext() const;
 

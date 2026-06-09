@@ -9,15 +9,16 @@ namespace MLCore::NN {
 		Sequential() = default;
 
 		template <typename ModuleType, typename... Args>
+		void EmplaceNamed(const std::string& name, Args&&... args);
+
+		template <typename ModuleType, typename... Args>
 		void Emplace(Args&&... args);
+
+		void Add(const std::string& name, std::unique_ptr<Module<T>> mod);
 
 		void Add(std::unique_ptr<Module<T>> mod);
 
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
-
-		virtual void Train() override;
-
-		virtual void Evaluate() override;
 	};
 }
 

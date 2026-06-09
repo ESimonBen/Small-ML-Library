@@ -15,8 +15,9 @@ namespace MLCore::Data {
 	}
 
 	template <typename T>
-	void DataLoader<T>::Reset() {
+	void DataLoader<T>::Reset(bool reshuffle) {
 		m_CurrentIndex = 0;
+		m_Shuffle = reshuffle;
 
 		m_Indices.resize(m_Dataset.Size());
 

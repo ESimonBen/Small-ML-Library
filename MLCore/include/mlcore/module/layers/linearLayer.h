@@ -14,6 +14,8 @@ namespace MLCore::NN {
 	protected:
 		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
 
+		virtual void CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) override;
+
 	private:
 		Parameter<T> m_Weight;
 		Parameter<T> m_Bias;

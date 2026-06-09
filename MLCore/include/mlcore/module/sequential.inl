@@ -5,8 +5,19 @@
 namespace MLCore::NN {
 	template <typename T>
 	template <typename ModuleType, typename... Args>
+	void Sequential<T>::EmplaceNamed(const std::string& name, Args&&... args) {
+		this->Add(name, std::make_unique<ModuleType>(std::forward<Args>(args)...));
+	}
+
+	template <typename T>
+	template <typename ModuleType, typename... Args>
 	void Sequential<T>::Emplace(Args&&... args) {
 		this->Add(std::make_unique<ModuleType>(std::forward<Args>(args)...));
+	}
+
+	template <typename T>
+	void Sequential<T>::Add(const std::string& name, std::unique_ptr<Module<T>> mod) {
+		Module<T>::Add(name, std::move(mod));
 	}
 
 	template <typename T>
@@ -18,28 +29,10 @@ namespace MLCore::NN {
 	TensorCore::Tensor<T> Sequential<T>::Forward(const TensorCore::Tensor<T>& input) const {
 		TensorCore::Tensor<T> inp = input;
 
-		for (const std::unique_ptr<Module<T>>& layer : this->m_Submodules) {
-			inp = layer->Forward(inp);
+		for (const RegisteredModule<T>& layer : this->m_Submodules) {
+			inp = layer.module->Forward(inp);
 		}
 
 		return inp;
-	}
-
-	template <typename T>
-	void Sequential<T>::Train() {
-		this->m_IsTraining = true;
-
-		for (const std::unique_ptr<Module<T>>& layer : this->m_Submodules) {
-			layer->Train();
-		}
-	}
-
-	template <typename T>
-	void Sequential<T>::Evaluate() {
-		this->m_IsTraining = false;
-
-		for (const std::unique_ptr<Module<T>>& layer : this->m_Submodules) {
-			layer->Evaluate();
-		}
 	}
 }

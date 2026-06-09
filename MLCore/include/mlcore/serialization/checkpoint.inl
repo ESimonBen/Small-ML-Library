@@ -1,8 +1,39 @@
 // checkpoint.inl
-#include <fstream>
 #include <filesystem>
 
 namespace MLCore::Serialization {
+	template <typename T>
+	static void Checkpoint::Write(std::ofstream& out, const T& data) {
+		out.write(reinterpret_cast<const char*>(&data), sizeof(data));
+
+		if (!out) {
+			throw std::runtime_error("ERROR: Write: Checkpoint write failed");
+		}
+	}
+
+	template <typename T>
+	static void Checkpoint::Read(std::ifstream& in, T& data) {
+		if (!in.read(reinterpret_cast<char*>(&data), sizeof(data))) {
+			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
+		}
+	}
+
+	template <typename T>
+	static void Checkpoint::WriteArray(std::ofstream& out, const T* data, size_t count) {
+		out.write(reinterpret_cast<const char*>(data), sizeof(T) * count);
+
+		if (!out) {
+			throw std::runtime_error("ERROR: Write: Checkpoint write failed");
+		}
+	}
+
+	template <typename T>
+	static void Checkpoint::ReadArray(std::ofstream& in, T* data, size_t count) {
+		if (!in.read(reinterpret_cast<char*>(data), sizeof(T) * count)) {
+			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
+		}
+	}
+
 	template <typename T>
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path) {
 		// Create the file and the directories it's stored in
@@ -15,30 +46,19 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Save: Failed to open checkpoint path");
 		}
 
-		// Store magic number and file format version
-		out.write(reinterpret_cast<const char*>(MAGIC_NUMBER), sizeof(MAGIC_NUMBER));
-		out.write(reinterpret_cast<const char*>(FORMAT_VERSION), sizeof(FORMAT_VERSION));
+		Write(out, MAGIC_NUMBER);
+		Write(out, FORMAT_VERSION);
 
-		// Store the number of parameters
-		auto params = model.GetParameters();
-		size_t numParams = params.size();
+		switch (FORMAT_VERSION) {
+		case 1:
+			SaveV1(model, out);
+			break;
 
-		out.write(reinterpret_cast<const char*>(&numParams), sizeof(size_t));
-
-		// Store the size, rank, shape, and data of each parameter
-		for (auto& ref : params) {
-			NN::Parameter<T>& param = ref.get();
-			TensorCore::Tensor<T>& tensor = param.Data();
-
-			size_t numElements = tensor.NumElements();
-			size_t rank = tensor.Rank();
-			auto& dims = tensor.Dims();
-
-			out.write(reinterpret_cast<const char*>(&numElements), sizeof(size_t));
-			out.write(reinterpret_cast<const char*>(&rank), sizeof(size_t));
-			out.write(reinterpret_cast<const char*>(&dims), sizeof(size_t) * dims.size());
-			out.write(reinterpret_cast<const char*>(tensor.Data()), sizeof(T) * numElements);
+		default:
+			throw std::runtime_error("ERROR: Save: Support for this version doesn't exist");
 		}
+
+		
 	}
 
 	template <typename T>
@@ -49,35 +69,57 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Load: Failed to open checkpoint path");
 		}
 
-		// Read the magic number
-		uint32_t magic;
+		// Read the magic number and file format version
+		uint64_t magic;
+		uint32_t version;
 
-		if (!in.read(reinterpret_cast<char*>(&magic), sizeof(magic))) {
-			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-		}
+		Read(in, magic);
+		Read(in, version);
 
 		if (magic != MAGIC_NUMBER) {
 			throw std::runtime_error("ERROR: Load: Invalid checkpoint file");
 		}
 
-		// Read the file format version
-		uint32_t version;
+		switch (version) {
+		case 1:
+			LoadV1(model, in);
+			break;
 
-		if (!in.read(reinterpret_cast<char*>(&version), sizeof(version))) {
-			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-		}
-
-		if (version != FORMAT_VERSION) {
+		default:
 			throw std::runtime_error("ERROR: Load: Unsupported checkpoint version");
 		}
+	}
 
+	template <typename T>
+	void Checkpoint::SaveV1(const NN::Module<T>& model, std::ofstream& out) {
+		// Store the number of parameters
+		auto params = model.GetParameters();
+		size_t numParams = params.size();
+
+		Write(out, numParams);
+
+		// Store the size, rank, shape, and data of each parameter
+		for (auto& ref : params) {
+			NN::Parameter<T>& param = ref.get();
+			TensorCore::Tensor<T>& tensor = param.Data();
+
+			size_t numElements = tensor.NumElements();
+			size_t rank = tensor.Rank();
+			auto& dims = tensor.Dims();
+
+			Write(out, numElements);
+			Write(out, rank);
+			WriteArray(out, dims.data(), dims.size());
+			WriteArray(out, tensor.Data(), numElements);
+		}
+	}
+
+	template <typename T>
+	void Checkpoint::LoadV1(NN::Module<T>& model, std::ifstream& in) {
 		// Read the number of parameters
 		auto params = model.GetParameters();
 		size_t numParams;
-
-		if (!in.read(reinterpret_cast<char*>(&numParams), sizeof(size_t))) {
-			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-		}
+		Read(in, numParams);
 
 		if (numParams != params.size()) {
 			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
@@ -90,10 +132,7 @@ namespace MLCore::Serialization {
 
 			// Read the size of each parameter
 			size_t numElements;
-
-			if (!in.read(reinterpret_cast<char*>(&numElements), sizeof(size_t))) {
-				throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-			}
+			Read(in, numElements);
 
 			if (numElements != tensor.NumElements()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
@@ -101,10 +140,7 @@ namespace MLCore::Serialization {
 
 			// Read the rank of each parameter
 			size_t rank;
-
-			if (!in.read(reinterpret_cast<char*>(&rank), sizeof(size_t))) {
-				throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-			}
+			Read(in, rank);
 
 			if (rank != tensor.Rank()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
@@ -112,19 +148,14 @@ namespace MLCore::Serialization {
 
 			// Read the shape of each parameter
 			std::vector<size_t> dims{ rank };
-
-			if (!in.read(reinterpret_cast<char*>(dims.data()), sizeof(size_t) * dims.size())) {
-				throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-			}
+			ReadArray(in, dims.data(), dims.size());
 
 			if (dims != tensor.Dims()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
 			}
 
 			// Read the data of each parameter
-			if (!in.read(reinterpret_cast<char*>(tensor.Data()), sizeof(T) * numElements)) {
-				throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-			}
+			ReadArray(in, tensor.Data(), numElements);
 		}
 	}
 }
