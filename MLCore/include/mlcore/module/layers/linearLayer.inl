@@ -30,10 +30,26 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
+	void LinearLayer<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
+		out.push_back(std::ref(m_Weight));
+		out.push_back(std::ref(m_Bias));
+	}
+
+	template <typename T>
 	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
 		auto MakeName = [&](const std::string& suffix) {
 			return (name.empty()) ? suffix : name + "." + suffix;
 		};
+
+		out.emplace_back(MakeName("weight"), std::ref(m_Weight));
+		out.emplace_back(MakeName("bias"), std::ref(m_Bias));
+	}
+
+	template <typename T>
+	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
+		auto MakeName = [&](const std::string& suffix) {
+			return (name.empty()) ? suffix : name + "." + suffix;
+			};
 
 		out.emplace_back(MakeName("weight"), std::ref(m_Weight));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));

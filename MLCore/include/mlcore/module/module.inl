@@ -21,8 +21,24 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
+	std::vector<std::reference_wrapper<const NN::Parameter<T>>> Module<T>::GetParameters() const {
+		std::vector<std::reference_wrapper<const NN::Parameter<T>>> out;
+		CollectSubmoduleParameters(out);
+
+		return out;
+	}
+
+	template <typename T>
 	std::vector<NamedParameter<T>> Module<T>::GetNamedParameters() {
 		std::vector<NamedParameter<T>> out;
+		CollectNamedSubmoduleParameters("", out);
+
+		return out;
+	}
+
+	template <typename T>
+	std::vector<ConstNamedParameter<T>> Module<T>::GetNamedParameters() const {
+		std::vector<ConstNamedParameter<T>> out;
 		CollectNamedSubmoduleParameters("", out);
 
 		return out;
@@ -34,7 +50,17 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
+	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
+		// Don't need an implementation here
+	}
+
+	template <typename T>
 	void Module<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
+		// Don't need an implementation here
+	}
+
+	template <typename T>
+	void Module<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
 		// Don't need an implementation here
 	}
 
@@ -48,10 +74,30 @@ namespace MLCore::NN {
 	}
 
 	template <typename T>
+	void Module<T>::CollectSubmoduleParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
+		CollectParameters(out);
+
+		for (const RegisteredModule<T>& sub : m_Submodules) {
+			sub.module->CollectSubmoduleParameters(out);
+		}
+	}
+
+	template <typename T>
 	void Module<T>::CollectNamedSubmoduleParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
 		CollectNamedParameters(name, out);
 
 		for (RegisteredModule<T>& sub : m_Submodules) {
+			std::string childPrefix = (name.empty()) ? sub.name : name + "." + sub.name;
+
+			sub.module->CollectNamedSubmoduleParameters(childPrefix, out);
+		}
+	}
+
+	template <typename T>
+	void Module<T>::CollectNamedSubmoduleParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
+		CollectNamedParameters(name, out);
+
+		for (const RegisteredModule<T>& sub : m_Submodules) {
 			std::string childPrefix = (name.empty()) ? sub.name : name + "." + sub.name;
 
 			sub.module->CollectNamedSubmoduleParameters(childPrefix, out);

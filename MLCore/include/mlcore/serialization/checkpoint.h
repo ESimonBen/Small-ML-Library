@@ -23,7 +23,7 @@ namespace MLCore::Serialization {
 		static void WriteArray(std::ofstream& out, const T* data, size_t count);
 
 		template <typename T>
-		static void ReadArray(std::ofstream& in, T* data, size_t count);
+		static void ReadArray(std::ifstream& in, T* data, size_t count);
 
 		template <typename T>
 		static void SaveV1(const NN::Module<T>& model, std::ofstream& out);
@@ -31,9 +31,15 @@ namespace MLCore::Serialization {
 		template <typename T>
 		static void LoadV1(NN::Module<T>& model, std::ifstream& in);
 
+		template <typename T>
+		static void SaveV2(const NN::Module<T>& model, std::ofstream& out);
+
+		template <typename T>
+		static void LoadV2(NN::Module<T>& model, std::ifstream& in);
+
 	private:
 		static constexpr uint64_t MAGIC_NUMBER = 0x4D4C434F5245ULL; // "MLCORE" in hexadecimal
-		static constexpr uint32_t FORMAT_VERSION = 1;
+		static constexpr uint32_t FORMAT_VERSION = 2; // Most recent developed version
 	};
 }
 

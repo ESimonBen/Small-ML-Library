@@ -1,5 +1,6 @@
 // checkpoint.inl
 #include <filesystem>
+#include <unordered_map>
 
 namespace MLCore::Serialization {
 	template <typename T>
@@ -28,7 +29,7 @@ namespace MLCore::Serialization {
 	}
 
 	template <typename T>
-	static void Checkpoint::ReadArray(std::ofstream& in, T* data, size_t count) {
+	static void Checkpoint::ReadArray(std::ifstream& in, T* data, size_t count) {
 		if (!in.read(reinterpret_cast<char*>(data), sizeof(T) * count)) {
 			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
 		}
@@ -38,7 +39,11 @@ namespace MLCore::Serialization {
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path) {
 		// Create the file and the directories it's stored in
 		std::filesystem::path filePath = path;
-		std::filesystem::create_directories(filePath.parent_path());
+		std::filesystem::path parentPath = filePath.parent_path();
+		
+		if (!parentPath.empty()) {
+			std::filesystem::create_directories(parentPath);
+		}
 
 		std::ofstream out{ filePath, std::ios::binary };
 
@@ -52,6 +57,10 @@ namespace MLCore::Serialization {
 		switch (FORMAT_VERSION) {
 		case 1:
 			SaveV1(model, out);
+			break;
+
+		case 2:
+			SaveV2(model, out);
 			break;
 
 		default:
@@ -85,6 +94,10 @@ namespace MLCore::Serialization {
 			LoadV1(model, in);
 			break;
 
+		case 2:
+			LoadV2(model, in);
+			break;
+
 		default:
 			throw std::runtime_error("ERROR: Load: Unsupported checkpoint version");
 		}
@@ -99,9 +112,9 @@ namespace MLCore::Serialization {
 		Write(out, numParams);
 
 		// Store the size, rank, shape, and data of each parameter
-		for (auto& ref : params) {
-			NN::Parameter<T>& param = ref.get();
-			TensorCore::Tensor<T>& tensor = param.Data();
+		for (const auto& ref : params) {
+			const NN::Parameter<T>& param = ref.get();
+			const TensorCore::Tensor<T>& tensor = param.Data();
 
 			size_t numElements = tensor.NumElements();
 			size_t rank = tensor.Rank();
@@ -109,7 +122,7 @@ namespace MLCore::Serialization {
 
 			Write(out, numElements);
 			Write(out, rank);
-			WriteArray(out, dims.data(), dims.size());
+			WriteArray(out, dims.data(), rank);
 			WriteArray(out, tensor.Data(), numElements);
 		}
 	}
@@ -147,8 +160,97 @@ namespace MLCore::Serialization {
 			}
 
 			// Read the shape of each parameter
-			std::vector<size_t> dims{ rank };
+			std::vector<size_t> dims( rank );
 			ReadArray(in, dims.data(), dims.size());
+
+			if (dims != tensor.Dims()) {
+				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
+			}
+
+			// Read the data of each parameter
+			ReadArray(in, tensor.Data(), numElements);
+		}
+	}
+
+	template <typename T>
+	void Checkpoint::SaveV2(const NN::Module<T>& model, std::ofstream& out) {
+		std::vector<NN::ConstNamedParameter<T>> params = model.GetNamedParameters();
+
+		size_t count = params.size();
+		Write(out, count);
+
+		for (const auto& [name, p] : params) {
+			size_t nameLength = name.size();
+			Write(out, nameLength);
+			WriteArray(out, name.data(), nameLength);
+
+			const TensorCore::Tensor<T>& tensor = p.get().Data();
+
+			size_t numElements = tensor.NumElements();
+			size_t rank = tensor.Rank();
+			auto& dims = tensor.Dims();
+
+			Write(out, numElements);
+			Write(out, rank);
+			WriteArray(out, dims.data(), rank);
+			WriteArray(out, tensor.Data(), numElements);
+		}
+	}
+
+	template <typename T>
+	void Checkpoint::LoadV2(NN::Module<T>& model, std::ifstream& in) {
+		std::unordered_map<std::string, NN::Parameter<T>*> paramMap;
+		std::vector<NN::NamedParameter<T>> params = model.GetNamedParameters();
+
+		for (auto& [name, p] : params) {
+			if (paramMap.contains(name)) {
+				throw std::runtime_error("ERROR: Duplicate parameter name");
+			}
+
+			paramMap[name] = &(p.get());
+		}
+
+		size_t numParams;
+		Read(in, numParams);
+
+		if (numParams != params.size()) {
+			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
+		}
+
+		for (size_t i = 0; i < numParams; ++i) {
+			size_t nameLength;
+			Read(in, nameLength);
+
+			std::string name( nameLength, '\0' );
+			ReadArray(in, /*name.data()*/ &name[0], nameLength);
+
+			auto iter = paramMap.find(name);
+
+			if (iter == paramMap.end()) {
+				throw std::runtime_error("ERROR: Load: Checkpoint name mismatch");
+			}
+
+			TensorCore::Tensor<T>& tensor = iter->second->Data();
+
+			// Read the size of each parameter
+			size_t numElements;
+			Read(in, numElements);
+
+			if (numElements != tensor.NumElements()) {
+				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
+			}
+
+			// Read the rank of each parameter
+			size_t rank;
+			Read(in, rank);
+
+			if (rank != tensor.Rank()) {
+				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
+			}
+
+			// Read the shape of each parameter
+			std::vector<size_t> dims( rank );
+			ReadArray(in, dims.data(), rank);
 
 			if (dims != tensor.Dims()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");

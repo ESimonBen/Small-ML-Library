@@ -7,6 +7,7 @@
 #include <mlCore/module/sequential.h>
 #include <mlCore/module/layers/layers.h>
 #include <mlCore/operations/operations.h>
+#include <mlCore/serialization/checkpoint.h>
 
 using namespace MLCore;
 using namespace MLCore::Memory;
@@ -18,6 +19,7 @@ using namespace MLCore::NN;
 using namespace MLCore::Init;
 using namespace MLCore::Training;
 using namespace MLCore::Schedulers;
+using namespace MLCore::Serialization;
 
 void TestXOR(ArenaAllocator& allocator) {
     std::cout << "=== XOR Nonlinear Test ===\n";
@@ -132,7 +134,7 @@ void TestXOR(ArenaAllocator& allocator) {
         }
     };
 
-    trainer.Fit(x, y, x, y, 20000, 4);
+    trainer.Fit(x, y, x, y, 10000, 4);
 
     for (auto& [name, p] : namedParams) {
         std::cout << "Name: " << name << std::endl;
@@ -154,7 +156,47 @@ void TestXOR(ArenaAllocator& allocator) {
 int main() {
     ArenaAllocator allocator;
 
+    // Model Training Test
     TestXOR(allocator);
+
+    // Model Saving Test
+    Sequential<float> modelA;
+    modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+
+    Checkpoint::Save(modelA, "../../models/xor.ckpt"); // 
+
+    Sequential<float> modelB;
+    modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+
+    Checkpoint::Load(modelB, "../../models/xor.ckpt");
+
+    auto paramsA = modelA.GetParameters();
+    auto paramsB = modelB.GetParameters();
+
+    bool equal = true;
+
+    for (size_t p = 0; p < paramsA.size(); ++p) {
+        auto& tensorA = paramsA[p].get().Data();
+        auto& tensorB = paramsB[p].get().Data();
+
+        if (tensorA.NumElements() != tensorB.NumElements()) {
+            equal = false;
+            break;
+        }
+
+        for (size_t i = 0; i < tensorA.NumElements(); ++i) {
+            if (tensorA[i] != tensorB[i]) {
+                equal = false;
+                break;
+            }
+        }
+    }
+
+    std::cout << (equal ? "Checkpoint PASSED" : "Checkpoint FAILED") << '\n';
 
     return 0;
 }
