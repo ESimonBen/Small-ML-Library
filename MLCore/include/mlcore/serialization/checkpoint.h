@@ -2,6 +2,7 @@
 #pragma once
 #include <fstream>
 #include <mlCore/module/module.h>
+#include <mlCore/serialization/binaryArchive.h>
 
 namespace MLCore::Serialization {
 	class Checkpoint {
@@ -14,28 +15,16 @@ namespace MLCore::Serialization {
 
 	private:
 		template <typename T>
-		static void Write(std::ofstream& out, const T& data);
+		static void SaveV1(const NN::Module<T>& model, BinaryWriter& writer);
 
 		template <typename T>
-		static void Read(std::ifstream& in, T& data);
+		static void LoadV1(NN::Module<T>& model, BinaryReader& reader);
 
 		template <typename T>
-		static void WriteArray(std::ofstream& out, const T* data, size_t count);
+		static void SaveV2(const NN::Module<T>& model, BinaryWriter& writer);
 
 		template <typename T>
-		static void ReadArray(std::ifstream& in, T* data, size_t count);
-
-		template <typename T>
-		static void SaveV1(const NN::Module<T>& model, std::ofstream& out);
-
-		template <typename T>
-		static void LoadV1(NN::Module<T>& model, std::ifstream& in);
-
-		template <typename T>
-		static void SaveV2(const NN::Module<T>& model, std::ofstream& out);
-
-		template <typename T>
-		static void LoadV2(NN::Module<T>& model, std::ifstream& in);
+		static void LoadV2(NN::Module<T>& model, BinaryReader& reader);
 
 	private:
 		static constexpr uint64_t MAGIC_NUMBER = 0x4D4C434F5245ULL; // "MLCORE" in hexadecimal

@@ -1,40 +1,9 @@
 // checkpoint.inl
 #include <filesystem>
 #include <unordered_map>
+#include <mlCore/tensor/dataType.h>
 
 namespace MLCore::Serialization {
-	template <typename T>
-	static void Checkpoint::Write(std::ofstream& out, const T& data) {
-		out.write(reinterpret_cast<const char*>(&data), sizeof(data));
-
-		if (!out) {
-			throw std::runtime_error("ERROR: Write: Checkpoint write failed");
-		}
-	}
-
-	template <typename T>
-	static void Checkpoint::Read(std::ifstream& in, T& data) {
-		if (!in.read(reinterpret_cast<char*>(&data), sizeof(data))) {
-			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-		}
-	}
-
-	template <typename T>
-	static void Checkpoint::WriteArray(std::ofstream& out, const T* data, size_t count) {
-		out.write(reinterpret_cast<const char*>(data), sizeof(T) * count);
-
-		if (!out) {
-			throw std::runtime_error("ERROR: Write: Checkpoint write failed");
-		}
-	}
-
-	template <typename T>
-	static void Checkpoint::ReadArray(std::ifstream& in, T* data, size_t count) {
-		if (!in.read(reinterpret_cast<char*>(data), sizeof(T) * count)) {
-			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
-		}
-	}
-
 	template <typename T>
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path) {
 		// Create the file and the directories it's stored in
@@ -51,16 +20,21 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Save: Failed to open checkpoint path");
 		}
 
-		Write(out, MAGIC_NUMBER);
-		Write(out, FORMAT_VERSION);
+		BinaryWriter writer{ out };
+
+		writer.Write(MAGIC_NUMBER);
+		writer.Write(FORMAT_VERSION);
+
+		TensorCore::DataType dtype = TensorCore::ExpectedType<T>();
+		writer.Write(dtype);
 
 		switch (FORMAT_VERSION) {
 		case 1:
-			SaveV1(model, out);
+			SaveV1(model, writer);
 			break;
 
 		case 2:
-			SaveV2(model, out);
+			SaveV2(model, writer);
 			break;
 
 		default:
@@ -81,21 +55,29 @@ namespace MLCore::Serialization {
 		// Read the magic number and file format version
 		uint64_t magic;
 		uint32_t version;
+		TensorCore::DataType dtype;
 
-		Read(in, magic);
-		Read(in, version);
+		BinaryReader reader{ in };
+
+		reader.Read(magic);
+		reader.Read(version);
+		reader.Read(dtype);
 
 		if (magic != MAGIC_NUMBER) {
 			throw std::runtime_error("ERROR: Load: Invalid checkpoint file");
 		}
 
+		if (dtype != TensorCore::ExpectedType<T>()) {
+			throw std::runtime_error("ERROR: Load: Model data type mismatch");
+		}
+
 		switch (version) {
 		case 1:
-			LoadV1(model, in);
+			LoadV1(model, reader);
 			break;
 
 		case 2:
-			LoadV2(model, in);
+			LoadV2(model, reader);
 			break;
 
 		default:
@@ -104,12 +86,12 @@ namespace MLCore::Serialization {
 	}
 
 	template <typename T>
-	void Checkpoint::SaveV1(const NN::Module<T>& model, std::ofstream& out) {
+	void Checkpoint::SaveV1(const NN::Module<T>& model, BinaryWriter& writer) {
 		// Store the number of parameters
 		auto params = model.GetParameters();
 		size_t numParams = params.size();
 
-		Write(out, numParams);
+		writer.Write(numParams);
 
 		// Store the size, rank, shape, and data of each parameter
 		for (const auto& ref : params) {
@@ -120,19 +102,19 @@ namespace MLCore::Serialization {
 			size_t rank = tensor.Rank();
 			auto& dims = tensor.Dims();
 
-			Write(out, numElements);
-			Write(out, rank);
-			WriteArray(out, dims.data(), rank);
-			WriteArray(out, tensor.Data(), numElements);
+			writer.Write(numElements);
+			writer.Write(rank);
+			writer.WriteArray(dims.data(), rank);
+			writer.WriteArray(tensor.Data(), numElements);
 		}
 	}
 
 	template <typename T>
-	void Checkpoint::LoadV1(NN::Module<T>& model, std::ifstream& in) {
+	void Checkpoint::LoadV1(NN::Module<T>& model, BinaryReader& reader) {
 		// Read the number of parameters
 		auto params = model.GetParameters();
 		size_t numParams;
-		Read(in, numParams);
+		reader.Read(numParams);
 
 		if (numParams != params.size()) {
 			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
@@ -145,7 +127,7 @@ namespace MLCore::Serialization {
 
 			// Read the size of each parameter
 			size_t numElements;
-			Read(in, numElements);
+			reader.Read(numElements);
 
 			if (numElements != tensor.NumElements()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
@@ -153,7 +135,7 @@ namespace MLCore::Serialization {
 
 			// Read the rank of each parameter
 			size_t rank;
-			Read(in, rank);
+			reader.Read(rank);
 
 			if (rank != tensor.Rank()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
@@ -161,28 +143,28 @@ namespace MLCore::Serialization {
 
 			// Read the shape of each parameter
 			std::vector<size_t> dims( rank );
-			ReadArray(in, dims.data(), dims.size());
+			reader.ReadArray(dims.data(), dims.size());
 
 			if (dims != tensor.Dims()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
 			}
 
 			// Read the data of each parameter
-			ReadArray(in, tensor.Data(), numElements);
+			reader.ReadArray(tensor.Data(), numElements);
 		}
 	}
 
 	template <typename T>
-	void Checkpoint::SaveV2(const NN::Module<T>& model, std::ofstream& out) {
+	void Checkpoint::SaveV2(const NN::Module<T>& model, BinaryWriter& writer) {
 		std::vector<NN::ConstNamedParameter<T>> params = model.GetNamedParameters();
 
 		size_t count = params.size();
-		Write(out, count);
+		writer.Write(count);
 
 		for (const auto& [name, p] : params) {
 			size_t nameLength = name.size();
-			Write(out, nameLength);
-			WriteArray(out, name.data(), nameLength);
+			writer.Write(nameLength);
+			writer.WriteArray(name.data(), nameLength);
 
 			const TensorCore::Tensor<T>& tensor = p.get().Data();
 
@@ -190,15 +172,15 @@ namespace MLCore::Serialization {
 			size_t rank = tensor.Rank();
 			auto& dims = tensor.Dims();
 
-			Write(out, numElements);
-			Write(out, rank);
-			WriteArray(out, dims.data(), rank);
-			WriteArray(out, tensor.Data(), numElements);
+			writer.Write(numElements);
+			writer.Write(rank);
+			writer.WriteArray(dims.data(), rank);
+			writer.WriteArray(tensor.Data(), numElements);
 		}
 	}
 
 	template <typename T>
-	void Checkpoint::LoadV2(NN::Module<T>& model, std::ifstream& in) {
+	void Checkpoint::LoadV2(NN::Module<T>& model, BinaryReader& reader) {
 		std::unordered_map<std::string, NN::Parameter<T>*> paramMap;
 		std::vector<NN::NamedParameter<T>> params = model.GetNamedParameters();
 
@@ -211,7 +193,7 @@ namespace MLCore::Serialization {
 		}
 
 		size_t numParams;
-		Read(in, numParams);
+		reader.Read(numParams);
 
 		if (numParams != params.size()) {
 			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
@@ -219,10 +201,10 @@ namespace MLCore::Serialization {
 
 		for (size_t i = 0; i < numParams; ++i) {
 			size_t nameLength;
-			Read(in, nameLength);
+			reader.Read(nameLength);
 
 			std::string name( nameLength, '\0' );
-			ReadArray(in, /*name.data()*/ &name[0], nameLength);
+			reader.ReadArray(name.data(), nameLength);
 
 			auto iter = paramMap.find(name);
 
@@ -234,7 +216,7 @@ namespace MLCore::Serialization {
 
 			// Read the size of each parameter
 			size_t numElements;
-			Read(in, numElements);
+			reader.Read(numElements);
 
 			if (numElements != tensor.NumElements()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
@@ -242,7 +224,7 @@ namespace MLCore::Serialization {
 
 			// Read the rank of each parameter
 			size_t rank;
-			Read(in, rank);
+			reader.Read(rank);
 
 			if (rank != tensor.Rank()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
@@ -250,14 +232,14 @@ namespace MLCore::Serialization {
 
 			// Read the shape of each parameter
 			std::vector<size_t> dims( rank );
-			ReadArray(in, dims.data(), rank);
+			reader.ReadArray(dims.data(), rank);
 
 			if (dims != tensor.Dims()) {
 				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
 			}
 
 			// Read the data of each parameter
-			ReadArray(in, tensor.Data(), numElements);
+			reader.ReadArray(tensor.Data(), numElements);
 		}
 	}
 }

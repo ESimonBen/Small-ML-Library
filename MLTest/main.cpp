@@ -165,14 +165,14 @@ int main() {
     modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
     modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
 
-    Checkpoint::Save(modelA, "../../models/xor.ckpt"); // 
+    Checkpoint::Save(modelA, "../../models/xorV2.ckpt");
 
     Sequential<float> modelB;
     modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
     modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
     modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
 
-    Checkpoint::Load(modelB, "../../models/xor.ckpt");
+    Checkpoint::Load(modelB, "../../models/xorV2.ckpt");
 
     auto paramsA = modelA.GetParameters();
     auto paramsB = modelB.GetParameters();
