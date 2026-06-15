@@ -97,15 +97,7 @@ namespace MLCore::Serialization {
 		for (const auto& ref : params) {
 			const NN::Parameter<T>& param = ref.get();
 			const TensorCore::Tensor<T>& tensor = param.Data();
-
-			size_t numElements = tensor.NumElements();
-			size_t rank = tensor.Rank();
-			auto& dims = tensor.Dims();
-
-			writer.Write(numElements);
-			writer.Write(rank);
-			writer.WriteArray(dims.data(), rank);
-			writer.WriteArray(tensor.Data(), numElements);
+			writer.WriteTensor(tensor);
 		}
 	}
 
@@ -124,33 +116,7 @@ namespace MLCore::Serialization {
 		for (auto& ref : params) {
 			NN::Parameter<T>& param = ref.get();
 			TensorCore::Tensor<T>& tensor = param.Data();
-
-			// Read the size of each parameter
-			size_t numElements;
-			reader.Read(numElements);
-
-			if (numElements != tensor.NumElements()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
-			}
-
-			// Read the rank of each parameter
-			size_t rank;
-			reader.Read(rank);
-
-			if (rank != tensor.Rank()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
-			}
-
-			// Read the shape of each parameter
-			std::vector<size_t> dims( rank );
-			reader.ReadArray(dims.data(), dims.size());
-
-			if (dims != tensor.Dims()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
-			}
-
-			// Read the data of each parameter
-			reader.ReadArray(tensor.Data(), numElements);
+			reader.ReadTensor(tensor);
 		}
 	}
 
@@ -167,15 +133,7 @@ namespace MLCore::Serialization {
 			writer.WriteArray(name.data(), nameLength);
 
 			const TensorCore::Tensor<T>& tensor = p.get().Data();
-
-			size_t numElements = tensor.NumElements();
-			size_t rank = tensor.Rank();
-			auto& dims = tensor.Dims();
-
-			writer.Write(numElements);
-			writer.Write(rank);
-			writer.WriteArray(dims.data(), rank);
-			writer.WriteArray(tensor.Data(), numElements);
+			writer.WriteTensor(tensor);
 		}
 	}
 
@@ -213,33 +171,7 @@ namespace MLCore::Serialization {
 			}
 
 			TensorCore::Tensor<T>& tensor = iter->second->Data();
-
-			// Read the size of each parameter
-			size_t numElements;
-			reader.Read(numElements);
-
-			if (numElements != tensor.NumElements()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor size mismatch");
-			}
-
-			// Read the rank of each parameter
-			size_t rank;
-			reader.Read(rank);
-
-			if (rank != tensor.Rank()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor rank mismatch");
-			}
-
-			// Read the shape of each parameter
-			std::vector<size_t> dims( rank );
-			reader.ReadArray(dims.data(), rank);
-
-			if (dims != tensor.Dims()) {
-				throw std::runtime_error("ERROR: Load: Checkpoint tensor shape mismatch");
-			}
-
-			// Read the data of each parameter
-			reader.ReadArray(tensor.Data(), numElements);
+			reader.ReadTensor(tensor);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 // lrScheduler.h
 #pragma once
 #include <mlCore/optimizers/optimizer.h>
+#include <mlCore/serialization/binaryArchive.h>
 
 namespace MLCore::Schedulers {
 	template <typename T>
@@ -16,6 +17,9 @@ namespace MLCore::Schedulers {
 		virtual ~LRScheduler() = default;
 
 		virtual void UpdateLR() = 0;
+
+		virtual void SaveState(Serialization::BinaryWriter& writer) const = 0;
+		virtual void LoadState(Serialization::BinaryReader& reader) = 0;
 
 	protected:
 		Optimizers::Optimizer<T>& m_Opt;

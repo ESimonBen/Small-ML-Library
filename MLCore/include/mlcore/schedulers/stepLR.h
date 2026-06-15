@@ -35,6 +35,30 @@ namespace MLCore::Schedulers {
 			}
 		}
 
+		virtual void SaveState(Serialization::BinaryWriter& writer) const override {
+			writer.Write(m_StepSize);
+			writer.Write(m_Gamma);
+			writer.Write(m_Step);
+		}
+
+		virtual void LoadState(Serialization::BinaryReader& reader) override {
+			reader.Read(m_StepSize);
+			reader.Read(m_Gamma);
+			reader.Read(m_Step);
+
+			if (m_StepSize <= 0) {
+				throw std::runtime_error("ERROR: Invalid StepLR step size");
+			}
+
+			if (!std::isfinite(m_Gamma) || m_Gamma <= static_cast<T>(0)) {
+				throw std::runtime_error("ERROR: Invalid StepLR gamma");
+			}
+
+			if (m_Step < 0 || m_Step >= m_StepSize) {
+				throw std::runtime_error("ERROR: Invalid StepLR step count");
+			}
+		}
+
 	private:
 		int m_StepSize;
 		T m_Gamma;

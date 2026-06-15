@@ -38,6 +38,37 @@ namespace MLCore::Schedulers {
 			}
 		}
 
+		virtual void SaveState(Serialization::BinaryWriter& writer) const override {
+			writer.Write(m_Gamma);
+			writer.Write(m_Multiplier);
+
+			size_t numLRs = m_BaseLRs.size();
+			writer.Write(numLRs);
+			writer.WriteArray(m_BaseLRs.data(), numLRs);
+		}
+
+		virtual void LoadState(Serialization::BinaryReader& reader) override {
+			reader.Read(m_Gamma);
+			reader.Read(m_Multiplier);
+
+			if (!std::isfinite(m_Gamma) || m_Gamma <= static_cast<T>(0)) {
+				throw std::runtime_error("ERROR: Invalid ExponentialLR gamma");
+			}
+
+			if (!std::isfinite(m_Multiplier) || m_Multiplier < static_cast<T>(0)) {
+				throw std::runtime_error("ERROR: Invalid ExponentialLR multiplier");
+			}
+
+			size_t numLRs;
+			reader.Read(numLRs);
+			if (numLRs != this->m_Opt.ParamGroups().size()) {
+				throw std::runtime_error("ERROR: Scheduler parameter group mismatch");
+			}
+
+			m_BaseLRs.resize(numLRs);
+			reader.ReadArray(m_BaseLRs.data(), numLRs);
+		}
+
 	private:
 		std::vector<T> m_BaseLRs;
 		T m_Gamma;

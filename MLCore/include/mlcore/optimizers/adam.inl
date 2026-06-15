@@ -1,5 +1,7 @@
 // adam.inl
 #include <cmath>
+#include <unordered_map>
+#include <mlCore/serialization/binaryArchive.h>
 
 namespace MLCore::Optimizers {
 	template <typename T>
@@ -139,6 +141,133 @@ namespace MLCore::Optimizers {
 	}
 
 	template <typename T>
+	void Adam<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+		auto namedParams = model.GetNamedParameters();
+		std::unordered_map<NN::ParamID, std::string> idToName;
+
+		for (const auto& [name, param] : namedParams) {
+			idToName[param.get().id] = name;
+		}
+
+		writer.Write(m_Beta1);
+		writer.Write(m_Beta2);
+		writer.Write(m_BetaPow1);
+		writer.Write(m_BetaPow2);
+		writer.Write(m_Epsilon);
+		writer.Write(m_Timestep);
+
+		size_t numGroups = this->m_ParamGroups.size();
+		writer.Write(numGroups);
+
+		for (const ParameterGroup<T>& group : this->m_ParamGroups) {
+			writer.Write(group.learningRate);
+			writer.Write(group.weightDecay);
+
+			size_t numParams = group.params.size();
+			writer.Write(numParams);
+
+			for (const std::reference_wrapper<NN::Parameter<T>>& ref : group.params) {
+				const NN::Parameter<T>& param = ref.get();
+
+				const std::string& name = idToName.at(param.id);
+				const size_t nameLength = name.size();
+				writer.Write(nameLength);
+				writer.WriteArray(name.data(), nameLength);
+
+				auto firstMomIter = m_FirstMoment.find(param.id);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: First moment not found");
+				}
+
+				auto secMomIter = m_SecondMoment.find(param.id);
+
+				if (secMomIter == m_SecondMoment.end()) {
+					throw std::runtime_error("ERROR: Second moment not found");
+				}
+
+				const TensorCore::Tensor<T>& firstMoment = firstMomIter->second;
+				const TensorCore::Tensor<T>& secondMoment = secMomIter->second;
+
+				writer.WriteTensor(firstMoment);
+				writer.WriteTensor(secondMoment);
+			}
+		}
+	}
+
+	template <typename T>
+	void Adam<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+		auto namedParams = model.GetNamedParameters();
+		std::unordered_map<std::string, NN::Parameter<T>*> nameToParam;
+
+		for (auto& [name, param] : namedParams) {
+			nameToParam[name] = &param.get();
+		}
+
+		reader.Read(m_Beta1);
+		reader.Read(m_Beta2);
+		reader.Read(m_BetaPow1);
+		reader.Read(m_BetaPow2);
+		reader.Read(m_Epsilon);
+		reader.Read(m_Timestep);
+
+		size_t numGroups;
+		reader.Read(numGroups);
+
+		if (numGroups != this->m_ParamGroups.size()) {
+			throw std::runtime_error("ERROR: Optimizer parameter group mismatch");
+		}
+
+		for (size_t i = 0; i < numGroups; ++i) {
+			ParameterGroup<T>& paramGroup = this->m_ParamGroups[i];
+
+			reader.Read(paramGroup.learningRate);
+			reader.Read(paramGroup.weightDecay);
+
+			size_t numParams;
+			reader.Read(numParams);
+
+			if (numParams != paramGroup.params.size()) {
+				throw std::runtime_error("ERROR: Parameter group size mismatch");
+			}
+
+			for (size_t j = 0; j < numParams; ++j) {
+				size_t nameLength;
+				reader.Read(nameLength);
+
+				std::string name(nameLength, '\0');
+				reader.ReadArray(name.data(), nameLength);
+
+				auto paramIt = nameToParam.find(name);
+
+				if (paramIt == nameToParam.end()) {
+					throw std::runtime_error("ERROR: Optimizer parameter '" + name + "' not found");
+				}
+
+				NN::ParamID paramID = paramIt->second->id;
+
+				auto firstMomIter = m_FirstMoment.find(paramID);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: First moment not found");
+				}
+
+				auto secMomIter = m_SecondMoment.find(paramID);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: Second moment not found");
+				}
+
+				TensorCore::Tensor<T>& firstMoment = firstMomIter->second;
+				TensorCore::Tensor<T>& secondMoment = secMomIter->second;
+
+				reader.ReadTensor(firstMoment);
+				reader.ReadTensor(secondMoment);
+			}
+		}
+	}
+
+	template <typename T>
 	AdamW<T>::AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
@@ -270,6 +399,133 @@ namespace MLCore::Optimizers {
 
 					param[i] -= learningRate * (m_hat / (std::sqrt(v_hat) + m_Epsilon));
 				}
+			}
+		}
+	}
+
+	template <typename T>
+	void AdamW<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+		auto namedParams = model.GetNamedParameters();
+		std::unordered_map<NN::ParamID, std::string> idToName;
+
+		for (const auto& [name, param] : namedParams) {
+			idToName[param.get().id] = name;
+		}
+
+		writer.Write(m_Beta1);
+		writer.Write(m_Beta2);
+		writer.Write(m_BetaPow1);
+		writer.Write(m_BetaPow2);
+		writer.Write(m_Epsilon);
+		writer.Write(m_Timestep);
+
+		size_t numGroups = this->m_ParamGroups.size();
+		writer.Write(numGroups);
+
+		for (const ParameterGroup<T>& group : this->m_ParamGroups) {
+			writer.Write(group.learningRate);
+			writer.Write(group.weightDecay);
+
+			size_t numParams = group.params.size();
+			writer.Write(numParams);
+
+			for (const std::reference_wrapper<NN::Parameter<T>>& ref : group.params) {
+				const NN::Parameter<T>& param = ref.get();
+
+				const std::string& name = idToName.at(param.id);
+				const size_t nameLength = name.size();
+				writer.Write(nameLength);
+				writer.WriteArray(name.data(), nameLength);
+
+				auto firstMomIter = m_FirstMoment.find(param.id);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: First moment not found");
+				}
+
+				auto secMomIter = m_SecondMoment.find(param.id);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: Second moment not found");
+				}
+
+				const TensorCore::Tensor<T>& firstMoment = firstMomIter->second;
+				const TensorCore::Tensor<T>& secondMoment = secMomIter->second;
+
+				writer.WriteTensor(firstMoment);
+				writer.WriteTensor(secondMoment);
+			}
+		}
+	}
+
+	template <typename T>
+	void AdamW<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+		auto namedParams = model.GetNamedParameters();
+		std::unordered_map<std::string, NN::Parameter<T>*> nameToParam;
+
+		for (auto& [name, param] : namedParams) {
+			nameToParam[name] = &param.get();
+		}
+
+		reader.Read(m_Beta1);
+		reader.Read(m_Beta2);
+		reader.Read(m_BetaPow1);
+		reader.Read(m_BetaPow2);
+		reader.Read(m_Epsilon);
+		reader.Read(m_Timestep);
+
+		size_t numGroups;
+		reader.Read(numGroups);
+
+		if (numGroups != this->m_ParamGroups.size()) {
+			throw std::runtime_error("ERROR: Optimizer parameter group mismatch");
+		}
+
+		for (size_t i = 0; i < numGroups; ++i) {
+			ParameterGroup<T>& paramGroup = this->m_ParamGroups[i];
+
+			reader.Read(paramGroup.learningRate);
+			reader.Read(paramGroup.weightDecay);
+
+			size_t numParams;
+			reader.Read(numParams);
+
+			if (numParams != paramGroup.params.size()) {
+				throw std::runtime_error("ERROR: Parameter group size mismatch");
+			}
+
+			for (size_t j = 0; j < numParams; ++j) {
+				size_t nameLength;
+				reader.Read(nameLength);
+
+				std::string name(nameLength, '\0');
+				reader.ReadArray(name.data(), nameLength);
+
+				auto paramIt = nameToParam.find(name);
+
+				if (paramIt == nameToParam.end()) {
+					throw std::runtime_error("ERROR: Optimizer parameter '" + name + "' not found");
+				}
+
+				NN::ParamID paramID = paramIt->second->id;
+
+				auto firstMomIter = m_FirstMoment.find(paramID);
+
+				if (firstMomIter == m_FirstMoment.end()) {
+					throw std::runtime_error("ERROR: First moment not found");
+				}
+
+				auto secMomIter = m_SecondMoment.find(paramID);
+
+				if (secMomIter == m_SecondMoment.end()) {
+					throw std::runtime_error("ERROR: Second moment not found");
+				}
+
+				TensorCore::Tensor<T>& firstMoment = firstMomIter->second;
+				TensorCore::Tensor<T>& secondMoment = secMomIter->second;
+
+				reader.ReadTensor(firstMoment);
+				reader.ReadTensor(secondMoment);
 			}
 		}
 	}

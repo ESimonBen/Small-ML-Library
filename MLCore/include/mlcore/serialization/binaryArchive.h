@@ -1,6 +1,7 @@
 // binaryArchive.h
 #pragma once
 #include <fstream>
+#include <mlCore/tensor/tensor.h>
 
 namespace MLCore::Serialization {
 	class BinaryWriter {
@@ -12,6 +13,9 @@ namespace MLCore::Serialization {
 
 		template <typename T>
 		void WriteArray(const T* data, size_t count);
+
+		template <typename T>
+		void WriteTensor(const TensorCore::Tensor<T>& tensor);
 
 	private:
 		std::ofstream& m_Out;
@@ -26,6 +30,9 @@ namespace MLCore::Serialization {
 
 		template <typename T>
 		void ReadArray(T* data, size_t count);
+
+		template <typename T>
+		void ReadTensor(TensorCore::Tensor<T>& tensor);
 
 	private:
 		std::ifstream& m_In;

@@ -3,7 +3,9 @@
 #include <vector>
 #include <functional>
 #include <mlCore/tensor/tensor.h>
+#include <mlCore/module/module.h>
 #include <mlCore/optimizers/parameterGroup.h>
+#include <mlCore/serialization/binaryArchive.h>
 
 namespace MLCore::Optimizers {
 	template <typename T>
@@ -21,6 +23,10 @@ namespace MLCore::Optimizers {
 
 		std::vector<ParameterGroup<T>>& ParamGroups();
 		void SetClipGradNorm(T maxNorm);
+
+		// Serialization
+		virtual void SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const = 0;
+		virtual void LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) = 0;
 
 	protected:
 		// Functions

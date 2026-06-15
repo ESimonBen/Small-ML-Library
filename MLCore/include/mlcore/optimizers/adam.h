@@ -2,6 +2,7 @@
 #pragma once
 #include "optimizer.h"
 #include <unordered_map>
+#include <mlCore/module/module.h>
 
 namespace MLCore::Optimizers {
 	template <typename T>
@@ -16,6 +17,13 @@ namespace MLCore::Optimizers {
 		Adam(std::vector<ParameterGroup<T>> groups, T beta1 = static_cast<T>(.9), T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		virtual void Step() override;
+
+		// NOTE:
+		// Optimizer parameter groups must be reconstructed
+		// in the same order before loading state.
+
+		virtual void SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const override;
+		virtual void LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) override;
 
 	private:
 		T m_Beta1;
@@ -40,6 +48,13 @@ namespace MLCore::Optimizers {
 		AdamW(std::vector<ParameterGroup<T>> groups, T beta1 = static_cast<T>(.9), T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		virtual void Step() override;
+
+		// NOTE:
+		// Optimizer parameter groups must be reconstructed
+		// in the same order before loading state.
+
+		virtual void SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const override;
+		virtual void LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) override;
 
 	private:
 		T m_Beta1;
