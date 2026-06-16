@@ -1,3 +1,4 @@
+#include "sgd.h"
 // sgd.inl
 
 namespace MLCore::Optimizers {
@@ -46,6 +47,11 @@ namespace MLCore::Optimizers {
 				}
 			}
 		}
+	}
+
+	template<typename T>
+	std::string SGD<T>::TypeName() const {
+		return "SGD";
 	}
 
 	template <typename T>
@@ -173,6 +179,11 @@ namespace MLCore::Optimizers {
 				}
 			}
 		}
+	}
+
+	template<typename T>
+	std::string SGDMomentum<T>::TypeName() const {
+		return "SGDMomentum";
 	}
 
 	template <typename T>

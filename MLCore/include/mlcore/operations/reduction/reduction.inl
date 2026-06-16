@@ -159,8 +159,6 @@ namespace MLCore::Operations {
 					sum += A[base + j * inner];
 				}
 
-				/*result[o * inner + i] = sum;*/
-
 				// Let's see if this works
 				size_t tmp = o;
 

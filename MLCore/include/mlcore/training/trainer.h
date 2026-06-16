@@ -35,6 +35,14 @@ namespace MLCore::Training {
 	};
 
 	template <typename T>
+	struct TrainerState {
+		int currentEpoch = 0;
+		size_t globalStep = 0;
+		T bestValidationMetric = static_cast<T>(0);
+		bool hasBestMetric = false;
+	};
+
+	template <typename T>
 	class Trainer {
 	public:
 		Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn);
@@ -51,6 +59,10 @@ namespace MLCore::Training {
 
 		// Adding Metrics
 		void AddMetric(const std::string& name, MetricFn<T> metric);
+
+		// Trainer State
+		TrainerState<T> GetState() const;
+		void LoadState(const TrainerState<T>& state);
 
 	public:
 		// Optional hooks for debugging
@@ -72,6 +84,12 @@ namespace MLCore::Training {
 		// Non-owning pointer (scheduler must outlive trainer)
 		Schedulers::LRScheduler<T>* m_Scheduler = nullptr;
 		SchedulerStepMode m_SchedulerMode = SchedulerStepMode::Epoch;
+
+		// Trainer state
+		int m_CurrentEpoch = 0;
+		size_t m_GlobalStep = 0;
+		T m_BestValidationMetric = static_cast<T>(0);
+		bool m_HasBestMetric = false;
 	};
 }
 

@@ -322,9 +322,6 @@ namespace MLCore::TensorCore {
 
 		AccumulateGrad(gradOutput);
 
-		// May add this back in TensorImpl
-		/*m_Visited = true;*/
-
 		if (m_Impl->gradFn) {
 			m_Impl->gradFn->Backward(gradOutput, *(m_Impl->allocator));
 		}

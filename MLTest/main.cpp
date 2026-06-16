@@ -21,37 +21,37 @@ using namespace MLCore::Training;
 using namespace MLCore::Schedulers;
 using namespace MLCore::Serialization;
 
-void TestXOR(ArenaAllocator& allocator) {
+void TestXORSave(ArenaAllocator& allocator) {
     std::cout << "=== XOR Nonlinear Test ===\n";
 
     // -----------------------------
-    // 1. Dataset (AND)
+    // 1. Dataset (XOR)
     // -----------------------------
     Tensor<float> x{ {4, 2}, allocator };
     Tensor<float> y{ {4, 1}, allocator };
 
     // (0,0) -> 0
-    x[0] = 0; 
-    x[1] = 0; 
+    x[0] = 0;
+    x[1] = 0;
     y[0] = 0;
 
     // (0,1) -> 1
-    x[2] = 0; 
-    x[3] = 1; 
+    x[2] = 0;
+    x[3] = 1;
     y[1] = 1;
 
     // (1,0) -> 1
-    x[4] = 1; 
-    x[5] = 0; 
+    x[4] = 1;
+    x[5] = 0;
     y[2] = 1;
 
     // (1,1) -> 0
-    x[6] = 1; 
+    x[6] = 1;
     x[7] = 1;
     y[3] = 0;
 
     // -----------------------------
-    // 2. Model (3-layer MLP)
+    // 2. Base Model
     // -----------------------------
     Sequential<float> model;
 
@@ -59,11 +59,22 @@ void TestXOR(ArenaAllocator& allocator) {
     model.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
     model.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
 
-    // Collect parameters
-    auto params = model.GetParameters();
-    auto namedParams = model.GetNamedParameters();
+    Checkpoint::Save(model, "../../models/base_model.ckpt");
 
-    for (auto& [name, p] : namedParams) {
+    // Model A (Test Continuous)
+    Sequential<float> modelA;
+    modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+
+    Checkpoint::Load(modelA, "../../models/base_model.ckpt");
+
+    // Collect parameters
+    auto paramsA = modelA.GetParameters();
+    auto namedParamsA = modelA.GetNamedParameters();
+
+    std::cout << "Params at Beginning (Model A)" << std::endl;
+    for (auto& [name, p] : namedParamsA) {
         std::cout << "Name: " << name << std::endl;
         std::cout << "Values: " << std::endl;
 
@@ -79,22 +90,199 @@ void TestXOR(ArenaAllocator& allocator) {
         }
     }
 
-    SGDMomentum<float> opt{ params, 0.1f, 0.1f };
+    SGDMomentum<float> optA{ paramsA, 0.1f, 0.1f };
 
-    StepLR<float> scheduler{ opt, 1000, .99f };
+    StepLR<float> schedulerA{ optA, 1000, .99f };
 
     // -----------------------------
     // 3. Training loop
     // -----------------------------
-    Trainer<float> trainer{ model, opt,
+    Trainer<float> trainerA{ modelA, optA,
         [&](const auto& pred, const auto& target) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
         }
     };
 
-    trainer.SetScheduler(scheduler, SchedulerStepMode::Epoch);
+    trainerA.SetScheduler(schedulerA, SchedulerStepMode::Epoch);
 
-    trainer.AddMetric("Accuracy", [](const TensorCore::Tensor<float>& pred, const TensorCore::Tensor<float>& target) -> float {
+    trainerA.AddMetric("Accuracy", [](const TensorCore::Tensor<float>& pred, const TensorCore::Tensor<float>& target) -> float {
+        size_t correct = 0;
+        size_t size = pred.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            int predict = (pred[i] > 0) ? 1 : 0;
+
+            if (predict == static_cast<int>(target[i])) {
+                correct++;
+            }
+        }
+
+        return static_cast<float>(correct) / size;
+        });
+
+    trainerA.OnEpochEnd =
+         [](const EpochStats<float>& stats) {
+
+         if (stats.epoch % 500 == 0) {
+             std::cout
+                 << "Epoch " << stats.epoch
+                 << " | Train Loss: " << stats.trainLoss
+                 << " | Train Accuracy: "
+                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                 << " | Val Loss: "
+                 << stats.valLoss
+                 << " | Val Accuracy: "
+                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                 << '\n';
+
+             std::cout << "Learning Rates: ";
+
+             for (auto& lr : stats.learningRates) {
+                 std::cout << lr << " ";
+             }
+
+             std::cout << std::endl;
+         }
+     };
+
+    trainerA.Fit(x, y, x, y, 10000, 4);
+
+    std::cout << std::endl;
+    std::cout << "Params at End (Model A)" << std::endl;
+    for (auto& [name, p] : namedParamsA) {
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Values: " << std::endl;
+
+        auto& tensor = p.get().Data();
+        auto size = tensor.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            std::cout << tensor[i] << " ";
+
+            if (i == size - 1) {
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    std::cout << std::endl;
+
+    // Model B (Pause/Resume)
+    Sequential<float> modelB;
+    modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+
+    Checkpoint::Load(modelB, "../../models/base_model.ckpt");
+
+    // Collect parameters
+    auto paramsB = modelB.GetParameters();
+    auto namedParamsB = modelB.GetNamedParameters();
+
+    std::cout << "Params at Beginning (Model B)" << std::endl;
+    for (auto& [name, p] : namedParamsB) {
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Values: " << std::endl;
+
+        auto& tensor = p.get().Data();
+        auto size = tensor.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            std::cout << tensor[i] << " ";
+
+            if (i == size - 1) {
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    SGDMomentum<float> optB{ paramsB, 0.1f, 0.1f };
+
+    StepLR<float> schedulerB{ optB, 1000, .99f };
+
+    // -----------------------------
+    // 3. Training loop
+    // -----------------------------
+    Trainer<float> trainerB{ modelB, optB,
+        [&](const auto& pred, const auto& target) {
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
+        }
+    };
+
+    trainerB.SetScheduler(schedulerB, SchedulerStepMode::Epoch);
+
+    trainerB.AddMetric("Accuracy", [](const TensorCore::Tensor<float>& pred, const TensorCore::Tensor<float>& target) -> float {
+        size_t correct = 0;
+        size_t size = pred.NumElements();
+
+        for (size_t i = 0; i < size; ++i) {
+            int predict = (pred[i] > 0) ? 1 : 0;
+
+            if (predict == static_cast<int>(target[i])) {
+                correct++;
+            }
+        }
+
+        return static_cast<float>(correct) / size;
+        });
+
+    trainerB.OnEpochEnd =
+         [](const EpochStats<float>& stats) {
+
+         if (stats.epoch % 500 == 0) {
+             std::cout
+                 << "Epoch " << stats.epoch
+                 << " | Train Loss: " << stats.trainLoss
+                 << " | Train Accuracy: "
+                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                 << " | Val Loss: "
+                 << stats.valLoss
+                 << " | Val Accuracy: "
+                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                 << '\n';
+
+             std::cout << "Learning Rates: ";
+
+             for (auto& lr : stats.learningRates) {
+                 std::cout << lr << " ";
+             }
+
+             std::cout << std::endl;
+         }
+     };
+
+    trainerB.Fit(x, y, x, y, 5000, 4);
+
+    TrainerState<float> stateB = trainerB.GetState();
+
+    Checkpoint::Save(modelB, "../../models/modelB.ckpt", &optB, &schedulerB, &stateB);
+
+    // Resume Model
+    Sequential<float> modelC;
+    modelC.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelC.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
+    modelC.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+
+    // Collect parameters
+    auto paramsC = modelC.GetParameters();
+    auto namedParamsC = modelC.GetNamedParameters();
+
+    SGDMomentum<float> optC{ paramsC, 0.1f, 0.1f };
+
+    StepLR<float> schedulerC{ optC, 1000, .99f };
+
+    // -----------------------------
+    // 3. Training loop
+    // -----------------------------
+    Trainer<float> trainerC{ modelC, optC,
+        [&](const auto& pred, const auto& target) {
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
+        }
+    };
+
+    trainerC.SetScheduler(schedulerC, SchedulerStepMode::Epoch);
+
+    trainerC.AddMetric("Accuracy", [](const TensorCore::Tensor<float>& pred, const TensorCore::Tensor<float>& target) -> float {
         size_t correct = 0;
         size_t size = pred.NumElements();
 
@@ -109,34 +297,41 @@ void TestXOR(ArenaAllocator& allocator) {
         return static_cast<float>(correct) / size;
     });
 
-    trainer.OnEpochEnd =
-        [](const EpochStats<float>& stats) {
+    trainerC.OnEpochEnd =
+         [](const EpochStats<float>& stats) {
 
-        if (stats.epoch % 500 == 0) {
-            std::cout
-                << "Epoch " << stats.epoch
-                << " | Train Loss: " << stats.trainLoss
-                << " | Train Accuracy: "
-                << (stats.trainMetrics.at("Accuracy") * 100) << "%"
-                << " | Val Loss: "
-                << stats.valLoss
-                << " | Val Accuracy: "
-                << (stats.valMetrics.at("Accuracy") * 100) << "%"
-                << '\n';
+         if (stats.epoch % 500 == 0) {
+             std::cout
+                 << "Epoch " << stats.epoch
+                 << " | Train Loss: " << stats.trainLoss
+                 << " | Train Accuracy: "
+                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                 << " | Val Loss: "
+                 << stats.valLoss
+                 << " | Val Accuracy: "
+                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                 << '\n';
 
-            std::cout << "Learning Rates: ";
+             std::cout << "Learning Rates: ";
 
-            for (auto& lr : stats.learningRates) {
-                std::cout << lr << " ";
-            }
+             for (auto& lr : stats.learningRates) {
+                 std::cout << lr << " ";
+             }
 
-            std::cout << std::endl;
-        }
-    };
+             std::cout << std::endl;
+         }
+     };
 
-    trainer.Fit(x, y, x, y, 10000, 4);
+    TrainerState<float> stateC;
 
-    for (auto& [name, p] : namedParams) {
+    Checkpoint::Load(modelC, "../../models/modelB.ckpt", &optC, &schedulerC, &stateC);
+    trainerC.LoadState(stateC);
+
+    trainerC.Fit(x, y, x, y, 5000, 4);
+
+    std::cout << std::endl;
+    std::cout << "Params at End (Model B)" << std::endl;
+    for (auto& [name, p] : namedParamsC) {
         std::cout << "Name: " << name << std::endl;
         std::cout << "Values: " << std::endl;
 
@@ -157,46 +352,7 @@ int main() {
     ArenaAllocator allocator;
 
     // Model Training Test
-    TestXOR(allocator);
-
-    // Model Saving Test
-    Sequential<float> modelA;
-    modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
-    modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
-
-    Checkpoint::Save(modelA, "../../models/xorV2.ckpt");
-
-    Sequential<float> modelB;
-    modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
-    modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
-
-    Checkpoint::Load(modelB, "../../models/xorV2.ckpt");
-
-    auto paramsA = modelA.GetParameters();
-    auto paramsB = modelB.GetParameters();
-
-    bool equal = true;
-
-    for (size_t p = 0; p < paramsA.size(); ++p) {
-        auto& tensorA = paramsA[p].get().Data();
-        auto& tensorB = paramsB[p].get().Data();
-
-        if (tensorA.NumElements() != tensorB.NumElements()) {
-            equal = false;
-            break;
-        }
-
-        for (size_t i = 0; i < tensorA.NumElements(); ++i) {
-            if (tensorA[i] != tensorB[i]) {
-                equal = false;
-                break;
-            }
-        }
-    }
-
-    std::cout << (equal ? "Checkpoint PASSED" : "Checkpoint FAILED") << '\n';
+    TestXORSave(allocator);
 
     return 0;
 }

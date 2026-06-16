@@ -1,5 +1,6 @@
 // trainer.inl
 #include <mlCore/data/tensorDataset.h>
+#include "trainer.h"
 
 namespace MLCore::Training {
 	template <typename T>
@@ -11,7 +12,9 @@ namespace MLCore::Training {
 	void Trainer<T>::Fit(Data::DataLoader<T>& dataLoader, int epochs) {
 		m_Model.Train();
 
-		for (int epoch = 0; epoch < epochs; ++epoch) {
+		int endEpoch = m_CurrentEpoch + epochs;
+
+		for (; m_CurrentEpoch < endEpoch; ++m_CurrentEpoch) {
 			dataLoader.Reset();
 
 			T epochLoss = static_cast<T>(0);
@@ -39,6 +42,7 @@ namespace MLCore::Training {
 				m_Optimizer.ZeroGrad();
 				loss.Backward();
 				m_Optimizer.Step();
+				m_GlobalStep++;
 
 				if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Batch) {
 					m_Scheduler->UpdateLR();
@@ -48,7 +52,7 @@ namespace MLCore::Training {
 				batchCount++;
 
 				if (OnBatchEnd) {
-					OnBatchEnd(epoch, pred, y);
+					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
 			}
 
@@ -65,14 +69,13 @@ namespace MLCore::Training {
 			if (OnEpochEnd) {
 				EpochStats<T> stats;
 
-				stats.epoch = epoch;
+				stats.epoch = m_CurrentEpoch;
 				stats.trainLoss = epochLoss;
 				stats.trainMetrics = std::move(epochMetrics);
 
 				const std::vector<Optimizers::ParameterGroup<T>>& paramGroups = m_Optimizer.ParamGroups();
 
 				for (const Optimizers::ParameterGroup<T>& group : paramGroups) {
-					/*stats.learningRate = m_Optimizer.ParamGroups()[0].learningRate;*/
 					stats.learningRates.push_back(group.learningRate);
 				}
 
@@ -97,7 +100,9 @@ namespace MLCore::Training {
 	void Trainer<T>::Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs) {
 		m_Model.Train();
 
-		for (int epoch = 0; epoch < epochs; ++epoch) {
+		int endEpoch = m_CurrentEpoch + epochs;
+
+		for (; m_CurrentEpoch < endEpoch; ++m_CurrentEpoch) {
 			trainLoader.Reset();
 
 			T epochLoss = static_cast<T>(0);
@@ -125,6 +130,7 @@ namespace MLCore::Training {
 				m_Optimizer.ZeroGrad();
 				loss.Backward();
 				m_Optimizer.Step();
+				m_GlobalStep++;
 
 				if (m_Scheduler && m_SchedulerMode == SchedulerStepMode::Batch) {
 					m_Scheduler->UpdateLR();
@@ -134,7 +140,7 @@ namespace MLCore::Training {
 				batchCount++;
 
 				if (OnBatchEnd) {
-					OnBatchEnd(epoch, pred, y);
+					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
 			}
 
@@ -153,7 +159,18 @@ namespace MLCore::Training {
 			if (OnEpochEnd) {
 				EpochStats<T> stats;
 
-				stats.epoch = epoch;
+				if (!valResult.metrics.empty()) {
+					auto it = valResult.metrics.begin();
+
+					T metric = it->second;
+
+					if (!m_HasBestMetric || valResult.loss < m_BestValidationMetric) {
+						m_BestValidationMetric = valResult.loss;
+						m_HasBestMetric = true;
+					}
+				}
+
+				stats.epoch = m_CurrentEpoch;
 				stats.trainLoss = epochLoss;
 				stats.valLoss = valResult.loss;
 				stats.trainMetrics = std::move(epochMetrics);
@@ -205,6 +222,26 @@ namespace MLCore::Training {
 	template<typename T>
 	void Trainer<T>::AddMetric(const std::string& name, MetricFn<T> metric) {
 		m_Metrics[name] = std::move(metric);
+	}
+
+	template<typename T>
+	TrainerState<T> Trainer<T>::GetState() const {
+		TrainerState<T> state;
+
+		state.currentEpoch = m_CurrentEpoch;
+		state.globalStep = m_GlobalStep;
+		state.bestValidationMetric = m_BestValidationMetric;
+		state.hasBestMetric = m_HasBestMetric;
+
+		return state;
+	}
+
+	template<typename T>
+	void Trainer<T>::LoadState(const TrainerState<T>& state) {
+		m_CurrentEpoch = state.currentEpoch;
+		m_GlobalStep = state.globalStep;
+		m_BestValidationMetric = state.bestValidationMetric;
+		m_HasBestMetric = state.hasBestMetric;
 	}
 
 	template <typename T>

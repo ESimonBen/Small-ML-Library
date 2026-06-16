@@ -5,7 +5,8 @@
 
 namespace MLCore::Serialization {
 	template <typename T>
-	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path) {
+	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path, const Optimizers::Optimizer<T>* opt,
+						  const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
 		// Create the file and the directories it's stored in
 		std::filesystem::path filePath = path;
 		std::filesystem::path parentPath = filePath.parent_path();
@@ -37,6 +38,10 @@ namespace MLCore::Serialization {
 			SaveV2(model, writer);
 			break;
 
+		case 3:
+			SaveV3(model, writer, opt, scheduler, state);
+			break;
+
 		default:
 			throw std::runtime_error("ERROR: Save: Support for this version doesn't exist");
 		}
@@ -45,7 +50,8 @@ namespace MLCore::Serialization {
 	}
 
 	template <typename T>
-	void Checkpoint::Load(NN::Module<T>& model, const std::string& path) {
+	void Checkpoint::Load(NN::Module<T>& model, const std::string& path, Optimizers::Optimizer<T>* opt,
+						  Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state) {
 		std::ifstream in{ path, std::ios::binary };
 
 		if (!in) {
@@ -78,6 +84,10 @@ namespace MLCore::Serialization {
 
 		case 2:
 			LoadV2(model, reader);
+			break;
+
+		case 3:
+			LoadV3(model, reader, opt, scheduler, state);
 			break;
 
 		default:
@@ -172,6 +182,130 @@ namespace MLCore::Serialization {
 
 			TensorCore::Tensor<T>& tensor = iter->second->Data();
 			reader.ReadTensor(tensor);
+		}
+	}
+
+	template <typename T>
+	void Checkpoint::SaveV3(const NN::Module<T>& model, BinaryWriter& writer, const Optimizers::Optimizer<T>* opt, const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
+		SaveV2(model, writer);
+
+		writer.Write(model.IsTraining());
+
+		if (opt) {
+			writer.Write(Section::Optimizer);
+			size_t nameLength = opt->TypeName().size();
+			writer.Write(nameLength);
+			writer.WriteArray(opt->TypeName().data(), nameLength);
+			opt->SaveState(writer, model);
+		}
+
+		if (scheduler) {
+			writer.Write(Section::Scheduler);
+			size_t nameLength = scheduler->TypeName().size();
+			writer.Write(nameLength);
+			writer.WriteArray(scheduler->TypeName().data(), nameLength);
+			scheduler->SaveState(writer);
+		}
+
+		if (state) {
+			writer.Write(Section::Trainer);
+			writer.Write(state->currentEpoch);
+			writer.Write(state->globalStep);
+			writer.Write(state->hasBestMetric);
+
+			if (state->hasBestMetric) {
+				writer.Write(state->bestValidationMetric);
+			}
+		}
+
+		writer.Write(Section::End);
+	}
+
+	template <typename T>
+	void Checkpoint::LoadV3(NN::Module<T>& model, BinaryReader& reader, Optimizers::Optimizer<T>* opt, Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state) {
+		LoadV2(model, reader);
+
+		bool training;
+		reader.Read(training);
+
+		if (training) {
+			model.Train();
+		}
+		else {
+			model.Evaluate();
+		}
+
+		// New way
+		while (true) {
+			Section section;
+			reader.Read(section);
+
+			if (section == Section::End) {
+				break;
+			}
+
+			switch (section) {
+			case Section::Optimizer:
+				{
+					if (!opt) {
+						throw std::runtime_error("ERROR: Checkpoint contains optimizer state, but no optimizer was provided");
+					}
+					
+					size_t nameLength;
+					reader.Read(nameLength);
+
+					std::string expected = opt->TypeName();
+					std::string actual(nameLength, '\0');
+					reader.ReadArray(actual.data(), nameLength);
+
+					if (expected != actual) {
+						throw std::runtime_error("ERROR: Optimizer type mismatch");
+					}
+
+					opt->LoadState(reader, model);
+				}
+				break;
+
+			case Section::Scheduler:
+				{
+					if (!scheduler) {
+						throw std::runtime_error("ERROR: Checkpoint contains scheduler state, but no scheduler was provided");
+					}
+					
+					size_t nameLength;
+					reader.Read(nameLength);
+
+					std::string expected = scheduler->TypeName();
+					std::string actual(nameLength, '\0');
+					reader.ReadArray(actual.data(), nameLength);
+
+					if (expected != actual) {
+						throw std::runtime_error("ERROR: Scheduler type mismatch");
+					}
+
+					scheduler->LoadState(reader);
+				}
+				break;
+
+			case Section::Trainer:
+				{
+					if (!state) {
+						throw std::runtime_error("ERROR: Checkpoint contains trainer state, but no TrainerState was provided");
+					}
+
+					reader.Read(state->currentEpoch);
+					reader.Read(state->globalStep);
+					reader.Read(state->hasBestMetric);
+
+					if (state->hasBestMetric) {
+						reader.Read(state->bestValidationMetric);
+					}
+				}
+				break;
+
+			default:
+				throw std::runtime_error("ERROR: Unknown checkpoint section");
+			}
 		}
 	}
 }

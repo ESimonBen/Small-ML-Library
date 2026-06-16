@@ -18,8 +18,14 @@ namespace MLCore::Schedulers {
 
 		virtual void UpdateLR() = 0;
 
+		virtual std::string TypeName() const = 0;
+
 		virtual void SaveState(Serialization::BinaryWriter& writer) const = 0;
 		virtual void LoadState(Serialization::BinaryReader& reader) = 0;
+
+		const std::vector<T>& GetLastLR() const {
+			return m_LastLRs;
+		}
 
 	protected:
 		Optimizers::Optimizer<T>& m_Opt;

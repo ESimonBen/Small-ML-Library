@@ -35,10 +35,19 @@ namespace MLCore::Schedulers {
 			}
 		}
 
+		virtual std::string TypeName() const override {
+			return "StepLR";
+		}
+
 		virtual void SaveState(Serialization::BinaryWriter& writer) const override {
 			writer.Write(m_StepSize);
 			writer.Write(m_Gamma);
 			writer.Write(m_Step);
+
+			size_t numLRs = this->m_LastLRs.size();
+
+			writer.Write(numLRs);
+			writer.WriteArray(this->m_LastLRs.data(), numLRs);
 		}
 
 		virtual void LoadState(Serialization::BinaryReader& reader) override {
@@ -57,6 +66,16 @@ namespace MLCore::Schedulers {
 			if (m_Step < 0 || m_Step >= m_StepSize) {
 				throw std::runtime_error("ERROR: Invalid StepLR step count");
 			}
+
+			size_t numLRs;
+			reader.Read(numLRs);
+
+			if (numLRs != this->m_Opt.ParamGroups().size()) {
+				throw std::runtime_error("ERROR: Scheduler parameter group mismatch");
+			}
+
+			this->m_LastLRs.resize(numLRs);
+			reader.ReadArray(this->m_LastLRs.data(), numLRs);
 		}
 
 	private:

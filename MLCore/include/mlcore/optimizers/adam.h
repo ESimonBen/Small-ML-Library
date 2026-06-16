@@ -18,6 +18,8 @@ namespace MLCore::Optimizers {
 
 		virtual void Step() override;
 
+		virtual std::string TypeName() const override;
+
 		// NOTE:
 		// Optimizer parameter groups must be reconstructed
 		// in the same order before loading state.
@@ -48,6 +50,8 @@ namespace MLCore::Optimizers {
 		AdamW(std::vector<ParameterGroup<T>> groups, T beta1 = static_cast<T>(.9), T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		virtual void Step() override;
+
+		virtual std::string TypeName() const override;
 
 		// NOTE:
 		// Optimizer parameter groups must be reconstructed

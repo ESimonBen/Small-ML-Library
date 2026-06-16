@@ -24,6 +24,8 @@ namespace MLCore::Optimizers {
 		std::vector<ParameterGroup<T>>& ParamGroups();
 		void SetClipGradNorm(T maxNorm);
 
+		virtual std::string TypeName() const = 0;
+
 		// Serialization
 		virtual void SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const = 0;
 		virtual void LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) = 0;

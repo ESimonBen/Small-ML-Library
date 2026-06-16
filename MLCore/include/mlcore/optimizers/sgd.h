@@ -14,6 +14,8 @@ namespace MLCore::Optimizers {
 
 		virtual void Step() override;
 
+		virtual std::string TypeName() const override;
+
 		// NOTE:
 		// Optimizer parameter groups must be reconstructed
 		// in the same order before loading state.
@@ -31,6 +33,8 @@ namespace MLCore::Optimizers {
 		SGDMomentum(std::vector<ParameterGroup<T>> groups, T momentum, T dampening = static_cast<T>(0), bool nesterov = false);
 
 		virtual void Step() override;
+
+		virtual std::string TypeName() const override;
 
 		// NOTE:
 		// Optimizer parameter groups must be reconstructed

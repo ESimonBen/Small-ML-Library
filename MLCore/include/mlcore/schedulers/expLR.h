@@ -38,13 +38,22 @@ namespace MLCore::Schedulers {
 			}
 		}
 
+		virtual std::string TypeName() const override {
+			return "ExponentialLR";
+		}
+
 		virtual void SaveState(Serialization::BinaryWriter& writer) const override {
 			writer.Write(m_Gamma);
 			writer.Write(m_Multiplier);
 
-			size_t numLRs = m_BaseLRs.size();
+			size_t n = m_BaseLRs.size();
+			writer.Write(n);
+			writer.WriteArray(m_BaseLRs.data(), n);
+
+			size_t numLRs = this->m_LastLRs.size();
+
 			writer.Write(numLRs);
-			writer.WriteArray(m_BaseLRs.data(), numLRs);
+			writer.WriteArray(this->m_LastLRs.data(), numLRs);
 		}
 
 		virtual void LoadState(Serialization::BinaryReader& reader) override {
@@ -59,14 +68,24 @@ namespace MLCore::Schedulers {
 				throw std::runtime_error("ERROR: Invalid ExponentialLR multiplier");
 			}
 
+			size_t n;
+			reader.Read(n);
+			if (n != this->m_Opt.ParamGroups().size()) {
+				throw std::runtime_error("ERROR: Scheduler parameter group mismatch");
+			}
+
+			m_BaseLRs.resize(n);
+			reader.ReadArray(m_BaseLRs.data(), n);
+
 			size_t numLRs;
 			reader.Read(numLRs);
+
 			if (numLRs != this->m_Opt.ParamGroups().size()) {
 				throw std::runtime_error("ERROR: Scheduler parameter group mismatch");
 			}
 
-			m_BaseLRs.resize(numLRs);
-			reader.ReadArray(m_BaseLRs.data(), numLRs);
+			this->m_LastLRs.resize(numLRs);
+			reader.ReadArray(this->m_LastLRs.data(), numLRs);
 		}
 
 	private:

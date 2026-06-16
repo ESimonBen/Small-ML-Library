@@ -2,6 +2,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <mlCore/serialization/binaryArchive.h>
+#include "adam.h"
 
 namespace MLCore::Optimizers {
 	template <typename T>
@@ -138,6 +139,11 @@ namespace MLCore::Optimizers {
 				}
 			}
 		}
+	}
+
+	template<typename T>
+	std::string Adam<T>::TypeName() const {
+		return "Adam";
 	}
 
 	template <typename T>
@@ -401,6 +407,11 @@ namespace MLCore::Optimizers {
 				}
 			}
 		}
+	}
+
+	template<typename T>
+	std::string AdamW<T>::TypeName() const {
+		return "AdamW";
 	}
 
 	template <typename T>
