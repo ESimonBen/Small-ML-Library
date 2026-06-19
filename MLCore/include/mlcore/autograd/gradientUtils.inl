@@ -1,4 +1,4 @@
-// gradientUtils.inl
+ /// gradientUtils.inl
 #include <mlCore/operations/broadcast/broadcast.h>
 #include <mlCore/operations/reduction/reduction.h>
 

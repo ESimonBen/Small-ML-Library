@@ -1,4 +1,4 @@
-// linalg.inl
+ /// linalg.inl
 #include <vector>
 #include <stdexcept>
 #include <mlCore/autograd/functions/linearAlgebra/linalgGradFn.h>
@@ -37,7 +37,7 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Transpose(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		if (A.Rank() != 2) {
@@ -62,7 +62,7 @@ namespace MLCore::Operations {
 
 		return B;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (A.Rank() != 1 || B.Rank() != 1 || A.NumElements() != B.NumElements()) {

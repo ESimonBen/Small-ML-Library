@@ -1,4 +1,4 @@
-// sequential.inl
+ /// sequential.inl
 #include <utility>
 #include <type_traits>
 
@@ -19,12 +19,12 @@ namespace MLCore::NN {
 	void Sequential<T>::Add(const std::string& name, std::unique_ptr<Module<T>> mod) {
 		Module<T>::Add(name, std::move(mod));
 	}
-
+	
 	template <typename T>
 	void Sequential<T>::Add(std::unique_ptr<Module<T>> mod) {
 		Module<T>::Add(std::move(mod));
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Sequential<T>::Forward(const TensorCore::Tensor<T>& input) const {
 		TensorCore::Tensor<T> inp = input;

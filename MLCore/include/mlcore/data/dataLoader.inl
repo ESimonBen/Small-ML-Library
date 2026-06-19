@@ -1,4 +1,4 @@
-// dataLoader.inl
+ /// dataLoader.inl
 #include <random>
 #include <numeric>
 #include <algorithm>
@@ -13,7 +13,7 @@ namespace MLCore::Data {
 
 		Reset();
 	}
-
+	
 	template <typename T>
 	void DataLoader<T>::Reset(bool reshuffle) {
 		m_CurrentIndex = 0;
@@ -28,12 +28,12 @@ namespace MLCore::Data {
 			std::shuffle(m_Indices.begin(), m_Indices.end(), std::mt19937(rand()));
 		}
 	}
-
+	
 	template <typename T>
 	bool DataLoader<T>::HasNext() const {
 		return m_CurrentIndex < m_Indices.size();
 	}
-
+	
 	template <typename T>
 	std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> DataLoader<T>::Next() {
 		if (!HasNext()) {

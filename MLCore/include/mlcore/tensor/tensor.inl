@@ -1,4 +1,4 @@
-// tensor.inl
+ /// tensor.inl
 #include <stdexcept>
 
 namespace MLCore::TensorCore {
@@ -8,22 +8,22 @@ namespace MLCore::TensorCore {
 
 		m_Impl = std::make_shared<Impl>( shape, std::move(storage), &allocator, 0, false, nullptr, nullptr);
 	}
-
+	
 	template <typename T>
 	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims, Memory::ArenaAllocator& allocator)
 		: Tensor(Utils::Shape{dims}, allocator)
 	{}
-
+	
 	template <typename T>
 	inline Tensor<T>::Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator)
 		: Tensor(Utils::Shape{dims}, allocator)
 	{}
-
+	
 	template <typename T>
 	inline Tensor<T>::Tensor(std::shared_ptr<Impl> impl)
 		: m_Impl(std::move(impl))
 	{}
-
+	
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Clone() const {
 		Tensor<T> out{ m_Impl->shape, (*m_Impl->allocator) };
@@ -35,15 +35,15 @@ namespace MLCore::TensorCore {
 
 		return out;
 	}
-
+	
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Detach() const {
 		auto newImpl = std::make_shared<Impl>(
 			m_Impl->shape,
-			m_Impl->storage,              // shared storage (shallow copy OK)
+			m_Impl->storage,              /// shared storage (shallow copy OK)
 			m_Impl->allocator,
 			m_Impl->offset,
-			false,                        // requiresGrad = false
+			false,                        /// requiresGrad = false
 			nullptr,
 			nullptr
 		);
@@ -51,17 +51,17 @@ namespace MLCore::TensorCore {
 		// This does a std::move of this shared_ptr, which essentially creates a way to view the data without creating it
 		return Tensor<T>{newImpl};
 	}
-
+	
 	template <typename T>
 	inline const Utils::Shape& Tensor<T>::GetShape() const {
 		return m_Impl->shape;
 	}
-
+	
 	template <typename T>
 	inline size_t Tensor<T>::NumElements() const {
 		return m_Impl->shape.NumElements();
 	}
-
+	
 	template <typename T>
 	inline void Tensor<T>::Fill(const T& value) {
 		size_t size = NumElements();
@@ -69,62 +69,62 @@ namespace MLCore::TensorCore {
 			m_Impl->storage.Data()[m_Impl->offset + i] = value;
 		}
 	}
-
+	
 	template <typename T>
 	inline T* Tensor<T>::Data() {
 		return m_Impl->storage.Data() + m_Impl->offset;
 	}
-
+	
 	template <typename T>
 	inline const T* Tensor<T>::Data() const {
 		return m_Impl->storage.Data() + m_Impl->offset;
 	}
-
+	
 	template <typename T>
 	inline size_t Tensor<T>::Rank() const {
 		return m_Impl->shape.Rank();
 	}
-
+	
 	template <typename T>
 	inline const std::vector<size_t>& Tensor<T>::Dims() const {
 		return m_Impl->shape.Dims();
 	}
-
+	
 	template <typename T>
 	Memory::ArenaAllocator& Tensor<T>::GetAllocator() {
 		return *(m_Impl->allocator);
 	}
-
+	
 	template <typename T>
 	Memory::ArenaAllocator& Tensor<T>::GetAllocator() const {
 		return *(m_Impl->allocator);
 	}
-
+	
 	template <typename T>
 	std::shared_ptr<TensorImpl<T>> Tensor<T>::GetImpl() const {
 		return m_Impl;
 	}
-
+	
 	template <typename T>
 	inline T* Tensor<T>::begin() {
 		return m_Impl->storage.Data() + m_Impl->offset;
 	}
-
+	
 	template <typename T>
 	inline T* Tensor<T>::end() {
 		return m_Impl->storage.Data() + m_Impl->offset + NumElements();
 	}
-
+	
 	template <typename T>
 	inline const T* Tensor<T>::begin() const {
 		return m_Impl->storage.Data() + m_Impl->offset;
 	}
-
+	
 	template <typename T>
 	inline const T* Tensor<T>::end() const {
 		return m_Impl->storage.Data() + m_Impl->offset + NumElements();
 	}
-
+	
 	template <typename T>
 	inline T& Tensor<T>::operator[](size_t i) {
 		if (i >= NumElements()) {
@@ -133,7 +133,7 @@ namespace MLCore::TensorCore {
 
 		return m_Impl->storage.Data()[i + m_Impl->offset];
 	}
-
+	
 	template <typename T>
 	inline const T& Tensor<T>::operator[](size_t i) const {
 		if (i >= NumElements()) {
@@ -142,8 +142,7 @@ namespace MLCore::TensorCore {
 
 		return m_Impl->storage.Data()[i + m_Impl->offset];
 	}
-
-
+	
 	template <typename T>
 	inline T& Tensor<T>::operator()(const std::vector<size_t>& indices) {
 		size_t offset = m_Impl->shape.FlattenIndex(indices);
@@ -154,7 +153,7 @@ namespace MLCore::TensorCore {
 
 		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
-
+	
 	template <typename T>
 	inline const T& Tensor<T>::operator()(const std::vector<size_t>& indices) const {
 		size_t offset = m_Impl->shape.FlattenIndex(indices);
@@ -209,17 +208,17 @@ namespace MLCore::TensorCore {
 
 		return m_Impl->storage.Data()[m_Impl->offset + offset];
 	}
-
+	
 	template <typename T>
 	bool Tensor<T>::RequiresGrad() const {
 		return m_Impl->requiresGrad;
 	}
-
+	
 	template <typename T>
 	bool Tensor<T>::HasGrad() const {
 		return m_Impl->grad != nullptr;
 	}
-
+	
 	template <typename T>
 	void Tensor<T>::ZeroGrad() {
 		if (!m_Impl->grad) {
@@ -235,12 +234,12 @@ namespace MLCore::TensorCore {
 			}
 		}
 	}
-
+	
 	template <typename T>
 	void Tensor<T>::SetRequiresGrad(bool require) {
 		m_Impl->requiresGrad = require;
 	}
-
+	
 	template <typename T>
 	Tensor<T> Tensor<T>::Grad() {
 		if (!m_Impl->grad) {
@@ -251,7 +250,7 @@ namespace MLCore::TensorCore {
 
 		return Tensor<T>{m_Impl->grad};
 	}
-
+	
 	template <typename T>
 	const Tensor<T> Tensor<T>::Grad() const {
 		if (!m_Impl->grad) {
@@ -260,22 +259,22 @@ namespace MLCore::TensorCore {
 
 		return Tensor<T>{m_Impl->grad};
 	}
-
+	
 	template <typename T>
 	std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() {
 		return m_Impl->gradFn;
 	}
-
+	
 	template <typename T>
 	const std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() const {
 		return m_Impl->gradFn;
 	}
-
+	
 	template <typename T>
 	void Tensor<T>::SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn) {
 		m_Impl->gradFn = std::move(gradFn);
 	}
-
+	
 	template <typename T>
 	void Tensor<T>::AccumulateGrad(const Tensor<T>& gradInput) {
 		if (!m_Impl->requiresGrad) {
@@ -296,8 +295,7 @@ namespace MLCore::TensorCore {
 			gradTensor[i] += gradInput[i];
 		}
 	}
-
-	// Should get rid of this
+	
 	template<typename T>
 	inline void Tensor<T>::Backward() {
 		if (!m_Impl->requiresGrad) {
@@ -313,7 +311,7 @@ namespace MLCore::TensorCore {
 
 		Backward(gradOutput);
 	}
-
+	
 	template <typename T>
 	void Tensor<T>::Backward(const Tensor<T>& gradOutput) {
 		if (!m_Impl->requiresGrad) {
@@ -326,7 +324,7 @@ namespace MLCore::TensorCore {
 			m_Impl->gradFn->Backward(gradOutput, *(m_Impl->allocator));
 		}
 	}
-
+	
 	template <typename T>
 	Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const{
 		if (Rank() < 1) {
@@ -354,7 +352,7 @@ namespace MLCore::TensorCore {
 
 		return Tensor<T>{newImpl};
 	}
-
+	
 	template <typename T>
 	Tensor<T> Tensor<T>::Concat(const std::vector<Tensor<T>>& tensors) {
 		if (tensors.empty()) {

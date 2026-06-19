@@ -1,4 +1,4 @@
-// elementwiseGradFn.inl
+ /// elementwiseGradFn.inl
 #include <mlCore/autograd/gradientUtils.h>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/elementwise/elementwise.h>
@@ -8,7 +8,7 @@ namespace MLCore::AutoGrad {
 	AddGradFn<T>::AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>({ a, b })
 	{}
-
+	
 	template <typename T>
 	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0] || !this->inputs[1]) {
@@ -28,12 +28,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	SubGradFn<T>::SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>({ a, b })
 	{}
-
+	
 	template <typename T>
 	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0] || !this->inputs[1]) {
@@ -55,12 +55,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	MulGradFn<T>::MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>({ a, b })
 	{}
-
+	
 	template <typename T>
 	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0] || !this->inputs[1]) {
@@ -85,12 +85,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	DivGradFn<T>::DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>({ a, b })
 	{}
-
+	
 	template <typename T>
 	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0] || !this->inputs[1]) {
@@ -120,12 +120,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	PowerGradFn<T>::PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent)
 		: GradFn<T>(a), exponent(exponent)
 	{}
-
+	
 	template <typename T>
 	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0]) {
@@ -149,12 +149,12 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
-
+	
 	template <typename T>
 	AbsGradFn<T>::AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
 		: GradFn<T>(input)
 	{}
-
+	
 	template <typename T>
 	void AbsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0]) {
@@ -180,12 +180,12 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
-
+	
 	template <typename T>
 	ClampGradFn<T>::ClampGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, T min, T max)
 		: GradFn<T>(input), m_Min(min), m_Max(max)
 	{}
-
+	
 	template <typename T>
 	void ClampGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0]) {
@@ -215,12 +215,12 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
-
+	
 	template <typename T>
 	LogGradFn<T>::LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
 		: GradFn<T>(input)
 	{}
-
+	
 	template <typename T>
 	void LogGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0]) {
@@ -241,12 +241,12 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
-
+	
 	template <typename T>
 	ExpGradFn<T>::ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
 		: GradFn<T>(input)
 	{}
-
+	
 	template <typename T>
 	void ExpGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		if (!this->inputs[0]) {

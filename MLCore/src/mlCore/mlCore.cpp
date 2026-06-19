@@ -1,0 +1,3 @@
+/// mlCore.cpp
+
+namespace MLCore{}

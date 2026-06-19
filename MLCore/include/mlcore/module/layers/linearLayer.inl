@@ -1,4 +1,4 @@
-// linearLayer.inl
+ /// linearLayer.inl
 #include <mlCore/operations/linearAlgebra/linalg.h>
 #include <mlCore/operations/elementwise/elementwise.h>
 
@@ -12,29 +12,29 @@ namespace MLCore::NN {
 		Init::Init(m_Weight.Data(), in, out, weightInit);
 		Init::Init(m_Bias.Data(), 1, out, biasInit);
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> LinearLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
 		Memory::ArenaAllocator& allocator = input.GetAllocator();
 
-		TensorCore::Tensor<T> mul = Operations::MatMultiply(input, m_Weight.Data(), allocator); // Matrix multiply weight with input
-		TensorCore::Tensor<T> result = Operations::Add(mul, m_Bias.Data(), allocator); // Add the bias
+		TensorCore::Tensor<T> mul = Operations::MatMultiply(input, m_Weight.Data(), allocator); /// Matrix multiply weight with input
+		TensorCore::Tensor<T> result = Operations::Add(mul, m_Bias.Data(), allocator); /// Add the bias
 
 		return result;
 	}
-
+	
 	template <typename T>
 	void LinearLayer<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) {
 		out.push_back(std::ref(m_Weight));
 		out.push_back(std::ref(m_Bias));
 	}
-
+	
 	template <typename T>
 	void LinearLayer<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
 		out.push_back(std::ref(m_Weight));
 		out.push_back(std::ref(m_Bias));
 	}
-
+	
 	template <typename T>
 	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
 		auto MakeName = [&](const std::string& suffix) {
@@ -44,7 +44,7 @@ namespace MLCore::NN {
 		out.emplace_back(MakeName("weight"), std::ref(m_Weight));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));
 	}
-
+	
 	template <typename T>
 	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
 		auto MakeName = [&](const std::string& suffix) {

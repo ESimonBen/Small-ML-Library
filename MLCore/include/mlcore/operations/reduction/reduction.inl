@@ -1,4 +1,4 @@
-// reduction.inl
+ /// reduction.inl
 #include <limits>
 #include <concepts>
 #include <stdexcept>
@@ -33,7 +33,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::is_floating_point_v<T>, "ERROR: T must be a floating point type");
@@ -52,7 +52,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MaxAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
@@ -79,7 +79,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MinAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
@@ -106,7 +106,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
 		if (axis >= A.Rank()) {
@@ -132,7 +132,7 @@ namespace MLCore::Operations {
 
 
 		TensorCore::Tensor<T> result{ outDims, allocator };
-		result.Fill(static_cast<T>(0)); // Temporary fix
+		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		// Outer and inner size calculation
 		size_t outer = 1;
@@ -190,7 +190,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisMean(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
 		if (axis >= A.Rank()) {
@@ -203,7 +203,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisMax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
 		if (axis >= A.Rank()) {
@@ -227,7 +227,7 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> result{ outDims, allocator };
-		result.Fill(static_cast<T>(0)); // Temporary fix
+		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		// Outer and inner size calculation
 		size_t outer = 1;
@@ -264,7 +264,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisMin(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
 		if (axis >= A.Rank()) {
@@ -288,7 +288,7 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> result{ outDims, allocator };
-		result.Fill(static_cast<T>(0)); // Temporary fix
+		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		// Outer and inner size calculation
 		size_t outer = 1;

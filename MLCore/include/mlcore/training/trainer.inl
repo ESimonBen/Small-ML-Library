@@ -1,4 +1,4 @@
-// trainer.inl
+ /// trainer.inl
 #include <mlCore/data/tensorDataset.h>
 #include "trainer.h"
 
@@ -7,7 +7,7 @@ namespace MLCore::Training {
 	Trainer<T>::Trainer(NN::Module<T>& model, Optimizers::Optimizer<T>& optimizer, LossFn<T> lossFn)
 		: m_Model(model), m_Optimizer(optimizer), m_LossFn(lossFn)
 	{}
-
+	
 	template <typename T>
 	void Trainer<T>::Fit(Data::DataLoader<T>& dataLoader, int epochs) {
 		m_Model.Train();
@@ -87,7 +87,7 @@ namespace MLCore::Training {
 			}
 		}
 	}
-
+	
 	template <typename T>
 	void Trainer<T>::Fit(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, int epochs, size_t batchSize) {
 		Data::TensorDataset<T> dataset{ inputs, targets };
@@ -95,7 +95,7 @@ namespace MLCore::Training {
 
 		Fit(dataLoader, epochs);
 	}
-
+	
 	template <typename T>
 	void Trainer<T>::Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs) {
 		m_Model.Train();
@@ -191,7 +191,7 @@ namespace MLCore::Training {
 		}
 
 	}
-
+	
 	template <typename T>
 	void Trainer<T>::Fit(const TensorCore::Tensor<T>& trainInputs, const TensorCore::Tensor<T>& trainTargets, const TensorCore::Tensor<T>& valInputs, const TensorCore::Tensor<T>& valTargets, int epochs, size_t batchSize) {
 		Data::TensorDataset<T> trainSet{ trainInputs, trainTargets };
@@ -202,28 +202,28 @@ namespace MLCore::Training {
 
 		Fit(trainLoader, valLoader, epochs);
 	}
-
+	
 	template <typename T>
 	void Trainer<T>::SetScheduler(Schedulers::LRScheduler<T>& scheduler, SchedulerStepMode schedulerMode) {
 		m_Scheduler = &scheduler;
 		m_SchedulerMode = schedulerMode;
 	}
-
+	
 	template <typename T>
 	bool Trainer<T>::HasScheduler() const {
 		return m_Scheduler != nullptr;
 	}
-
+	
 	template <typename T>
 	Schedulers::LRScheduler<T>* Trainer<T>::GetScheduler() const {
 		return m_Scheduler;
 	}
-
+	
 	template<typename T>
 	void Trainer<T>::AddMetric(const std::string& name, MetricFn<T> metric) {
 		m_Metrics[name] = std::move(metric);
 	}
-
+	
 	template<typename T>
 	TrainerState<T> Trainer<T>::GetState() const {
 		TrainerState<T> state;
@@ -235,7 +235,7 @@ namespace MLCore::Training {
 
 		return state;
 	}
-
+	
 	template<typename T>
 	void Trainer<T>::LoadState(const TrainerState<T>& state) {
 		m_CurrentEpoch = state.currentEpoch;
@@ -243,7 +243,7 @@ namespace MLCore::Training {
 		m_BestValidationMetric = state.bestValidationMetric;
 		m_HasBestMetric = state.hasBestMetric;
 	}
-
+	
 	template <typename T>
 	EvaluationResult<T> Trainer<T>::Evaluate(Data::DataLoader<T>& dataLoader) {
 		bool wasTraining = m_Model.IsTraining();
@@ -295,7 +295,7 @@ namespace MLCore::Training {
 
 		return evalResult;
 	}
-
+	
 	template<typename T>
 	EvaluationResult<T> Trainer<T>::Evaluate(const TensorCore::Tensor<T>& inputs, const TensorCore::Tensor<T>& targets, size_t batchSize) {
 		Data::TensorDataset<T> dataset{ inputs, targets };
@@ -303,7 +303,7 @@ namespace MLCore::Training {
 
 		return Evaluate(dataLoader);
 	}
-
+	
 	template<typename T>
 	std::unordered_map<std::string, T> Trainer<T>::ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target) {
 		std::unordered_map<std::string, T> results;

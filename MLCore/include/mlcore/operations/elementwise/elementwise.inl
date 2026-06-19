@@ -1,4 +1,4 @@
-// elementwise.inl
+ /// elementwise.inl
 #include <cmath>
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>
@@ -45,7 +45,7 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
@@ -85,7 +85,7 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
@@ -125,7 +125,7 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
@@ -165,14 +165,14 @@ namespace MLCore::Operations {
 
 		return C;
 	}
-
+	
 	template <typename T>
 	[[nodiscard]] TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		const size_t size = B.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
-			B[i] = std::pow(A[i], exponent); // May be optimized in the future
+			B[i] = std::pow(A[i], exponent); /// May be optimized in the future
 		}
 
 		if (A.RequiresGrad()) {
@@ -182,7 +182,7 @@ namespace MLCore::Operations {
 
 		return B;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
@@ -190,7 +190,7 @@ namespace MLCore::Operations {
 
 		for (size_t i = 0; i < size; ++i) {
 			T num = A[i];
-			B[i] = (num < 0) ? -num : num; // Automatically catches the 0 case, because 0 is not less than 0, so the value will be 0
+			B[i] = (num < 0) ? -num : num; /// Automatically catches the 0 case, because 0 is not less than 0, so the value will be 0
 		}
 
 		if (A.RequiresGrad()) {
@@ -200,7 +200,7 @@ namespace MLCore::Operations {
 
 		return B;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -219,7 +219,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -237,7 +237,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -255,7 +255,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template<typename T>
 	TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (A.GetShape() != B.GetShape()) {
@@ -270,11 +270,11 @@ namespace MLCore::Operations {
 			C[i] = (A[i] == B[i]) ? static_cast<T>(1) : static_cast<T>(0);
 		}
 
-		C.SetRequiresGrad(false); // No gradient function necessary
+		C.SetRequiresGrad(false); /// No gradient function necessary
 
 		return C;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = MultiplyScalar(A, static_cast<T>(-1), allocator);
@@ -285,7 +285,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = Power(A, static_cast<T>(2), allocator);
@@ -296,7 +296,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = DivideScalar(A, static_cast<T>(1), allocator, true);

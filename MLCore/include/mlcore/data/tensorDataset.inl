@@ -1,4 +1,4 @@
-// tensorDataset.inl
+ /// tensorDataset.inl
 
 namespace MLCore::Data {
 	template <typename T>
@@ -8,7 +8,7 @@ namespace MLCore::Data {
 			throw std::runtime_error("ERROR: Dataset sample mismatch");
 		}
 	}
-
+	
 	template <typename T>
 	size_t TensorDataset<T>::Size() const {
 		return m_Inputs.Dims()[0];

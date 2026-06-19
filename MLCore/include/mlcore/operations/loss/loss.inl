@@ -1,4 +1,4 @@
-// loss.inl
+ /// loss.inl
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
@@ -38,7 +38,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Invalid reduction option/type");
 		}
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
@@ -72,7 +72,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Invalid reduction option/type");
 		}
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
@@ -118,7 +118,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Invalid reduction option/type");
 		}
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
@@ -162,9 +162,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Invalid reduction option/type");
 		}
 	}
-
-	// This assumes that the result of Softmax is being passed in
-	// (Softmax returns the probabilities of each element of the prediction)
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (predictions.GetShape() != targets.GetShape()) {
@@ -204,7 +202,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Invalid reduction option/type");
 		}
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {

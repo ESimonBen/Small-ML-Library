@@ -1,6 +1,6 @@
-// operations.h
+ /// operations.h
 
-// All operation header files
+/// All operation header files
 #include <mlCore/operations/loss/loss.h>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/reduction/reduction.h>

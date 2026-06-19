@@ -1,12 +1,11 @@
-// main.cpp
+ /// main.cpp
 #include <iostream>
-#include <mlCore/optimizers/sgd.h>
-#include <mlCore/optimizers/adam.h>
 #include <mlCore/training/trainer.h>
-#include <mlCore/schedulers/stepLR.h>
 #include <mlCore/module/sequential.h>
 #include <mlCore/module/layers/layers.h>
 #include <mlCore/operations/operations.h>
+#include <mlCore/schedulers/schedulers.h>
+#include <mlCore/optimizers/optimizers.h>
 #include <mlCore/serialization/checkpoint.h>
 
 using namespace MLCore;
@@ -24,35 +23,35 @@ using namespace MLCore::Serialization;
 void TestXORSave(ArenaAllocator& allocator) {
     std::cout << "=== XOR Nonlinear Test ===\n";
 
-    // -----------------------------
-    // 1. Dataset (XOR)
-    // -----------------------------
+    /// -----------------------------
+    /// 1. Dataset (XOR)
+    /// -----------------------------
     Tensor<float> x{ {4, 2}, allocator };
     Tensor<float> y{ {4, 1}, allocator };
 
-    // (0,0) -> 0
+    /// (0,0) -> 0
     x[0] = 0;
     x[1] = 0;
     y[0] = 0;
 
-    // (0,1) -> 1
+    /// (0,1) -> 1
     x[2] = 0;
     x[3] = 1;
     y[1] = 1;
 
-    // (1,0) -> 1
+    /// (1,0) -> 1
     x[4] = 1;
     x[5] = 0;
     y[2] = 1;
 
-    // (1,1) -> 0
+    /// (1,1) -> 0
     x[6] = 1;
     x[7] = 1;
     y[3] = 0;
 
-    // -----------------------------
-    // 2. Base Model
-    // -----------------------------
+    /// -----------------------------
+    /// 2. Base Model
+    /// -----------------------------
     Sequential<float> model;
 
     model.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
@@ -61,7 +60,7 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     Checkpoint::Save(model, "../../models/base_model.ckpt");
 
-    // Model A (Test Continuous)
+    /// Model A (Test Continuous)
     Sequential<float> modelA;
     modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
     modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
@@ -69,7 +68,7 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     Checkpoint::Load(modelA, "../../models/base_model.ckpt");
 
-    // Collect parameters
+    /// Collect parameters
     auto paramsA = modelA.GetParameters();
     auto namedParamsA = modelA.GetNamedParameters();
 
@@ -94,9 +93,9 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     StepLR<float> schedulerA{ optA, 1000, .99f };
 
-    // -----------------------------
-    // 3. Training loop
-    // -----------------------------
+    /// -----------------------------
+    /// 3. Training loop
+    /// -----------------------------
     Trainer<float> trainerA{ modelA, optA,
         [&](const auto& pred, const auto& target) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
@@ -167,7 +166,7 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     std::cout << std::endl;
 
-    // Model B (Pause/Resume)
+    /// Model B (Pause/Resume)
     Sequential<float> modelB;
     modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
     modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
@@ -175,7 +174,7 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     Checkpoint::Load(modelB, "../../models/base_model.ckpt");
 
-    // Collect parameters
+    /// Collect parameters
     auto paramsB = modelB.GetParameters();
     auto namedParamsB = modelB.GetNamedParameters();
 
@@ -200,9 +199,9 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     StepLR<float> schedulerB{ optB, 1000, .99f };
 
-    // -----------------------------
-    // 3. Training loop
-    // -----------------------------
+    /// -----------------------------
+    /// 3. Training loop
+    /// -----------------------------
     Trainer<float> trainerB{ modelB, optB,
         [&](const auto& pred, const auto& target) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
@@ -257,13 +256,13 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     Checkpoint::Save(modelB, "../../models/modelB.ckpt", &optB, &schedulerB, &stateB);
 
-    // Resume Model
+    /// Resume Model
     Sequential<float> modelC;
     modelC.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
     modelC.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
     modelC.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
 
-    // Collect parameters
+    /// Collect parameters
     auto paramsC = modelC.GetParameters();
     auto namedParamsC = modelC.GetNamedParameters();
 
@@ -271,9 +270,9 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     StepLR<float> schedulerC{ optC, 1000, .99f };
 
-    // -----------------------------
-    // 3. Training loop
-    // -----------------------------
+    /// -----------------------------
+    /// 3. Training loop
+    /// -----------------------------
     Trainer<float> trainerC{ modelC, optC,
         [&](const auto& pred, const auto& target) {
             return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
@@ -351,7 +350,7 @@ void TestXORSave(ArenaAllocator& allocator) {
 int main() {
     ArenaAllocator allocator;
 
-    // Model Training Test
+    /// Model Training Test
     TestXORSave(allocator);
 
     return 0;

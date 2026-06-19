@@ -1,4 +1,4 @@
-// initialization.inl
+ /// initialization.inl
 #include <cmath>
 #include <random>
 

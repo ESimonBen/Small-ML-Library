@@ -1,4 +1,4 @@
-// checkpoint.h
+ /// checkpoint.h
 #pragma once
 #include <fstream>
 #include <mlCore/module/module.h>
@@ -8,6 +8,9 @@
 #include <mlCore/serialization/binaryArchive.h>
 
 namespace MLCore::Serialization {
+	/// <summary>
+	/// Scoped enumeration defining named sections used by the checkpoint system.
+	/// </summary>
 	enum class Section : uint8_t {
 		Optimizer = 1,
 		Scheduler = 2,
@@ -15,6 +18,9 @@ namespace MLCore::Serialization {
 		End = 255
 	};
 
+	/// <summary>
+	/// Utility class for saving and loading neural network checkpoints (model weights and optional optimizer, scheduler, and trainer state) to and from disk using a versioned binary format.
+	/// </summary>
 	class Checkpoint {
 	public:
 		template <typename T>
@@ -45,8 +51,8 @@ namespace MLCore::Serialization {
 		static void LoadV3(NN::Module<T>& model, BinaryReader& reader, Optimizers::Optimizer<T>* opt, Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state);
 
 	private:
-		static constexpr uint64_t MAGIC_NUMBER = 0x4D4C434F5245ULL; // "MLCORE" in hexadecimal
-		static constexpr uint32_t FORMAT_VERSION = 3; // Most recent developed version
+		static constexpr uint64_t MAGIC_NUMBER = 0x4D4C434F5245ULL; /// "MLCORE" in hexadecimal
+		static constexpr uint32_t FORMAT_VERSION = 3; /// Most recent developed version
 	};
 }
 

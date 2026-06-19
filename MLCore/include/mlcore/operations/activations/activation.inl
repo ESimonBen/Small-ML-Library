@@ -1,4 +1,4 @@
-// activation.inl
+ /// activation.inl
 #include <cmath>
 #include <algorithm>
 #include <mlCore/autograd/gradientUtils.h>
@@ -23,7 +23,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -42,7 +42,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
@@ -53,13 +53,13 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
 
-		TensorCore::Tensor<T> expPos = Operations::Exp(A, allocator); // exp(x)
-		TensorCore::Tensor<T> expNeg = Operations::Exp(neg, allocator); // exp(-x)
+		TensorCore::Tensor<T> expPos = Operations::Exp(A, allocator); /// exp(x)
+		TensorCore::Tensor<T> expNeg = Operations::Exp(neg, allocator); /// exp(-x)
 
 		TensorCore::Tensor<T> diff = Operations::Subtract(expPos, expNeg, allocator);
 		TensorCore::Tensor<T> sum = Operations::Add(expPos, expNeg, allocator);
@@ -68,8 +68,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
-	// Should not be used in actual machine learning contexts, debugging / teaching moment for me only
+	
 	template <typename T>
 	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
@@ -100,7 +99,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (axis >= A.Rank()) {
@@ -157,14 +156,14 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	TensorCore::Tensor<T> AxisLogSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisLogSoftmax: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> axisMax = Operations::AxisMax(A, axis, allocator, true); // For "numerical stability"
+		TensorCore::Tensor<T> axisMax = Operations::AxisMax(A, axis, allocator, true); /// For "numerical stability"
 		TensorCore::Tensor<T> maxExpanded = AutoGrad::ExpandToShape(axisMax, A.GetShape());
 
 		TensorCore::Tensor<T> sub = Operations::Subtract(A, maxExpanded, allocator);

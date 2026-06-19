@@ -1,4 +1,4 @@
-// linalgGradFn.inl
+ /// linalgGradFn.inl
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/linearAlgebra/linalg.h>
 
@@ -37,12 +37,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	MatMulGradFn<T>::MatMulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
 		: GradFn<T>({ a, b })
 	{}
-
+	
 	template <typename T>
 	void MatMulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> a{this->inputs[0]};
@@ -70,12 +70,12 @@ namespace MLCore::AutoGrad {
 			b.Backward(gradB);
 		}
 	}
-
+	
 	template <typename T>
 	TransposeGradFn<T>::TransposeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a)
 	{}
-
+	
 	template <typename T>
 	void TransposeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
