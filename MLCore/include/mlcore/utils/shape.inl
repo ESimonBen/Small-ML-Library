@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace MLCore::Utils {
-	Shape::Shape(const std::vector<size_t>& dims)
+	inline Shape::Shape(const std::vector<size_t>& dims)
 		: m_Dims(dims) {
 		ComputeStrides();
 
@@ -23,17 +23,17 @@ namespace MLCore::Utils {
 		}
 	}
 	
-	Shape::Shape(const Shape& other) noexcept
+	inline Shape::Shape(const Shape& other) noexcept
 		: m_Dims(other.m_Dims), m_Strides(other.m_Strides), m_NumElements(other.m_NumElements)
 	{
 	}
 	
-	Shape::Shape(Shape&& other) noexcept
+	inline Shape::Shape(Shape&& other) noexcept
 		: m_Dims(std::move(other.m_Dims)), m_Strides(std::move(other.m_Strides)), m_NumElements(other.m_NumElements)
 	{
 	}
 	
-	Shape& Shape::operator=(const Shape& other) noexcept {
+	inline Shape& Shape::operator=(const Shape& other) noexcept {
 		if (*this != other) {
 			m_Dims = other.m_Dims;
 			m_Strides = other.m_Strides;
@@ -43,7 +43,7 @@ namespace MLCore::Utils {
 		return *this;
 	}
 
-	Shape& Shape::operator=(Shape&& other) noexcept {
+	inline Shape& Shape::operator=(Shape&& other) noexcept {
 		if (*this != other) {
 			m_Dims = std::move(other.m_Dims);
 			m_Strides = std::move(other.m_Strides);
@@ -53,7 +53,7 @@ namespace MLCore::Utils {
 		return *this;
 	}
 	
-	size_t Shape::FlattenIndex(const std::vector<size_t>& indices) const {
+	inline size_t Shape::FlattenIndex(const std::vector<size_t>& indices) const {
 		if (indices.size() != m_Dims.size()) {
 			throw std::runtime_error("ERROR: Index dimension mismatch");
 		}
@@ -75,7 +75,7 @@ namespace MLCore::Utils {
 		return offset;
 	}
 	
-	std::vector<size_t> Shape::UnflattenIndex(size_t index) const {
+	inline std::vector<size_t> Shape::UnflattenIndex(size_t index) const {
 		std::vector<size_t> indices(m_Dims.size());
 
 		for (size_t i = 0; i < m_Dims.size(); ++i) {
@@ -86,7 +86,7 @@ namespace MLCore::Utils {
 		return indices;
 	}
 	
-	void Shape::ComputeStrides() {
+	inline void Shape::ComputeStrides() {
 		m_Strides.resize(m_Dims.size());
 
 		if (!m_Dims.empty()) {
@@ -97,7 +97,7 @@ namespace MLCore::Utils {
 		}
 	}
 	
-	size_t Shape::operator[](size_t i) const {
+	inline size_t Shape::operator[](size_t i) const {
 		return m_Dims[i];
 	}
 	

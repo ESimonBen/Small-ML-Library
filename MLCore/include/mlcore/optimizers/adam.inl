@@ -6,7 +6,7 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Adam<T>::Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline Adam<T>::Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -28,7 +28,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	Adam<T>::Adam(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline Adam<T>::Adam(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		  m_Epsilon(epsilon), m_Timestep(0) {
 			  for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -50,7 +50,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	Adam<T>::Adam(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
+	inline Adam<T>::Adam(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -72,7 +72,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void Adam<T>::Step() {
+	inline void Adam<T>::Step() {
 		m_Timestep++;
 		this->ClipGradients();
 
@@ -142,12 +142,12 @@ namespace MLCore::Optimizers {
 	}
 	
 	template<typename T>
-	std::string Adam<T>::TypeName() const {
+	inline std::string Adam<T>::TypeName() const {
 		return "Adam";
 	}
 	
 	template <typename T>
-	void Adam<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+	inline void Adam<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
@@ -202,7 +202,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void Adam<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+	inline void Adam<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<std::string, NN::Parameter<T>*> nameToParam;
 
@@ -274,7 +274,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	AdamW<T>::AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline AdamW<T>::AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -296,7 +296,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	AdamW<T>::AdamW(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline AdamW<T>::AdamW(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		  m_Epsilon(epsilon), m_Timestep(0) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -318,7 +318,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	AdamW<T>::AdamW(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
+	inline AdamW<T>::AdamW(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -340,7 +340,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void AdamW<T>::Step() {
+	inline void AdamW<T>::Step() {
 		m_Timestep++;
 		this->ClipGradients();
 
@@ -410,12 +410,12 @@ namespace MLCore::Optimizers {
 	}
 	
 	template<typename T>
-	std::string AdamW<T>::TypeName() const {
+	inline std::string AdamW<T>::TypeName() const {
 		return "AdamW";
 	}
 	
 	template <typename T>
-	void AdamW<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+	inline void AdamW<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
@@ -470,7 +470,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void AdamW<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+	inline void AdamW<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<std::string, NN::Parameter<T>*> nameToParam;
 

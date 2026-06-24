@@ -4,12 +4,12 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay) {
+	inline Optimizer<T>::Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay) {
 		m_ParamGroups.emplace_back(params, learningRate, weightDecay);
 	}
 	
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
+	inline Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
 		std::vector<std::reference_wrapper<NN::Parameter<T>>> refs;
 		refs.reserve(params.size());
 
@@ -21,12 +21,12 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	Optimizer<T>::Optimizer(std::vector<ParameterGroup<T>> groups)
+	inline Optimizer<T>::Optimizer(std::vector<ParameterGroup<T>> groups)
 		: m_ParamGroups(std::move(groups))
 	{}
 	
 	template <typename T>
-	void Optimizer<T>::ZeroGrad() {
+	inline void Optimizer<T>::ZeroGrad() {
 		for (ParameterGroup<T>& paramGroup : m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
@@ -40,18 +40,18 @@ namespace MLCore::Optimizers {
 	}
 	
 	template<typename T>
-	std::vector<ParameterGroup<T>>& MLCore::Optimizers::Optimizer<T>::ParamGroups() {
+	inline std::vector<ParameterGroup<T>>& MLCore::Optimizers::Optimizer<T>::ParamGroups() {
 		return m_ParamGroups;
 	}
 	
 	template <typename T>
-	void Optimizer<T>::SetClipGradNorm(T maxNorm) {
+	inline void Optimizer<T>::SetClipGradNorm(T maxNorm) {
 		m_UseClip = true;
 		m_MaxNorm = maxNorm;
 	}
 	
 	template <typename T>
-	void Optimizer<T>::ClipGradients() {
+	inline void Optimizer<T>::ClipGradients() {
 		if (!m_UseClip) {
 			return;
 		}

@@ -85,10 +85,12 @@ namespace MLCore::Operations {
 
 		const T epsilon = static_cast<T>(1e-7);
 
+		/// term1 = targets * ln(clamp(preds, 1e-7, (1 - 1e-7)))
 		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
 		TensorCore::Tensor<T> logP = Operations::Log(clamp, allocator);
 		TensorCore::Tensor<T> term1 = Operations::Multiply(targets, logP, allocator);
 
+		/// term2 = (1 - targets) * ln(1 - preds)
 		TensorCore::Tensor<T> oneMinusT = Operations::SubtractScalar(targets, static_cast<T>(1), allocator, true);
 		TensorCore::Tensor<T> oneMinusP = Operations::SubtractScalar(clamp, static_cast<T>(1), allocator, true);
 		TensorCore::Tensor<T> logOneMinusP = Operations::Log(oneMinusP, allocator);
@@ -120,7 +122,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Tensor shape mismatch");
 		}
@@ -204,7 +206,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
 		}
@@ -240,35 +242,35 @@ namespace MLCore::Operations {
 		}
 	}
 
-	// Assuming axis = last axis here
+	/// Assuming axis = last axis here
 
 	template <typename T>
-	TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return MeanSquaredError(predictions, targets, predictions.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return MeanAbsoluteError(predictions, targets, predictions.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return BinaryCrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return BinaryCrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
 		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
 	}
 }

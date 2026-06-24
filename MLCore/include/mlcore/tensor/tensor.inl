@@ -91,17 +91,17 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	Memory::ArenaAllocator& Tensor<T>::GetAllocator() {
+	inline Memory::ArenaAllocator& Tensor<T>::GetAllocator() {
 		return *(m_Impl->allocator);
 	}
 	
 	template <typename T>
-	Memory::ArenaAllocator& Tensor<T>::GetAllocator() const {
+	inline Memory::ArenaAllocator& Tensor<T>::GetAllocator() const {
 		return *(m_Impl->allocator);
 	}
 	
 	template <typename T>
-	std::shared_ptr<TensorImpl<T>> Tensor<T>::GetImpl() const {
+	inline std::shared_ptr<TensorImpl<T>> Tensor<T>::GetImpl() const {
 		return m_Impl;
 	}
 	
@@ -210,17 +210,17 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	bool Tensor<T>::RequiresGrad() const {
+	inline bool Tensor<T>::RequiresGrad() const {
 		return m_Impl->requiresGrad;
 	}
 	
 	template <typename T>
-	bool Tensor<T>::HasGrad() const {
+	inline bool Tensor<T>::HasGrad() const {
 		return m_Impl->grad != nullptr;
 	}
 	
 	template <typename T>
-	void Tensor<T>::ZeroGrad() {
+	inline void Tensor<T>::ZeroGrad() {
 		if (!m_Impl->grad) {
 			return;
 		}
@@ -236,12 +236,12 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	void Tensor<T>::SetRequiresGrad(bool require) {
+	inline void Tensor<T>::SetRequiresGrad(bool require) {
 		m_Impl->requiresGrad = require;
 	}
 	
 	template <typename T>
-	Tensor<T> Tensor<T>::Grad() {
+	inline Tensor<T> Tensor<T>::Grad() {
 		if (!m_Impl->grad) {
 			Tensor<T> zero{ m_Impl->shape, *(m_Impl->allocator) };
 			zero.Fill(static_cast<T>(0));
@@ -252,7 +252,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	const Tensor<T> Tensor<T>::Grad() const {
+	inline const Tensor<T> Tensor<T>::Grad() const {
 		if (!m_Impl->grad) {
 			throw std::runtime_error("ERROR: Gradient doesn't exist");
 		}
@@ -261,22 +261,22 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() {
+	inline std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() {
 		return m_Impl->gradFn;
 	}
 	
 	template <typename T>
-	const std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() const {
+	inline const std::shared_ptr<AutoGrad::GradFn<T>> Tensor<T>::GradFn() const {
 		return m_Impl->gradFn;
 	}
 	
 	template <typename T>
-	void Tensor<T>::SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn) {
+	inline void Tensor<T>::SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn) {
 		m_Impl->gradFn = std::move(gradFn);
 	}
 	
 	template <typename T>
-	void Tensor<T>::AccumulateGrad(const Tensor<T>& gradInput) {
+	inline void Tensor<T>::AccumulateGrad(const Tensor<T>& gradInput) {
 		if (!m_Impl->requiresGrad) {
 			return;
 		}
@@ -313,7 +313,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	void Tensor<T>::Backward(const Tensor<T>& gradOutput) {
+	inline void Tensor<T>::Backward(const Tensor<T>& gradOutput) {
 		if (!m_Impl->requiresGrad) {
 			return;
 		}
@@ -326,7 +326,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const{
+	inline Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const{
 		if (Rank() < 1) {
 			throw std::runtime_error("Cannot slice scalar tensor");
 		}
@@ -354,7 +354,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	Tensor<T> Tensor<T>::Concat(const std::vector<Tensor<T>>& tensors) {
+	inline Tensor<T> Tensor<T>::Concat(const std::vector<Tensor<T>>& tensors) {
 		if (tensors.empty()) {
 			throw std::runtime_error("ERROR: Cannot concatenate empty tensors");
 		}

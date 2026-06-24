@@ -167,7 +167,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		const size_t size = B.NumElements();
 
@@ -184,7 +184,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		size_t size = B.NumElements();
 
@@ -202,7 +202,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -221,7 +221,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -239,7 +239,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -257,7 +257,7 @@ namespace MLCore::Operations {
 	}
 	
 	template<typename T>
-	TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
 		if (A.GetShape() != B.GetShape()) {
 			throw std::runtime_error("ERROR: Equal: Tensors are not the same shape");
 		}
@@ -276,7 +276,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = MultiplyScalar(A, static_cast<T>(-1), allocator);
 
 		if (A.RequiresGrad()) {
@@ -287,7 +287,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = Power(A, static_cast<T>(2), allocator);
 
 		if (A.RequiresGrad()) {
@@ -298,7 +298,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
 		TensorCore::Tensor<T> result = DivideScalar(A, static_cast<T>(1), allocator, true);
 
 		if (A.RequiresGrad()) {

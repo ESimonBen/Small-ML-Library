@@ -11,11 +11,11 @@ namespace MLCore::Operations {
 	/// <param name="i">The index in the aligned dimension space to query.</param>
 	/// <param name="offset">The number of leading aligned dimensions treated as size 1; indices less than this are considered padding.</param>
 	/// <returns>The dimension size for index i after alignment: 1 when i < offset, otherwise shape[i - offset].</returns>
-	static size_t GetAlignedDim(const Utils::Shape& shape, size_t i, size_t offset) {
+	inline static size_t GetAlignedDim(const Utils::Shape& shape, size_t i, size_t offset) {
 		return (i < offset) ? 1 : shape[i - offset];
 	}
 	
-	BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB) {
+	inline BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB) {
 		BroadcastInfo info;
 
 		const size_t rankA = shapeA.Rank();
@@ -53,7 +53,7 @@ namespace MLCore::Operations {
 		return info;
 	}
 	
-	BroadcastInfo ComputeBroadcastTo(const Utils::Shape& smaller, const Utils::Shape& target) {
+	inline BroadcastInfo ComputeBroadcastTo(const Utils::Shape& smaller, const Utils::Shape& target) {
 		BroadcastInfo info;
 
 		const size_t smallerRank = smaller.Rank();
@@ -84,7 +84,7 @@ namespace MLCore::Operations {
 		return info;
 	}
 	
-	bool CanBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB) {
+	inline bool CanBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB) {
 		const size_t rankA = shapeA.Rank();
 		const size_t rankB = shapeB.Rank();
 		const size_t rank = std::max(rankA, rankB);
@@ -105,7 +105,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (axis > A.Rank()) {
 			throw std::runtime_error("ERROR: Squeeze: Axis out of bounds");
 		}
@@ -142,7 +142,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
 		if (axis > A.Rank()) {
 			throw std::runtime_error("ERROR: Unsqueeze: Axis out of bounds");
 		}

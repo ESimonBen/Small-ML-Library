@@ -11,7 +11,7 @@ namespace MLCore::Operations {
 	/// <param name="allocator">The memory arena allocator used to construct and store the returned single-element tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> with shape {1} whose sole element is the sum of all elements in A (or zero if A is empty). If A.RequiresGrad() is true, the returned tensor will require gradients and have its gradient function set appropriately.</returns>
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> SumAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> SumAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
 	/// Computes the mean of all elements in a tensor and returns it as a scalar tensor. The template type T must be a floating-point type.
@@ -21,7 +21,7 @@ namespace MLCore::Operations {
 	/// <param name="allocator">An ArenaAllocator used for any internal allocations and for allocating the result tensor.</param>
 	/// <returns>A scalar Tensor<T> containing the mean (sum of all elements divided by the number of elements).</returns>
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MeanAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> MeanAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
 	/// Computes the maximum element of the input tensor and returns it as a scalar (1-element) tensor. The function scans all elements (O(n)). Throws std::runtime_error if the input tensor is empty. T is required to satisfy std::totally_ordered.
@@ -31,7 +31,7 @@ namespace MLCore::Operations {
 	/// <param name="allocator">Allocator used to construct and own the returned scalar tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> with shape {1} containing the maximum element of A. If A.RequiresGrad() is true, the returned tensor is marked to require gradients and its gradient function is set accordingly. Throws std::runtime_error if A has no elements.</returns>
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MaxAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> MaxAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
 	/// Computes the minimum value over all elements of the input tensor and returns it as a scalar tensor. Requires that T is totally ordered and throws at runtime if the input tensor is empty.
@@ -41,7 +41,7 @@ namespace MLCore::Operations {
 	/// <param name="allocator">Arena allocator used to construct and allocate the resulting scalar tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> of shape {1} holding the minimum element of A. The returned tensor may require gradients and will have its gradient function set when A.RequiresGrad() is true.</returns>
 	template <typename T>
-	[[nodiscard]] TensorCore::Tensor<T> MinAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> MinAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
 	/// Computes the sum of tensor elements along the specified axis and returns a new tensor with that axis reduced. If keepDims is true, the reduced axis is kept with size 1; otherwise it is removed. Throws std::out_of_range if the axis is out of bounds. If the input tensor requires gradients, the result is configured for automatic differentiation.

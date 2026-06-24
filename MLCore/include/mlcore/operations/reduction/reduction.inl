@@ -116,7 +116,7 @@ namespace MLCore::Operations {
 		const std::vector<size_t>& dims = A.Dims();
 		size_t rank = A.Rank();
 
-		// This is assuming that keepDims is fault, and needs to be changed for all axis-based and reduction operations/functions
+		/// This is assuming that keepDims is fault, and needs to be changed for all axis-based and reduction operations/functions
 		std::vector<size_t> outDims = dims;
 
 		if (keepDims) {

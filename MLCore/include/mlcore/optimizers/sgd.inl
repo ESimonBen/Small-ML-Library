@@ -3,22 +3,22 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	SGD<T>::SGD(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay)
+	inline SGD<T>::SGD(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay)
 		: Optimizer<T>(params, learningRate, weightDecay)
 	{}
 	
 	template <typename T>
-	SGD<T>::SGD(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay)
+	inline SGD<T>::SGD(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay)
 		: Optimizer<T>(params, learningRate, weightDecay)
 	{}
 	
 	template <typename T>
-	SGD<T>::SGD(std::vector<ParameterGroup<T>> groups)
+	inline SGD<T>::SGD(std::vector<ParameterGroup<T>> groups)
 		: Optimizer<T>(groups)
 	{}
 	
 	template <typename T>
-	void SGD<T>::Step() {
+	inline void SGD<T>::Step() {
 		this->ClipGradients();
 
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -50,12 +50,12 @@ namespace MLCore::Optimizers {
 	}
 	
 	template<typename T>
-	std::string SGD<T>::TypeName() const {
+	inline std::string SGD<T>::TypeName() const {
 		return "SGD";
 	}
 	
 	template <typename T>
-	void SGD<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+	inline void SGD<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
 		size_t numGroups = this->m_ParamGroups.size();
 		writer.Write(numGroups);
 
@@ -66,7 +66,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void SGD<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+	inline void SGD<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
 		size_t numGroups;
 		reader.Read(numGroups);
 
@@ -81,7 +81,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	SGDMomentum<T>::SGDMomentum(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
+	inline SGDMomentum<T>::SGDMomentum(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
@@ -97,7 +97,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	SGDMomentum<T>::SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
+	inline SGDMomentum<T>::SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
@@ -113,7 +113,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	SGDMomentum<T>::SGDMomentum(std::vector<ParameterGroup<T>> groups, T momentum, T dampening, bool nesterov)
+	inline SGDMomentum<T>::SGDMomentum(std::vector<ParameterGroup<T>> groups, T momentum, T dampening, bool nesterov)
 		: Optimizer<T>(groups), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
@@ -129,7 +129,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void SGDMomentum<T>::Step() {
+	inline void SGDMomentum<T>::Step() {
 		this->ClipGradients();
 
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
@@ -182,12 +182,12 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	std::string SGDMomentum<T>::TypeName() const {
+	inline std::string SGDMomentum<T>::TypeName() const {
 		return "SGDMomentum";
 	}
 	
 	template <typename T>
-	void SGDMomentum<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
+	inline void SGDMomentum<T>::SaveState(Serialization::BinaryWriter& writer, const NN::Module<T>& model) const {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
@@ -230,7 +230,7 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	void SGDMomentum<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
+	inline void SGDMomentum<T>::LoadState(Serialization::BinaryReader& reader, NN::Module<T>& model) {
 		auto namedParams = model.GetNamedParameters();
 		std::unordered_map<std::string, NN::Parameter<T>*> nameToParam;
 

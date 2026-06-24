@@ -1,8 +1,6 @@
 # MLTests CMakeLists
-set(TEST_SOURCES
-    test_main.cpp
-    tensorTests.cpp
-    checkpointTests.cpp
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
+    *.cpp
 )
 
 add_executable(MLTests

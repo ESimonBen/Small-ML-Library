@@ -1,4 +1,4 @@
- /// adam.h
+/// adam.h
 #pragma once
 #include "optimizer.h"
 #include <unordered_map>
