@@ -1,5 +1,6 @@
 # MLTests CMakeLists
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
+    *.h
     *.cpp
 )
 

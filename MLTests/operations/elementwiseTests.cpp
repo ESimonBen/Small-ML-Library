@@ -139,10 +139,7 @@ TEST_SUITE("Elementwise Operations") {
             A.Fill(5.0f);
             B.Fill(3.0f);
 
-            CHECK_THROWS_AS(
-                Subtract(A, B, allocator),
-                std::runtime_error
-            );
+            CHECK_THROWS_AS(Subtract(A, B, allocator), std::runtime_error);
         }
 
         SUBCASE("Elementwise Subtract propagates requires-grad") {
