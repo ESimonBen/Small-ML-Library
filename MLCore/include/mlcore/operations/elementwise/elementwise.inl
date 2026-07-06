@@ -168,6 +168,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		const size_t size = B.NumElements();
 
@@ -185,6 +189,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		size_t size = B.NumElements();
 
@@ -203,8 +211,11 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
 
+		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
@@ -222,8 +233,11 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
 
+		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
@@ -240,8 +254,11 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
 
+		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
@@ -258,6 +275,10 @@ namespace MLCore::Operations {
 	
 	template<typename T>
 	inline TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (A.GetShape() != B.GetShape()) {
 			throw std::runtime_error("ERROR: Equal: Tensors are not the same shape");
 		}
