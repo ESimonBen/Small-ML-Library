@@ -76,8 +76,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 		
 
-		// Must create a detached version of the input to make sure another
-		// computation graph is not created while backpropogating
+		/// Must create a detached version of the input to make sure another computation graph is not created while backpropogating
 		auto detachedInput = input.Detach();
 
 		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ?

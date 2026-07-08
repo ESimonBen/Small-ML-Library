@@ -8,6 +8,10 @@
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> Add(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
@@ -48,6 +52,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
@@ -88,6 +96,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
@@ -128,6 +140,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (!CanBroadcast(A.GetShape(), B.GetShape())) {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}

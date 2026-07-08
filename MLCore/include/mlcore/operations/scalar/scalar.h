@@ -12,7 +12,7 @@ namespace MLCore::Operations {
 	/// <param name="allocator">Memory::ArenaAllocator used to allocate storage for the output tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> with the same shape as Input containing the element-wise sums. If Input.RequiresGrad() is true, the returned tensor will require gradients and have its gradient function set.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  noexcept;
+	TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
 	/// Multiplies each element of a tensor by a scalar and returns a new tensor. If the input tensor requires gradients, the returned tensor is marked to require gradients and a corresponding gradient function is attached.
@@ -23,10 +23,10 @@ namespace MLCore::Operations {
 	/// <param name="allocator">Allocator used to allocate memory for the output tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> with the same shape as Input where each element is Input[i] * Scalar. The tensor is allocated with the provided allocator. If Input.RequiresGrad() is true, the returned tensor will require gradients and have the appropriate gradient function attached.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept;
+	TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator);
 
 	/// <summary>
-	/// Performs element-wise subtraction between a tensor and a scalar, returning a new tensor. If scalarOnLeft is true each element is computed as (Scalar - element); otherwise as (element - Scalar). If the input tensor requires gradients, the returned tensor will record a gradient function. The function is noexcept.
+	/// Performs element-wise subtraction between a tensor and a scalar, returning a new tensor. If scalarOnLeft is true each element is computed as (Scalar - element); otherwise as (element - Scalar). If the input tensor requires gradients, the returned tensor will record a gradient function.
 	/// </summary>
 	/// <typeparam name="T">The element type of the tensor and the scalar (e.g., float, double, int).</typeparam>
 	/// <param name="Input">The input tensor whose elements will be involved in the subtraction.</param>
@@ -35,7 +35,7 @@ namespace MLCore::Operations {
 	/// <param name="scalarOnLeft">Determines the operand order: true computes Scalar - Input[i]; false computes Input[i] - Scalar.</param>
 	/// <returns>A new Tensor<T> containing the result of the element-wise subtraction. If Input.RequiresGrad() is true, the returned tensor will have gradients enabled and an associated backward function.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) noexcept;
+	TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft);
 
 	/// <summary>
 	/// Performs element-wise division between a tensor and a scalar, returning a new tensor allocated with the given allocator. Throws std::runtime_error on division by zero.

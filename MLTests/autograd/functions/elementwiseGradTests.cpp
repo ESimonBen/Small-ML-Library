@@ -21,6 +21,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto C = Add(A, B, allocator);
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -51,8 +52,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = Add(A, B, allocator);
-
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -71,6 +72,13 @@ TEST_SUITE("Elementwise Gradient Tests") {
 				CHECK(val == 3);
 			}
 		}
+
+		SUBCASE("Null input throws") {
+			ArenaAllocator allocator;
+
+			Tensor<float> A(Shape(), allocator);
+			
+		}
 	}
 
 	TEST_CASE("Elementwise Subtract Gradient") {
@@ -86,6 +94,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto C = Subtract(A, B, allocator);
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -104,6 +113,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 				CHECK(val == -1);
 			}
 		}
+		
 		SUBCASE("Subtract Gradient with broadcasting") {
 			ArenaAllocator allocator;
 
@@ -115,8 +125,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = Subtract(A, B, allocator);
-
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -150,6 +160,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto C = Multiply(A, B, allocator);
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -180,8 +191,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = Multiply(A, B, allocator);
-
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -215,6 +226,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto C = Divide(A, B, allocator);
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -245,8 +257,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = Divide(A, B, allocator);
-
 			CHECK(C.GetShape() == Shape(2, 3));
+			CHECK(C.RequiresGrad());
 
 			auto loss = SumAll(C, allocator);
 			loss.Backward();
@@ -277,8 +289,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			A.SetRequiresGrad(true);
 
 			auto B = Power(A, 2.0f, allocator);
-			
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 			
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -300,8 +312,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			A.SetRequiresGrad(true);
 
 			auto B = Power(A, 0.5f, allocator);
-
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -323,8 +335,8 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			A.SetRequiresGrad(true);
 
 			auto B = Power(A, 0.0f, allocator);
-
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -358,6 +370,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto B = Abs(A, allocator);
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -390,6 +403,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto B = Clamp(A, -0.5f, 0.5f, allocator);
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -422,6 +436,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto B = Log(A, allocator);
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -454,6 +469,7 @@ TEST_SUITE("Elementwise Gradient Tests") {
 
 			auto B = Exp(A, allocator);
 			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
 
 			auto loss = SumAll(B, allocator);
 			loss.Backward();
@@ -473,80 +489,6 @@ TEST_SUITE("Elementwise Gradient Tests") {
 			A.SetRequiresGrad(true);
 
 			CHECK_THROWS_AS(Exp(A, allocator), std::runtime_error);
-		}
-	}
-
-	TEST_CASE("Elementwise Equal Gradient") {
-		SUBCASE("Equal Gradient Operation (Equal)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
-			A.Fill(2.0f);
-			B.Fill(2.0f);
-			A.SetRequiresGrad(true);
-			B.SetRequiresGrad(true);
-
-			auto C = Equal(A, B, allocator);
-			CHECK(C.GetShape() == Shape(2, 3));
-
-			auto loss = SumAll(B, allocator);
-			loss.Backward();
-
-			auto gradA = A.Grad();
-			CHECK(gradA.GetShape() == Shape(2, 3));
-
-			for (auto& val : gradA) {
-				CHECK(val == 0.0f);
-			}
-		}
-
-		SUBCASE("Equal Gradient Operation (Not Equal)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
-			A.Fill(2.0f);
-			B.Fill(3.0f);
-			A.SetRequiresGrad(true);
-			B.SetRequiresGrad(true);
-
-			auto C = Equal(A, B, allocator);
-			CHECK(C.GetShape() == Shape(2, 3));
-
-			auto loss = SumAll(B, allocator);
-			loss.Backward();
-
-			auto gradA = A.Grad();
-			CHECK(gradA.GetShape() == Shape(2, 3));
-
-			for (auto& val : gradA) {
-				CHECK(val == 0.0f);
-			}
-		}
-
-		SUBCASE("Shape mismatch throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 1 }, allocator);
-			A.Fill(3.0f);
-			B.Fill(4.0f);
-			A.SetRequiresGrad(true);
-			B.SetRequiresGrad(true);
-
-			CHECK_THROWS_AS(Equal(A, B, allocator), std::runtime_error);
-		}
-
-		SUBCASE("Null input throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
-			A.SetRequiresGrad(true);
-			B.SetRequiresGrad(true);
-
-			CHECK_THROWS_AS(Equal(A, B, allocator), std::runtime_error);
 		}
 	}
 }

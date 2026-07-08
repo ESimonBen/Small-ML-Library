@@ -7,7 +7,11 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
+	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) {
+		if (Input.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -25,7 +29,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) noexcept {
+	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft)  {
+		if (Input.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -43,7 +51,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) noexcept {
+	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  {
+		if (Input.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -62,7 +74,11 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> DivideScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) {
-		// Also should create checks for if the tensor itself has any zeros
+		if (Input.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be null");
+		}
+
+		/// Also should create checks for if the tensor itself has any zeros
 		if (Scalar == static_cast<T>(0) && !scalarOnLeft) {
 			throw std::runtime_error("ERROR: Divide by 0");
 		}
