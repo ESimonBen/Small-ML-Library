@@ -38,13 +38,8 @@ namespace MLCore::TensorCore {
 			bool requiresGrad = false,
 			std::shared_ptr<TensorImpl<T>> grad = nullptr,
 			std::shared_ptr<AutoGrad::GradFn<T>> gradFn = nullptr)
-			: shape(shape),
-			storage(std::move(storage)),
-			allocator(allocator),
-			offset(offset),
-			requiresGrad(requiresGrad),
-			grad(std::move(grad)),
-			gradFn(std::move(gradFn))
+			: shape(shape), storage(std::move(storage)), allocator(allocator), offset(offset),
+			  requiresGrad(requiresGrad), grad(std::move(grad)), gradFn(std::move(gradFn))
 		{}
 	};
 

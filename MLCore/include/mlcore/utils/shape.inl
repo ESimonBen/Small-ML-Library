@@ -122,7 +122,16 @@ namespace MLCore::Utils {
 	}
 	
 	inline bool Shape::operator==(const Shape& other) const {
-		return m_Dims == other.m_Dims;
+		bool equalSize = m_NumElements == other.m_NumElements;
+
+		if (equalSize && m_NumElements == 0) {
+			return true;
+		}
+		else if (equalSize) {
+			return m_Dims == other.m_Dims;
+		}
+
+		return false;
 	}
 	
 	inline bool Shape::operator!=(const Shape& other) const {

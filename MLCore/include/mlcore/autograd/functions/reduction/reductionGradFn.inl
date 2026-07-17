@@ -1,4 +1,5 @@
  /// reductionGradFn.inl
+#include <iostream>
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/broadcast/broadcast.h>

@@ -147,9 +147,9 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Unsqueeze: Axis out of bounds");
 		}
 
-		if (A.Dims()[axis] != 1) {
+		/*if (A.Dims()[axis] != 1) {
 			throw std::runtime_error("ERROR: Unsqueeze: Can only unsqueeze dimensions of size 1");
-		}
+		}*/
 
 		std::vector<size_t> newDims = A.Dims();
 		newDims.insert(newDims.begin() + axis, 1);

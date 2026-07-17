@@ -1,4 +1,4 @@
- /// main.cpp
+/// main.cpp
 #include <iostream>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>
@@ -10,6 +10,7 @@
 
 using namespace MLCore;
 using namespace MLCore::Memory;
+using namespace MLCore::Utils;
 using namespace MLCore::AutoGrad;
 using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
