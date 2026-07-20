@@ -65,6 +65,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty() || B.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (A.Rank() != 1 || B.Rank() != 1 || A.NumElements() != B.NumElements()) {
 			throw std::runtime_error("ERROR: Dot: Only 1D tensors of the same size supported");
 		}

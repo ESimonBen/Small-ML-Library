@@ -1,5 +1,4 @@
 /// reductionGradTests.cpp
-#include <iostream>
 #include <doctest/doctest.h>
 #include <mlCore/operations/reduction/reduction.h>
 
@@ -20,6 +19,7 @@ TEST_SUITE("Reduction Gradient Tests") {
 
 			auto B = SumAll(A, allocator);
 			CHECK(B.GetShape() == Shape(1));
+			CHECK(B.RequiresGrad());
 
 			B.Backward(); // No need for loss here, it's already scalar
 
@@ -64,6 +64,7 @@ TEST_SUITE("Reduction Gradient Tests") {
 
 			auto B = MeanAll(A, allocator);
 			CHECK(B.GetShape() == Shape(1));
+			CHECK(B.RequiresGrad());
 
 			B.Backward();
 
@@ -101,6 +102,7 @@ TEST_SUITE("Reduction Gradient Tests") {
 
 			auto B = MaxAll(A, allocator);
 			CHECK(B.GetShape() == Shape(1));
+			CHECK(B.RequiresGrad());
 
 			B.Backward();
 
@@ -140,6 +142,7 @@ TEST_SUITE("Reduction Gradient Tests") {
 
 			auto B = MinAll(A, allocator);
 			CHECK(B.GetShape() == Shape(1));
+			CHECK(B.RequiresGrad());
 
 			B.Backward();
 

@@ -153,8 +153,8 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 		}
 	}
 
-	TEST_CASE("Dot") {
-		SUBCASE("Dot Calculation") {
+	TEST_CASE("Dot Product") {
+		SUBCASE("Dot Product Calculation") {
 			ArenaAllocator allocator;
 
 			Tensor<float> A({ 3 }, allocator);
@@ -208,7 +208,7 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 			CHECK(C.RequiresGrad());
 		}
 
-		SUBCASE("Dor Orthogonality") {
+		SUBCASE("Dot Orthogonality") {
 			ArenaAllocator allocator;
 
 			Tensor<float> A({ 2 }, allocator);

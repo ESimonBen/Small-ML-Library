@@ -1,4 +1,4 @@
- /// reductionGradFn.inl
+/// reductionGradFn.inl
 #include <iostream>
 #include <stdexcept>
 #include <mlCore/operations/scalar/scalar.h>

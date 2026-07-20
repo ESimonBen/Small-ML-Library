@@ -350,9 +350,32 @@ void TestXORSave(ArenaAllocator& allocator) {
 
 int main() {
     ArenaAllocator allocator;
-
+    
     /// Model Training Test
     TestXORSave(allocator);
+
+    Tensor<float> A({ 3 }, allocator);
+    Tensor<float> B({ 3 }, allocator);
+    A.Fill(4.0f);
+    B.Fill(3.0f);
+    A.SetRequiresGrad(true);
+    B.SetRequiresGrad(true);
+
+    auto C = Dot(A, B, allocator);
+
+    auto loss = SumAll(C, allocator);
+    loss.Backward();
+
+    auto gradA = A.Grad();
+    auto gradB = B.Grad();
+
+    for (auto& val : gradA) {
+        std::cout << val << " ";
+    }
+
+    for (auto& val : gradB) {
+        std::cout << val << " ";
+    }
 
     return 0;
 }

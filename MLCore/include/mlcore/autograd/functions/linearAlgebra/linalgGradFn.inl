@@ -48,7 +48,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> a{this->inputs[0]};
 		TensorCore::Tensor<T> b{this->inputs[1]};
 
-		if (gradOutput.Dims()[0] != a.Dims()[0] || gradOutput.Dims()[1] != b.Dims()[1]) {
+		if (gradOutput.Rank() != 2 || gradOutput.Dims()[0] != a.Dims()[0] || gradOutput.Dims()[1] != b.Dims()[1]) {
 			throw std::runtime_error("ERROR: MatMulGradFn: gradOutput shape mismatch");
 		}
 
@@ -84,7 +84,7 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		if (gradOutput.Dims()[0] != input.Dims()[1] || gradOutput.Dims()[1] != input.Dims()[0]) {
+		if (gradOutput.Rank() != 2 || gradOutput.Dims()[0] != input.Dims()[1] || gradOutput.Dims()[1] != input.Dims()[0]) {
 			throw std::runtime_error("ERROR: TransposeGradFn: gradOutput shape mismatch");
 		}
 

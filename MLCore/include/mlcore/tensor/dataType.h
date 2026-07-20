@@ -1,7 +1,6 @@
  /// dataType.h
 #pragma once
 #include <cstdint>
-#include <type_traits>
 
 namespace MLCore::TensorCore {
 	/// <summary>
