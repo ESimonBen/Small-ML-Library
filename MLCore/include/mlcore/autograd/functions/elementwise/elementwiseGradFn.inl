@@ -1,5 +1,4 @@
  /// elementwiseGradFn.inl
-#include <mlCore/autograd/gradientUtils.h>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/elementwise/elementwise.h>
 
@@ -19,12 +18,12 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> b{ this->inputs[1] };
 
 		if (a.RequiresGrad()) {
-			auto gradA = ReduceSumToShape(gradOutput, a.GetShape());
+			auto gradA = Operations::ReduceSumToShape(gradOutput, a.GetShape(), allocator);
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
-			auto gradB = ReduceSumToShape(gradOutput, b.GetShape());
+			auto gradB = Operations::ReduceSumToShape(gradOutput, b.GetShape(), allocator);
 			b.Backward(gradB);
 		}
 	}
@@ -46,12 +45,12 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		if (a.RequiresGrad()) {
-			auto gradA = ReduceSumToShape(gradientOut, a.GetShape());
+			auto gradA = Operations::ReduceSumToShape(gradientOut, a.GetShape(), allocator);
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
-			auto gradB = ReduceSumToShape(Operations::Negate(gradientOut, gradientOut.GetAllocator()), b.GetShape());
+			auto gradB = Operations::ReduceSumToShape(Operations::Negate(gradientOut, allocator), b.GetShape(), allocator);
 			b.Backward(gradB);
 		}
 	}
@@ -75,13 +74,13 @@ namespace MLCore::AutoGrad {
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
-			auto gradA = ReduceSumToShape(Operations::Multiply(gradientOut, detachedB, allocator), a.GetShape());
+			auto gradA = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedB, allocator), a.GetShape(), allocator);
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
 			auto detachedA = a.Detach();
-			auto gradB = ReduceSumToShape(Operations::Multiply(gradientOut, detachedA, allocator), b.GetShape());
+			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedA, allocator), b.GetShape(), allocator);
 			b.Backward(gradB);
 		}
 	}
@@ -105,7 +104,7 @@ namespace MLCore::AutoGrad {
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
-			auto gradA = ReduceSumToShape(Operations::Divide(gradientOut, detachedB, allocator), a.GetShape());
+			auto gradA = Operations::ReduceSumToShape(Operations::Divide(gradientOut, detachedB, allocator), a.GetShape(), allocator);
 			a.Backward(gradA);
 		}
 
@@ -116,7 +115,7 @@ namespace MLCore::AutoGrad {
 			auto negGradOutput = Operations::Negate(gradientOut, allocator);
 			auto bSquared = Operations::Square(detachedB, allocator);
 			
-			auto gradB = ReduceSumToShape(Operations::Multiply(negGradOutput, Operations::Divide(detachedA, bSquared, allocator), allocator), b.GetShape());
+			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(negGradOutput, Operations::Divide(detachedA, bSquared, allocator), allocator), b.GetShape(), allocator);
 			b.Backward(gradB);
 		}
 	}

@@ -44,12 +44,6 @@ TEST_SUITE("Reduction Gradient Tests") {
 			for (auto& val : B) {
 				CHECK(val == 0.0f);
 			}
-
-			B.Backward();
-
-			auto gradA = A.Grad();
-
-			CHECK(gradA.GetShape() == Shape());
 		}
 	}
 

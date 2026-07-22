@@ -16,9 +16,9 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> inp = input.Detach();
+		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
-		TensorCore::Tensor<T> gradInput = Operations::Unsqueeze(inp, m_Axis, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
 
 		input.Backward(gradInput);
 	}
@@ -37,9 +37,47 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> inp = input.Detach();
+		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
-		TensorCore::Tensor<T> gradInput = Operations::Squeeze(inp, m_Axis, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Squeeze(gradientOut, m_Axis, allocator);
+
+		input.Backward(gradInput);
+	}
+	
+	template <typename T>
+	ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+		: GradFn<T>(a), m_OriginalShape(a->shape)
+	{}
+	
+	template <typename T>
+	void ReduceToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, m_OriginalShape, allocator);
+
+		input.Backward(gradInput);
+	}
+
+	template <typename T>
+	ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+		: GradFn<T>(a), m_OriginalShape(a->shape)
+	{}
+
+	template <typename T>
+	void ExpandToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+
+		if (!input.RequiresGrad()) {
+			return;
+		}
+
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
+		TensorCore::Tensor<T> gradInput = Operations::ReduceSumToShape(gradientOut, m_OriginalShape, allocator);
 
 		input.Backward(gradInput);
 	}

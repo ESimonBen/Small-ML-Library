@@ -64,6 +64,10 @@ namespace MLCore::TensorCore {
 	
 	template <typename T>
 	inline void Tensor<T>::Fill(const T& value) {
+		if (Dims().empty() || NumElements() == 0) {
+			throw std::runtime_error("ERROR: Cannot fill empty tensor with a value");
+		}
+
 		size_t size = NumElements();
 		for (size_t i = 0; i < size; ++i) {
 			m_Impl->storage.Data()[m_Impl->offset + i] = value;

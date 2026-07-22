@@ -1,12 +1,18 @@
  /// activation.inl
 #include <cmath>
 #include <algorithm>
-#include <mlCore/autograd/gradientUtils.h>
+#include <mlCore/operations/reduction/reduction.h>
+#include <mlCore/operations/broadcast/broadcast.h>
+#include <mlCore/operations/elementwise/elementwise.h>
 #include <mlCore/autograd/functions/activations/activationGradFn.h>
 
 namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be empty");
+		}
+
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -26,6 +32,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be empty");
+		}
+
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -45,32 +55,44 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
-		TensorCore::Tensor<T> exp = Operations::Exp(neg, allocator);
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be empty");
+		}
 
-		TensorCore::Tensor<T> sum = Operations::AddScalar(exp, static_cast<T>(1), allocator);
-		TensorCore::Tensor<T> result = Operations::DivideScalar(sum, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> neg = Negate(A, allocator);
+		TensorCore::Tensor<T> exp = Exp(neg, allocator);
+
+		TensorCore::Tensor<T> sum = AddScalar(exp, static_cast<T>(1), allocator);
+		TensorCore::Tensor<T> result = DivideScalar(sum, static_cast<T>(1), allocator, true);
 
 		return result;
 	}
 	
 	template <typename T>
 	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> neg = Operations::Negate(A, allocator);
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be empty");
+		}
 
-		TensorCore::Tensor<T> expPos = Operations::Exp(A, allocator); /// exp(x)
-		TensorCore::Tensor<T> expNeg = Operations::Exp(neg, allocator); /// exp(-x)
+		TensorCore::Tensor<T> neg = Negate(A, allocator);
 
-		TensorCore::Tensor<T> diff = Operations::Subtract(expPos, expNeg, allocator);
-		TensorCore::Tensor<T> sum = Operations::Add(expPos, expNeg, allocator);
+		TensorCore::Tensor<T> expPos = Exp(A, allocator); /// exp(x)
+		TensorCore::Tensor<T> expNeg = Exp(neg, allocator); /// exp(-x)
 
-		TensorCore::Tensor<T> result = Operations::Divide(diff, sum, allocator);
+		TensorCore::Tensor<T> diff = Subtract(expPos, expNeg, allocator);
+		TensorCore::Tensor<T> sum = Add(expPos, expNeg, allocator);
+
+		TensorCore::Tensor<T> result = Divide(diff, sum, allocator);
 
 		return result;
 	}
 	
 	template <typename T>
 	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+		if (A.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensor cannot be empty");
+		}
+
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 		T maxValue = A[0];
@@ -163,19 +185,19 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: AxisLogSoftmax: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> axisMax = Operations::AxisMax(A, axis, allocator, true); /// For "numerical stability"
-		TensorCore::Tensor<T> maxExpanded = AutoGrad::ExpandToShape(axisMax, A.GetShape());
+		TensorCore::Tensor<T> axisMax = AxisMax(A, axis, allocator, true); /// For "numerical stability"
+		TensorCore::Tensor<T> maxExpanded = ExpandToShape(axisMax, A.GetShape(), allocator);
 
-		TensorCore::Tensor<T> sub = Operations::Subtract(A, maxExpanded, allocator);
+		TensorCore::Tensor<T> sub = Subtract(A, maxExpanded, allocator);
 
-		TensorCore::Tensor<T> exp = Operations::Exp(sub, allocator);
+		TensorCore::Tensor<T> exp = Exp(sub, allocator);
 
-		TensorCore::Tensor<T> sum = Operations::AxisSum(exp, axis, allocator, true);
+		TensorCore::Tensor<T> sum = AxisSum(exp, axis, allocator, true);
 
-		TensorCore::Tensor<T> log = Operations::Log(sum, allocator);
+		TensorCore::Tensor<T> log = Log(sum, allocator);
 
-		TensorCore::Tensor<T> logExpanded = AutoGrad::ExpandToShape(log, A.GetShape());
-		TensorCore::Tensor<T> result = Operations::Subtract(sub, logExpanded, allocator);
+		TensorCore::Tensor<T> logExpanded = ExpandToShape(log, A.GetShape(), allocator);
+		TensorCore::Tensor<T> result = Subtract(sub, logExpanded, allocator);
 
 		return result;
 	}

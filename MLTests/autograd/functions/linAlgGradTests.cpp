@@ -132,6 +132,7 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 
 			auto C = Dot(A, B, allocator);
 			CHECK(C.GetShape() == Shape(1));
+			CHECK(C.RequiresGrad());
 
 			C.Backward();
 

@@ -24,7 +24,7 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor gradientOut = gradOutput.Detach();
 
-		auto gradInput = ExpandToShape(gradientOut, inputShape);
+		auto gradInput = Operations::ExpandToShape(gradientOut, inputShape, allocator);
 
 		input.Backward(gradInput);
 	}
@@ -129,7 +129,7 @@ namespace MLCore::AutoGrad {
 			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
 		}
 
-		TensorCore::Tensor<T> gradInput = ExpandToShape(gradientOut, inputShape);
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, inputShape, allocator);
 
 		input.Backward(gradInput);
 	}
@@ -155,14 +155,14 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> axisMax = Operations::AxisMax(inp, m_Axis, allocator, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
-		TensorCore::Tensor<T> maxExpanded = ExpandToShape(axisMax, inp.GetShape());
+		TensorCore::Tensor<T> maxExpanded = Operations::ExpandToShape(axisMax, inp.GetShape(), allocator);
 
-		TensorCore::Tensor<T> gradExpanded = ExpandToShape(gradientOut, input.GetShape());
+		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape(), allocator);
 
 		TensorCore::Tensor<T> mask = Operations::Equal(input, maxExpanded, allocator);
 
 		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
-		TensorCore::Tensor<T> countExpanded = ExpandToShape(count, inp.GetShape());
+		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape(), allocator);
 
 		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);
 		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div, allocator);
@@ -191,14 +191,14 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> axisMin = Operations::AxisMin(inp, m_Axis, allocator, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
-		TensorCore::Tensor<T> minExpanded = ExpandToShape(axisMin, inp.GetShape());
+		TensorCore::Tensor<T> minExpanded = Operations::ExpandToShape(axisMin, inp.GetShape(), allocator);
 
-		TensorCore::Tensor<T> gradExpanded = ExpandToShape(gradientOut, input.GetShape());
+		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape(), allocator);
 
 		TensorCore::Tensor<T> mask = Operations::Equal(input, minExpanded, allocator);
 
 		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
-		TensorCore::Tensor<T> countExpanded = ExpandToShape(count, inp.GetShape());
+		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape(), allocator);
 
 		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);
 		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div, allocator);

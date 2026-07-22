@@ -92,7 +92,7 @@ namespace MLCore::AutoGrad {
 		DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
-		/// Performs the backward pass for a division operation: validates inputs, detaches tensors as needed, computes gradients for each input, and calls Backward on inputs that require gradients. For input a, computes gradA = ReduceSumToShape(gradOutput / b, a.shape). For input b, computes gradB = ReduceSumToShape(-gradOutput * (a / b^2), b.shape).
+		/// Performs the backward pass for a division operation: validates inputs, detaches tensors as needed, computes gradients for each input, and calls Backward on inputs that require gradients. For input a, computes gradA = Operations::ReduceSumToShape(gradOutput / b, a.shape). For input b, computes gradB = Operations::ReduceSumToShape(-gradOutput * (a / b^2), b.shape).
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double).</typeparam>
 		/// <param name="gradOutput">The gradient of the loss with respect to the output of the division (const Tensor<T>&). Used to compute gradients for the inputs.</param>

@@ -114,6 +114,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
 
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		gradInput.Fill(0.0f);
 
 		const std::vector<size_t>& dims = input.Dims();
 		size_t rank = input.Rank();

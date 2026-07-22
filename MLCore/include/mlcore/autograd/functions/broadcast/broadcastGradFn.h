@@ -57,6 +57,60 @@ namespace MLCore::AutoGrad {
 	private:
 		size_t m_Axis; /// Represents the axis that was unsqueezed.
 	};
+
+	/// <summary>
+	/// Template gradient function that reshapes or reduces a gradient tensor back to a specified original shape during the backward pass.
+	/// </summary>
+	/// <typeparam name="T">The element type of the tensors (numeric type) handled by this gradient function.</typeparam>
+	template <typename T>
+	class ReduceToShapeGradFn : public GradFn<T> {
+	public:
+		/// <summary>
+		/// Constructs a ReduceToShapeGradFn<T>, forwarding the provided gradient implementation to the base GradFn and storing the original shape.
+		/// </summary>
+		/// <typeparam name="T">The value/gradient element type handled by this gradient function.</typeparam>
+		/// <param name="a">Shared pointer to the underlying GradFn<T>::Impl that provides the gradient implementation; forwarded to the base GradFn<T> constructor.</param>
+		/// <param name="originalShape">Reference to a Utils::Shape describing the original/target shape; its value is copied into the member m_OriginalShape.</param>
+		ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+
+		/// <summary>
+		/// Propagates the gradient for a reduce-to-shape operation by expanding the output gradient back to the original input shape and calling the input's backward.
+		/// </summary>
+		/// <typeparam name="T">Element type of the tensors (for example, float or double).</typeparam>
+		/// <param name="gradOutput">Gradient tensor with respect to this function's output. It is detached and then expanded to the input's original shape to form the input gradient.</param>
+		/// <param name="allocator">Allocator used to allocate memory when expanding the detached output gradient to the input's original shape.</param>
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	private:
+		Utils::Shape m_OriginalShape; /// The shape of the input tensor
+	};
+
+	/// <summary>
+	/// Gradient function object that computes the backward pass for tensors that were expanded to a larger shape. It maps gradients from the expanded shape back to the original shape during backpropagation.
+	/// </summary>
+	/// <typeparam name="T">Element type of the tensors handled by this gradient function (e.g., float, double, int).</typeparam>
+	template <typename T>
+	class ExpandToShapeGradFn : public GradFn<T> {
+	public:
+		/// <summary>
+		/// Constructs an ExpandToShapeGradFn that wraps a child gradient function and records the original shape to which gradients should be expanded.
+		/// </summary>
+		/// <typeparam name="T">The element type for which gradients are computed.</typeparam>
+		/// <param name="a">A shared pointer to the child gradient function implementation (GradFn<T>::Impl). This is forwarded to the base GradFn<T> constructor.</param>
+		/// <param name="originalShape">A reference to the original tensor shape. It is used to initialize the member m_OriginalShape (copied into the object) and determines the target shape for expanding gradients.</param>
+		ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+
+		/// <summary>
+		/// Performs backward gradient propagation for an expand-to-shape operation: if the original input requires gradients, detaches the output gradient, reduces it to the input's original shape, and calls the input's Backward with the reduced gradient. Does nothing if the input does not require gradients.
+		/// </summary>
+		/// <typeparam name="T">The element type of the tensors (for example float or double).</typeparam>
+		/// <param name="gradOutput">The gradient tensor with respect to the operation's output. It is detached and used as the source for reduction back to the input shape.</param>
+		/// <param name="allocator">Memory arena allocator used for temporary allocations during the reduction (e.g., by ReduceSumToShape).</param>
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+
+	private:
+		Utils::Shape m_OriginalShape; /// The shape of the input tensor
+	};
 }
 
 #include "broadcastGradFn.inl"

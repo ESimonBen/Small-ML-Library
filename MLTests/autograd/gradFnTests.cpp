@@ -23,7 +23,7 @@ TEST_SUITE("Base Gradient Function Tests") {
 			CHECK(gradFn.GetInput(0)->requiresGrad == impl->requiresGrad);
 		}
 
-		SUBCASE("GradFn stores multiple input") {
+		SUBCASE("GradFn stores multiple inputs") {
 			ArenaAllocator allocator;
 
 			Tensor<float> tensor1({ 2, 3 }, allocator);
