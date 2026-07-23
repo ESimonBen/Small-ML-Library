@@ -298,6 +298,30 @@ TEST_SUITE("Activation Function Gradient Tests") {
 			}
 		}
 
+		SUBCASE("AxisLogSoftmax Gradient Operation (axis 1)") {
+			ArenaAllocator allocator;
+
+			Tensor<float> A({ 2, 3 }, allocator);
+			A[0] = A[1] = A[2] = 3;
+			A[3] = A[4] = A[5] = 4;
+			A.SetRequiresGrad(true);
+
+			auto B = AxisLogSoftmax(A, 1, allocator);
+			CHECK(B.GetShape() == Shape(2, 3));
+			CHECK(B.RequiresGrad());
+
+			auto loss = SumAll(B, allocator);
+			loss.Backward();
+
+			auto gradA = A.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+
+			for (auto& val : gradA) {
+				CHECK(val == 0.0f);
+			}
+		}
+
 		SUBCASE("Empty tensor AxisLogSoftMax throws") {
 			ArenaAllocator allocator;
 

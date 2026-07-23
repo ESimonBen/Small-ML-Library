@@ -7,6 +7,10 @@
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (predictions.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: MeanSquaredError: Tensor size mismatch");
 		}
@@ -41,6 +45,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (predictions.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: MeanAbsoluteError: Tensor size mismatch");
 		}
@@ -75,6 +83,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (predictions.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropy: Tensor size mismatch");
 		}
@@ -123,6 +135,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (logits.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+		
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Tensor shape mismatch");
 		}
@@ -167,6 +183,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (predictions.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (predictions.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropy: Tensor shape mismatch");
 		}
@@ -207,6 +227,10 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+		if (logits.Dims().empty() || targets.Dims().empty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
 		if (logits.GetShape() != targets.GetShape()) {
 			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Tensor shape mismatch");
 		}

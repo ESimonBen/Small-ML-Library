@@ -211,7 +211,7 @@ TEST_SUITE("Loss Function Tests") {
             CHECK(result[0] == doctest::Approx(0.10536052));
         }
 
-        SUBCASE("BinaryCrossEntropy - ClampPreventsInf") {
+        SUBCASE("BinaryCrossEntropy - Clamp Prevents Infinite Result") {
             ArenaAllocator allocator;
 
             Tensor<float> pred({ 2 }, allocator);

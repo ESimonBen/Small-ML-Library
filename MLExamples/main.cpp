@@ -354,21 +354,5 @@ int main() {
     /// Model Training Test
     TestXORSave(allocator);
 
-    Tensor<float> A({ 2, 3 }, allocator);
-    A[0] = A[1] = A[2] = 3;
-    A[3] = A[4] = A[5] = 4;
-    A.SetRequiresGrad(true);
-
-    auto B = AxisLogSoftmax(A, 0, allocator);
-
-    auto loss = SumAll(B, allocator);
-    loss.Backward();
-
-    auto gradA = A.Grad();
-
-    for (auto& val : gradA) {
-        std::cout << val << " ";
-    }
-
     return 0;
 }
