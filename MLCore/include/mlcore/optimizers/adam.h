@@ -26,19 +26,6 @@ namespace MLCore::Optimizers {
 			T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		/// <summary>
-		/// Constructs an Adam optimizer for the given parameters and initializes internal optimizer state (first and second moment estimates) and hyperparameters.
-		/// </summary>
-		/// <typeparam name="T">The numeric scalar type for parameters and optimizer state (typically a floating-point type such as float or double).</typeparam>
-		/// <param name="params">A vector of references to NN::Parameter<T> objects to be optimized. The constructor registers these parameters with the base Optimizer and prepares per-parameter optimizer state.</param>
-		/// <param name="learningRate">The initial learning rate (step size) used by the optimizer.</param>
-		/// <param name="weightDecay">The weight decay (L2 regularization) factor applied during updates.</param>
-		/// <param name="beta1">The exponential decay rate for the first moment estimates (momentum term).</param>
-		/// <param name="beta2">The exponential decay rate for the second moment estimates (RMS term).</param>
-		/// <param name="epsilon">A small constant added for numerical stability when normalizing by the second moment.</param>
-		Adam(std::vector<NN::Parameter<T>>& params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
-			 T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
-
-		/// <summary>
 		/// Constructor for an Adam optimizer specialized on type T. Initializes optimizer state, hyperparameters, and per-parameter first- and second-moment tensors.
 		/// </summary>
 		/// <typeparam name="T">The numeric type used for parameters, moments, and internal computations (e.g., float or double).</typeparam>
@@ -106,19 +93,6 @@ namespace MLCore::Optimizers {
 		/// <param name="beta2">Exponential decay rate for the second moment estimates (beta2).</param>
 		/// <param name="epsilon">Small constant added for numerical stability when computing updates.</param>
 		AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
-			T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
-
-		/// <summary>
-		/// Constructs an AdamW optimizer and initializes internal state (hyperparameters, timestep, and per-parameter first and second moment tensors).
-		/// </summary>
-		/// <typeparam name="T">The numeric type used for parameters, moment tensors, and optimizer state (e.g., float or double).</typeparam>
-		/// <param name="params">A vector of references to model parameters to optimize; the constructor registers each parameter and allocates zero-initialized first- and second-moment tensors for them.</param>
-		/// <param name="learningRate">The initial learning rate used by the optimizer.</param>
-		/// <param name="weightDecay">The weight decay (L2 regularization) coefficient applied during optimization.</param>
-		/// <param name="beta1">The exponential decay rate for the first moment estimates (moving average of gradients).</param>
-		/// <param name="beta2">The exponential decay rate for the second moment estimates (moving average of squared gradients).</param>
-		/// <param name="epsilon">A small constant added for numerical stability when normalizing updates.</param>
-		AdamW(std::vector<NN::Parameter<T>>& params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
 			T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		/// <summary>

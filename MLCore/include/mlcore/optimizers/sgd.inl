@@ -8,11 +8,6 @@ namespace MLCore::Optimizers {
 	{}
 	
 	template <typename T>
-	inline SGD<T>::SGD(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay)
-		: Optimizer<T>(params, learningRate, weightDecay)
-	{}
-	
-	template <typename T>
 	inline SGD<T>::SGD(std::vector<ParameterGroup<T>> groups)
 		: Optimizer<T>(groups)
 	{}
@@ -59,7 +54,7 @@ namespace MLCore::Optimizers {
 		size_t numGroups = this->m_ParamGroups.size();
 		writer.Write(numGroups);
 
-		for (ParameterGroup<T>& group : this->m_ParamGroups) {
+		for (const ParameterGroup<T>& group : this->m_ParamGroups) {
 			writer.Write(group.learningRate);
 			writer.Write(group.weightDecay);
 		}
@@ -82,22 +77,6 @@ namespace MLCore::Optimizers {
 	
 	template <typename T>
 	inline SGDMomentum<T>::SGDMomentum(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
-		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
-			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-				for (auto& ref : paramGroup.params) {
-					NN::Parameter<T>& p = ref.get();
-					NN::ParamID paramID = p.id;
-					TensorCore::Tensor<T>& param = p.Data();
-
-					TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
-					velocity.Fill(static_cast<T>(0));
-					m_Velocities.try_emplace(paramID, velocity);
-				}
-			}
-	}
-	
-	template <typename T>
-	inline SGDMomentum<T>::SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T momentum, T weightDecay, T dampening, bool nesterov)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Momentum(momentum), m_Dampening(dampening), m_Nesterov(nesterov) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
@@ -159,17 +138,17 @@ namespace MLCore::Optimizers {
 				for (size_t j = 0; j < size; ++j) {
 					T gradScalar = grad[j];
 
-					// Weight decay
+					/// Weight decay
 					if (weightDecay != static_cast<T>(0)) {
 						gradScalar += weightDecay * param[j];
 					}
 
 					T scaledGrad = (static_cast<T>(1) - m_Dampening) * gradScalar;
 
-					// Momentum with dampening
+					/// Momentum with dampening
 					velocity[j] = (m_Momentum * velocity[j]) + scaledGrad;
 
-					// Nesterov or standard stochastic gradient descent
+					/// Nesterov or standard stochastic gradient descent
 					if (m_Nesterov) {
 						param[j] -= learningRate * (scaledGrad + m_Momentum * velocity[j]);
 					}

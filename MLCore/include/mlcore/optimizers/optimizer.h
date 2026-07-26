@@ -25,15 +25,6 @@ namespace MLCore::Optimizers {
 		Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay = static_cast<T>(0));
 		
 		/// <summary>
-		/// Initializes an Optimizer for the given model parameters, creating an internal parameter group that holds references to the provided parameters along with the specified learning rate and weight decay.
-		/// </summary>
-		/// <typeparam name="T">The numeric type of the parameters and optimizer values (for example, float or double).</typeparam>
-		/// <param name="params">A vector of NN::Parameter<T> objects to optimize. The constructor stores references to these parameters (using std::reference_wrapper) rather than copying them.</param>
-		/// <param name="learningRate">The initial learning rate to associate with the created parameter group.</param>
-		/// <param name="weightDecay">The weight decay (L2 regularization) coefficient to associate with the created parameter group.</param>
-		Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay = static_cast<T>(0));
-		
-		/// <summary>
 		/// Constructs an Optimizer<T>, initializing its parameter groups by moving the provided vector into the instance.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the parameter groups and the optimizer.</typeparam>
@@ -101,8 +92,8 @@ namespace MLCore::Optimizers {
 		std::vector<ParameterGroup<T>> m_ParamGroups; /// A container of ParameterGroups
 
 	private:
-		bool m_UseClip = false; /// Flag indicating whether clipping is enabled.
 		T m_MaxNorm = static_cast<T>(0); /// The maximum L2 norm the gradient is limited to.
+		bool m_UseClip = false; /// Flag indicating whether clipping is enabled.
 	};
 }
 

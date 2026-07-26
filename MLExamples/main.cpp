@@ -90,7 +90,7 @@ void TestXORSave(ArenaAllocator& allocator) {
         }
     }
 
-    SGDMomentum<float> optA{ paramsA, 0.1f, 0.1f };
+    SGDMomentum optA{ paramsA, 0.1f, 0.1f };
 
     StepLR<float> schedulerA{ optA, 1000, .99f };
 
@@ -129,8 +129,7 @@ void TestXORSave(ArenaAllocator& allocator) {
                  << " | Train Loss: " << stats.trainLoss
                  << " | Train Accuracy: "
                  << (stats.trainMetrics.at("Accuracy") * 100) << "%"
-                 << " | Val Loss: "
-                 << stats.valLoss
+                 << " | Val Loss: " << stats.valLoss
                  << " | Val Accuracy: "
                  << (stats.valMetrics.at("Accuracy") * 100) << "%"
                  << '\n';
@@ -196,7 +195,7 @@ void TestXORSave(ArenaAllocator& allocator) {
         }
     }
 
-    SGDMomentum<float> optB{ paramsB, 0.1f, 0.1f };
+    SGDMomentum optB{ paramsB, 0.1f, 0.1f };
 
     StepLR<float> schedulerB{ optB, 1000, .99f };
 
@@ -267,7 +266,7 @@ void TestXORSave(ArenaAllocator& allocator) {
     auto paramsC = modelC.GetParameters();
     auto namedParamsC = modelC.GetNamedParameters();
 
-    SGDMomentum<float> optC{ paramsC, 0.1f, 0.1f };
+    SGDMomentum optC{ paramsC, 0.1f, 0.1f };
 
     StepLR<float> schedulerC{ optC, 1000, .99f };
 

@@ -7,7 +7,7 @@ namespace MLCore::Serialization {
 	template <typename T>
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path, const Optimizers::Optimizer<T>* opt,
 						  const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
-		// Create the file and the directories it's stored in
+		/// Create the file and the directories it's stored in
 		std::filesystem::path filePath = path;
 		std::filesystem::path parentPath = filePath.parent_path();
 		
@@ -58,7 +58,7 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Load: Failed to open checkpoint path");
 		}
 
-		// Read the magic number and file format version
+		/// Read the magic number and file format version
 		uint64_t magic;
 		uint32_t version;
 		TensorCore::DataType dtype;
@@ -97,13 +97,13 @@ namespace MLCore::Serialization {
 
 	template <typename T>
 	void Checkpoint::SaveV1(const NN::Module<T>& model, BinaryWriter& writer) {
-		// Store the number of parameters
+		/// Store the number of parameters
 		auto params = model.GetParameters();
 		size_t numParams = params.size();
 
 		writer.Write(numParams);
 
-		// Store the size, rank, shape, and data of each parameter
+		/// Store the size, rank, shape, and data of each parameter
 		for (const auto& ref : params) {
 			const NN::Parameter<T>& param = ref.get();
 			const TensorCore::Tensor<T>& tensor = param.Data();
@@ -113,7 +113,7 @@ namespace MLCore::Serialization {
 
 	template <typename T>
 	void Checkpoint::LoadV1(NN::Module<T>& model, BinaryReader& reader) {
-		// Read the number of parameters
+		/// Read the number of parameters
 		auto params = model.GetParameters();
 		size_t numParams;
 		reader.Read(numParams);
@@ -122,7 +122,7 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
 		}
 
-		// Read each parameter
+		/// Read each parameter
 		for (auto& ref : params) {
 			NN::Parameter<T>& param = ref.get();
 			TensorCore::Tensor<T>& tensor = param.Data();
@@ -235,7 +235,6 @@ namespace MLCore::Serialization {
 			model.Evaluate();
 		}
 
-		// New way
 		while (true) {
 			Section section;
 			reader.Read(section);

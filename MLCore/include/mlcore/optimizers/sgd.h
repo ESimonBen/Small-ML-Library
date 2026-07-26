@@ -21,15 +21,6 @@ namespace MLCore::Optimizers {
 		SGD(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay = static_cast<T>(0));
 		
 		/// <summary>
-		/// Constructs an SGD optimizer that initializes the base Optimizer with the provided parameters, learning rate, and weight decay.
-		/// </summary>
-		/// <typeparam name="T">The numeric type used for parameters and computations (e.g., float or double).</typeparam>
-		/// <param name="params">A reference to a vector of NN::Parameter<T> representing the model parameters to be optimized.</param>
-		/// <param name="learningRate">The learning rate (step size) used for parameter updates.</param>
-		/// <param name="weightDecay">The weight decay (L2 regularization) factor applied during optimization.</param>
-		SGD(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay = static_cast<T>(0));
-		
-		/// <summary>
 		/// Constructs an SGD optimizer initialized with the provided parameter groups.
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the parameters and optimizer state (for example, float or double).</typeparam>
@@ -84,18 +75,6 @@ namespace MLCore::Optimizers {
 		/// <param name="dampening">The dampening factor applied to momentum updates.</param>
 		/// <param name="nesterov">If true, use Nesterov momentum; otherwise use standard (classical) momentum.</param>
 		SGDMomentum(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T momentum, T weightDecay = static_cast<T>(0), T dampening = static_cast<T>(0), bool nesterov = false);
-		
-		/// <summary>
-		/// Constructs an SGDMomentum optimizer, initializes optimizer state (learning rate, weight decay, momentum, dampening, Nesterov flag) and allocates zero-initialized velocity tensors for each parameter.
-		/// </summary>
-		/// <typeparam name="T">Numeric type for parameters and optimizer state (e.g., float or double).</typeparam>
-		/// <param name="params">Reference to a vector of NN::Parameter<T> objects to be managed by the optimizer. These parameters are registered with the base Optimizer and used to create per-parameter velocity tensors.</param>
-		/// <param name="learningRate">Initial learning rate for the optimizer.</param>
-		/// <param name="momentum">Momentum coefficient used to scale the velocity update.</param>
-		/// <param name="weightDecay">Weight decay (L2 regularization) coefficient applied by the base optimizer.</param>
-		/// <param name="dampening">Dampening factor applied to momentum updates.</param>
-		/// <param name="nesterov">If true, enables Nesterov momentum; otherwise standard momentum is used.</param>
-		SGDMomentum(std::vector<NN::Parameter<T>>& params, T learningRate, T momentum, T weightDecay = static_cast<T>(0), T dampening = static_cast<T>(0), bool nesterov = false);
 		
 		/// <summary>
 		/// Constructs an SGDMomentum optimizer using the provided parameter groups and momentum settings. Initializes internal momentum, dampening and Nesterov flags, and creates zero-initialized per-parameter velocity tensors stored in m_Velocities keyed by each parameter's ID.

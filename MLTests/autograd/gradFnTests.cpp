@@ -1,7 +1,8 @@
 /// gradFnTests.cpp
-#include "dummyGradFn.h"
 #include <doctest/doctest.h>
 #include <mlCore/operations/operations.h>
+
+#include "dummyGradFn.h"
 
 using namespace MLCore::Utils;
 using namespace MLCore::Memory;

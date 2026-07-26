@@ -21,7 +21,7 @@ TEST_SUITE("Reduction Gradient Tests") {
 			CHECK(B.GetShape() == Shape(1));
 			CHECK(B.RequiresGrad());
 
-			B.Backward(); // No need for loss here, it's already scalar
+			B.Backward(); /// No need for loss here, it's already scalar
 
 			auto gradA = A.Grad();
 

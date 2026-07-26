@@ -9,18 +9,6 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	inline Optimizer<T>::Optimizer(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay) {
-		std::vector<std::reference_wrapper<NN::Parameter<T>>> refs;
-		refs.reserve(params.size());
-
-		for (NN::Parameter<T>& p : params) {
-			refs.emplace_back(p);
-		}
-
-		m_ParamGroups.emplace_back(refs, learningRate, weightDecay);
-	}
-	
-	template <typename T>
 	inline Optimizer<T>::Optimizer(std::vector<ParameterGroup<T>> groups)
 		: m_ParamGroups(std::move(groups))
 	{}

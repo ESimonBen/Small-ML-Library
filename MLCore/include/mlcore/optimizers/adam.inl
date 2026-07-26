@@ -28,28 +28,6 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	inline Adam<T>::Adam(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
-		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
-		  m_Epsilon(epsilon), m_Timestep(0) {
-			  for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-				  for (auto& ref : paramGroup.params) {
-					  NN::Parameter<T>& p = ref.get();
-					  NN::ParamID paramID = p.id;
-					  TensorCore::Tensor<T>& param = p.Data();
-
-					  TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
-					  TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
-
-					  m.Fill(static_cast<T>(0));
-					  v.Fill(static_cast<T>(0));
-
-					  m_FirstMoment.try_emplace(paramID, m);
-					  m_SecondMoment.try_emplace(paramID, v);
-				  }
-			  }
-	}
-	
-	template <typename T>
 	inline Adam<T>::Adam(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
@@ -122,16 +100,16 @@ namespace MLCore::Optimizers {
 				for (size_t i = 0; i < size; ++i) {
 					T gradScalar = grad[i];
 
-					// Weight decay
+					/// Weight decay
 					if (weightDecay != static_cast<T>(0)) {
 						gradScalar += weightDecay * param[i];
 					}
 
-					// Update biased moments
+					/// Update biased moments
 					m[i] = m_Beta1 * m[i] + (static_cast<T>(1) - m_Beta1) * gradScalar;
 					v[i] = m_Beta2 * v[i] + (static_cast<T>(1) - m_Beta2) * (gradScalar * gradScalar);
 
-					// Bias correction
+					/// Bias correction
 					T m_hat = m[i] / bias1;
 					T v_hat = v[i] / bias2;
 
@@ -296,28 +274,6 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	inline AdamW<T>::AdamW(std::vector<NN::Parameter<T>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
-		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
-		  m_Epsilon(epsilon), m_Timestep(0) {
-			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
-				for (auto& ref : paramGroup.params) {
-					NN::Parameter<T>& p = ref.get();
-					NN::ParamID paramID = p.id;
-					TensorCore::Tensor<T>& param = p.Data();
-
-					TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
-					TensorCore::Tensor<T> v{ param.GetShape(), param.GetAllocator() };
-
-					m.Fill(static_cast<T>(0));
-					v.Fill(static_cast<T>(0));
-
-					m_FirstMoment.try_emplace(paramID, m);
-					m_SecondMoment.try_emplace(paramID, v);
-				}
-			}
-	}
-	
-	template <typename T>
 	inline AdamW<T>::AdamW(std::vector<ParameterGroup<T>> groups, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(groups), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
@@ -390,16 +346,16 @@ namespace MLCore::Optimizers {
 				for (size_t i = 0; i < size; ++i) {
 					T gradScalar = grad[i];
 
-					// Weight decay
+					/// Weight decay
 					if (weightDecay != static_cast<T>(0)) {
 						param[i] -= learningRate * weightDecay * param[i];
 					}
 
-					// Update biased moments
+					/// Update biased moments
 					m[i] = m_Beta1 * m[i] + (static_cast<T>(1) - m_Beta1) * gradScalar;
 					v[i] = m_Beta2 * v[i] + (static_cast<T>(1) - m_Beta2) * (gradScalar * gradScalar);
 
-					// Bias correction
+					/// Bias correction
 					T m_hat = m[i] / bias1;
 					T v_hat = v[i] / bias2;
 

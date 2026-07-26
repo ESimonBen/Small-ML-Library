@@ -48,7 +48,7 @@ namespace MLCore::TensorCore {
 			nullptr
 		);
 
-		// This does a std::move of this shared_ptr, which essentially creates a way to view the data without creating it
+		/// This does a std::move of this shared_ptr, which essentially creates a way to view the data without creating it
 		return Tensor<T>{newImpl};
 	}
 	
@@ -394,7 +394,7 @@ namespace MLCore::TensorCore {
 			}
 		}
 
-		// Find output shape
+		/// Find output shape
 		std::vector<size_t> outDims = baseDims;
 		outDims[0] = 0;
 
@@ -402,7 +402,7 @@ namespace MLCore::TensorCore {
 			outDims[0] += tensor.Dims()[0];
 		}
 
-		// Copy data into output tensor
+		/// Copy data into output tensor
 		Tensor<T> result{ outDims, firstTensor.GetAllocator() };
 		size_t writeOffset = 0;
 
