@@ -10,7 +10,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AddScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AddScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -26,7 +26,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void SubScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator)  {
+	void SubScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput)  {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -35,7 +35,7 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ? Operations::Negate(gradientOut, allocator) : gradientOut;
+		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ? Operations::Negate(gradientOut) : gradientOut;
 
 		input.Backward(gradInput);
 	}
@@ -46,7 +46,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void MulScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void MulScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -55,7 +55,7 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> gradInput = Operations::MultiplyScalar(gradientOut, scalar, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::MultiplyScalar(gradientOut, scalar);
 
 		input.Backward(gradInput);
 	}
@@ -66,7 +66,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void DivScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void DivScalarGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -80,8 +80,8 @@ namespace MLCore::AutoGrad {
 		auto detachedInput = input.Detach();
 
 		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ?
-			Operations::Multiply(gradientOut, Operations::DivideScalar(Operations::Square(detachedInput, allocator), -scalar, allocator, true), allocator)
-			: Operations::DivideScalar(gradientOut, scalar, allocator, false);
+			Operations::Multiply(gradientOut, Operations::DivideScalar(Operations::Square(detachedInput), -scalar, true))
+			: Operations::DivideScalar(gradientOut, scalar, false);
 
 		input.Backward(gradInput);
 	}

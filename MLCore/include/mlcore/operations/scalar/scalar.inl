@@ -7,11 +7,12 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar) {
 		if (Input.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = Input.GetAllocator();
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -29,11 +30,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft)  {
+	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, bool scalarOnLeft)  {
 		if (Input.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = Input.GetAllocator();
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -51,11 +53,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator)  {
+	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar)  {
 		if (Input.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = Input.GetAllocator();
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();
@@ -73,7 +76,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> DivideScalar(const TensorCore::Tensor<T>& Input, const T Scalar, Memory::ArenaAllocator& allocator, bool scalarOnLeft) {
+	inline TensorCore::Tensor<T> DivideScalar(const TensorCore::Tensor<T>& Input, const T Scalar, bool scalarOnLeft) {
 		if (Input.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
@@ -89,6 +92,7 @@ namespace MLCore::Operations {
 			}
 		}
 
+		Memory::ArenaAllocator& allocator = Input.GetAllocator();
 		TensorCore::Tensor<T> Output{ Input.GetShape(), allocator };
 
 		const size_t size = Input.NumElements();

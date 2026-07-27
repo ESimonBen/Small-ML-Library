@@ -7,10 +7,12 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> SumAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> SumAll(const TensorCore::Tensor<T>& A) {
 		static_assert(std::is_arithmetic_v<T>, "ERROR: T must be an arithmetic type");
 
 		const size_t size = A.NumElements();
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		if (size == 0) {
@@ -35,7 +37,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanAll(const TensorCore::Tensor<T>& A) {
 		static_assert(std::is_floating_point_v<T>, "ERROR: T must be a floating point type");
 
 		size_t size = A.NumElements();
@@ -44,7 +46,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Mean: Tensor was empty");
 		}
 
-		TensorCore::Tensor<T> result = DivideScalar(SumAll(A, allocator), static_cast<T>(size), allocator, false);
+		TensorCore::Tensor<T> result = DivideScalar(SumAll(A), static_cast<T>(size), false);
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -54,7 +56,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MaxAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MaxAll(const TensorCore::Tensor<T>& A) {
 		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
 
 		const size_t size = A.NumElements();
@@ -64,6 +66,7 @@ namespace MLCore::Operations {
 
 		T max = A[0];
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		for (size_t i = 1; i < size; ++i) {
@@ -81,7 +84,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MinAll(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MinAll(const TensorCore::Tensor<T>& A) {
 		static_assert(std::totally_ordered<T>, "ERROR: T must be totally ordered");
 
 		const size_t size = A.NumElements();
@@ -91,6 +94,7 @@ namespace MLCore::Operations {
 
 		T min = A[0];
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ {1}, allocator };
 
 		for (size_t i = 1; i < size; ++i) {
@@ -108,7 +112,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
+	TensorCore::Tensor<T> AxisSum(const TensorCore::Tensor<T>& A, size_t axis, bool keepDims) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisSum: Axis out of bounds");
 		}
@@ -130,7 +134,7 @@ namespace MLCore::Operations {
 			}
 		}
 
-
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ outDims, allocator };
 		result.Fill(static_cast<T>(0)); /// Temporary fix
 
@@ -192,20 +196,21 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisMean(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
+	TensorCore::Tensor<T> AxisMean(const TensorCore::Tensor<T>& A, size_t axis, bool keepDims) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisMean: Axis out of bounds");
 		}
 
 		size_t axisSize = A.Dims()[axis];
 
-		TensorCore::Tensor<T> result = DivideScalar(AxisSum(A, axis, allocator, keepDims), static_cast<T>(axisSize), allocator, false);
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
+		TensorCore::Tensor<T> result = DivideScalar(AxisSum(A, axis, keepDims), static_cast<T>(axisSize), false);
 
 		return result;
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisMax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
+	TensorCore::Tensor<T> AxisMax(const TensorCore::Tensor<T>& A, size_t axis, bool keepDims) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisMax: Axis out of bounds");
 		}
@@ -226,10 +231,12 @@ namespace MLCore::Operations {
 			}
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
+
 		TensorCore::Tensor<T> result{ outDims, allocator };
 		result.Fill(static_cast<T>(0)); /// Temporary fix
 
-		// Outer and inner size calculation
+		/// Outer and inner size calculation
 		size_t outer = 1;
 		for (size_t i = 0; i < axis; ++i) {
 			outer *= dims[i];
@@ -266,7 +273,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisMin(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator, bool keepDims) {
+	TensorCore::Tensor<T> AxisMin(const TensorCore::Tensor<T>& A, size_t axis, bool keepDims) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisMin: Axis out of bounds");
 		}
@@ -287,7 +294,9 @@ namespace MLCore::Operations {
 			}
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ outDims, allocator };
+
 		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		// Outer and inner size calculation

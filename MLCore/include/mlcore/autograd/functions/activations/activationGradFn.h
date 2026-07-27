@@ -23,8 +23,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (e.g., float, double, etc.).</typeparam>
 		/// <param name="gradOutput">Const reference to the gradient tensor with respect to the ReLU output. Must have the same shape as the stored input tensor.</param>
-		/// <param name="allocator">Allocator used to create the gradInput tensor that will hold the gradient with respect to the input.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -47,8 +46,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Numeric element type of the tensors (e.g., float, double).</typeparam>
 		/// <param name="gradOutput">Incoming gradient tensor (dL/dy) for the activation's output. Must have the same shape as the saved input; otherwise the function throws std::runtime_error.</param>
-		/// <param name="allocator">Memory allocator used to allocate the temporary input gradient tensor (dL/dx).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		T alpha; /// Represents the multiplier (alpha) for elements <= 0
@@ -74,8 +72,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors. Must be a floating-point type.</typeparam>
 		/// <param name="gradOutput">Gradient w.r.t. the softmax output. Must have the same shape as the stored input/output tensors.</param>
-		/// <param name="allocator">Memory arena allocator used for creating temporary tensors during the backward computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> outputImpl; /// The output of the operation as a TensorImpl
@@ -102,8 +99,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double).</typeparam>
 		/// <param name="gradOutput">Gradient of the loss with respect to the softmax output (dL/dy). Provided as a tensor with the same shape as the output.</param>
-		/// <param name="allocator">Arena allocator used to allocate the tensor for the computed input gradients.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		std::shared_ptr<typename GradFn<T>::Impl> outputImpl; /// The output of the operation as a TensorImpl

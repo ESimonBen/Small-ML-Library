@@ -106,7 +106,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: Squeeze: Axis out of bounds");
 		}
@@ -121,6 +121,8 @@ namespace MLCore::Operations {
 		if (newDims.empty()) {
 			newDims.push_back(1);
 		}
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 
 		TensorCore::Tensor<T> result{ newDims, allocator };
 		result.Fill(static_cast<T>(0));
@@ -143,13 +145,15 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis) {
 		if (axis > A.Rank()) {
 			throw std::out_of_range("ERROR: Unsqueeze: Axis out of bounds");
 		}
 
 		std::vector<size_t> newDims = A.Dims();
 		newDims.insert(newDims.begin() + axis, 1);
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 
 		TensorCore::Tensor<T> result{ newDims, allocator };
 		result.Fill(static_cast<T>(0));
@@ -169,12 +173,12 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Input tensor cannot be null");
 		}
 
-		if (!Operations::CanBroadcast(targetShape, A.GetShape())) {
+		if (!CanBroadcast(targetShape, A.GetShape())) {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
 		}
 
@@ -187,7 +191,7 @@ namespace MLCore::Operations {
 		size_t targetRank = targetShape.Rank();
 
 		while (gradRank > targetRank) {
-			result = std::move(AxisSum(result, 0, allocator, false));
+			result = std::move(AxisSum(result, 0, false));
 			--gradRank;
 		}
 
@@ -197,11 +201,9 @@ namespace MLCore::Operations {
 			size_t targetDim = targetShape.Dims()[i];
 
 			if (targetDim == 1 && gradDim > 1) {
-				result = std::move(AxisSum(result, i, allocator, true));
+				result = std::move(AxisSum(result, i, true));
 			}
 		}
-
-		/*result.SetRequiresGrad(false);*/
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -212,14 +214,16 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: ExpandToShape: Input tensor cannot be null");
 		}
 
-		auto info = Operations::ComputeBroadcastTo(A.GetShape(), targetShape);
+		auto info = ComputeBroadcastTo(A.GetShape(), targetShape);
 
 		TensorCore::Tensor<T> grad = A.Detach();
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> output{ targetShape, allocator };
 
 		const size_t size = output.NumElements();

@@ -10,9 +10,7 @@ using namespace MLCore::Operations;
 TEST_SUITE("Activation Function Tests") {
 	TEST_CASE("ReLU") {
         SUBCASE("ReLU Calculation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 5 }, allocator);
+            Tensor<float> A({ 5 });
 
             A[0] = -2.0f;
             A[1] = -0.5f;
@@ -20,7 +18,7 @@ TEST_SUITE("Activation Function Tests") {
             A[3] = 2.0f;
             A[4] = 5.0f;
 
-            auto B = ReLU(A, allocator);
+            auto B = ReLU(A);
 
             CHECK(B.GetShape() == A.GetShape());
 
@@ -32,12 +30,10 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("ReLU propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
             A.SetRequiresGrad(true);
 
-            auto B = ReLU(A, allocator);
+            auto B = ReLU(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -45,16 +41,14 @@ TEST_SUITE("Activation Function Tests") {
 
 	TEST_CASE("LeakyReLU") {
         SUBCASE("LeakyReLU Calculation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -2.0f;
             A[1] = -1.0f;
             A[2] = 1.0f;
             A[3] = 3.0f;
 
-            auto B = LeakyReLU(A, 0.1f, allocator);
+            auto B = LeakyReLU(A, 0.1f);
 
             CHECK(B[0] == doctest::Approx(-0.2f));
             CHECK(B[1] == doctest::Approx(-0.1f));
@@ -63,12 +57,10 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("LeakyReLU propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2 }, allocator);
+            Tensor<float> A({ 2 });
             A.SetRequiresGrad(true);
 
-            auto B = LeakyReLU(A, 0.01f, allocator);
+            auto B = LeakyReLU(A, 0.01f);
 
             CHECK(B.RequiresGrad());
         }
@@ -76,15 +68,13 @@ TEST_SUITE("Activation Function Tests") {
 	
 	TEST_CASE("Sigmoid") {
         SUBCASE("Sigmoid Calculation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A[0] = -1.0f;
             A[1] = 0.0f;
             A[2] = 1.0f;
 
-            auto B = Sigmoid(A, allocator);
+            auto B = Sigmoid(A);
 
             CHECK(B[0] == doctest::Approx(0.268941f));
             CHECK(B[1] == doctest::Approx(0.5f));
@@ -92,22 +82,18 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("Sigmoid preserves shape") {
-            ArenaAllocator allocator;
+            Tensor<float> A({ 2,3 });
 
-            Tensor<float> A({ 2,3 }, allocator);
-
-            auto B = Sigmoid(A, allocator);
+            auto B = Sigmoid(A);
 
             CHECK(B.GetShape() == A.GetShape());
         }
 
         SUBCASE("Sigmoid propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2 }, allocator);
+            Tensor<float> A({ 2 });
             A.SetRequiresGrad(true);
 
-            auto B = Sigmoid(A, allocator);
+            auto B = Sigmoid(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -115,15 +101,13 @@ TEST_SUITE("Activation Function Tests") {
 
 	TEST_CASE("Tanh") {
         SUBCASE("Tanh Calculation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A[0] = -1.0f;
             A[1] = 0.0f;
             A[2] = 1.0f;
 
-            auto B = Tanh(A, allocator);
+            auto B = Tanh(A);
 
             CHECK(B[0] == doctest::Approx(-0.761594f));
             CHECK(B[1] == doctest::Approx(0.0f));
@@ -131,12 +115,10 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("Tanh propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2 }, allocator);
+            Tensor<float> A({ 2 });
             A.SetRequiresGrad(true);
 
-            auto B = Tanh(A, allocator);
+            auto B = Tanh(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -144,13 +126,11 @@ TEST_SUITE("Activation Function Tests") {
 
 	TEST_CASE("Softmax") {
         SUBCASE("Softmax Uniform Input") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A.Fill(0.0f);
 
-            auto B = Softmax(A, allocator);
+            auto B = Softmax(A);
 
             CHECK(B[0] == doctest::Approx(1.0f / 3.0f));
             CHECK(B[1] == doctest::Approx(1.0f / 3.0f));
@@ -158,15 +138,13 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("Softmax probabilities sum to one") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A[0] = 1.0f;
             A[1] = 2.0f;
             A[2] = 3.0f;
 
-            auto B = Softmax(A, allocator);
+            auto B = Softmax(A);
 
             float sum = B[0] + B[1] + B[2];
 
@@ -174,15 +152,13 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("Softmax handles large values") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A[0] = 1000.0f;
             A[1] = 1001.0f;
             A[2] = 1002.0f;
 
-            auto B = Softmax(A, allocator);
+            auto B = Softmax(A);
 
             float sum = B[0] + B[1] + B[2];
 
@@ -194,13 +170,11 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("Softmax propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 3 }, allocator);
+            Tensor<float> A({ 3 });
 
             A.SetRequiresGrad(true);
 
-            auto B = Softmax(A, allocator);
+            auto B = Softmax(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -208,39 +182,33 @@ TEST_SUITE("Activation Function Tests") {
 
 	TEST_CASE("AxisSoftmax") {
         SUBCASE("AxisSoftmax rows sum to one") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             for (size_t i = 0; i < 6; i++) {
                 A[i] = static_cast<float>(i + 1);
             }
 
-            auto B = AxisSoftmax(A, 1, allocator);
+            auto B = AxisSoftmax(A, 1);
 
             CHECK(B[0] + B[1] + B[2] == doctest::Approx(1.0f));
             CHECK(B[3] + B[4] + B[5] == doctest::Approx(1.0f));
         }
 
         SUBCASE("AxisSoftmax throws on invalid axis") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             CHECK_THROWS_AS(
-                AxisSoftmax(A, 5, allocator),
+                AxisSoftmax(A, 5),
                 std::out_of_range
             );
         }
 
         SUBCASE("AxisSoftmax propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             A.SetRequiresGrad(true);
 
-            auto B = AxisSoftmax(A, 1, allocator);
+            auto B = AxisSoftmax(A, 1);
 
             CHECK(B.RequiresGrad());
         }
@@ -248,15 +216,13 @@ TEST_SUITE("Activation Function Tests") {
 
 	TEST_CASE("LogAxisSoftmax") {
         SUBCASE("Exponentiated log-softmax sums to one") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             for (size_t i = 0; i < 6; i++) {
                 A[i] = static_cast<float>(i + 1);
             }
 
-            auto B = AxisLogSoftmax(A, 1, allocator);
+            auto B = AxisLogSoftmax(A, 1);
 
             float row1 =
                 std::exp(B[0]) +
@@ -273,24 +239,20 @@ TEST_SUITE("Activation Function Tests") {
         }
 
         SUBCASE("AxisLogSoftmax throws on invalid axis") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             CHECK_THROWS_AS(
-                AxisLogSoftmax(A, 10, allocator),
+                AxisLogSoftmax(A, 10),
                 std::out_of_range
             );
         }
 
         SUBCASE("AxisLogSoftmax propagates requires-grad") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2,3 }, allocator);
+            Tensor<float> A({ 2,3 });
 
             A.SetRequiresGrad(true);
 
-            auto B = AxisLogSoftmax(A, 1, allocator);
+            auto B = AxisLogSoftmax(A, 1);
 
             CHECK(B.RequiresGrad());
         }

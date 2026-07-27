@@ -17,10 +17,9 @@ namespace MLCore::NN {
 		/// <typeparam name="T">Numeric type of the layer's tensors (for example, float or double).</typeparam>
 		/// <param name="in">Number of input features (size of the input dimension).</param>
 		/// <param name="out">Number of output features (size of the output dimension).</param>
-		/// <param name="allocator">Arena allocator used to allocate memory for the weight and bias tensors.</param>
 		/// <param name="weightInit">Initialization type to use for the weight tensor.</param>
 		/// <param name="biasInit">Initialization type to use for the bias tensor.</param>
-		LinearLayer(size_t in, size_t out, Memory::ArenaAllocator& allocator, Init::InitType weightInit = Init::InitType::XavierUniform, Init::InitType biasInit = Init::InitType::Zero);
+		LinearLayer(size_t in, size_t out, Init::InitType weightInit = Init::InitType::XavierUniform, Init::InitType biasInit = Init::InitType::Zero);
 
 		/// <summary>
 		/// Performs the forward pass of a linear (fully connected) layer: multiplies the input by the layer weights and adds the bias.

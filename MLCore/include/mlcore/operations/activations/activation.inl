@@ -8,11 +8,12 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -31,11 +32,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 
 		size_t size = A.NumElements();
@@ -54,45 +56,46 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
-		TensorCore::Tensor<T> neg = Negate(A, allocator);
-		TensorCore::Tensor<T> exp = Exp(neg, allocator);
+		TensorCore::Tensor<T> neg = Negate(A);
+		TensorCore::Tensor<T> exp = Exp(neg);
 
-		TensorCore::Tensor<T> sum = AddScalar(exp, static_cast<T>(1), allocator);
-		TensorCore::Tensor<T> result = DivideScalar(sum, static_cast<T>(1), allocator, true);
+		TensorCore::Tensor<T> sum = AddScalar(exp, static_cast<T>(1));
+		TensorCore::Tensor<T> result = DivideScalar(sum, static_cast<T>(1), true);
 
 		return result;
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
-		TensorCore::Tensor<T> neg = Negate(A, allocator);
+		TensorCore::Tensor<T> neg = Negate(A);
 
-		TensorCore::Tensor<T> expPos = Exp(A, allocator); /// exp(x)
-		TensorCore::Tensor<T> expNeg = Exp(neg, allocator); /// exp(-x)
+		TensorCore::Tensor<T> expPos = Exp(A); /// exp(x)
+		TensorCore::Tensor<T> expNeg = Exp(neg); /// exp(-x)
 
-		TensorCore::Tensor<T> diff = Subtract(expPos, expNeg, allocator);
-		TensorCore::Tensor<T> sum = Add(expPos, expNeg, allocator);
+		TensorCore::Tensor<T> diff = Subtract(expPos, expNeg);
+		TensorCore::Tensor<T> sum = Add(expPos, expNeg);
 
-		TensorCore::Tensor<T> result = Divide(diff, sum, allocator);
+		TensorCore::Tensor<T> result = Divide(diff, sum);
 
 		return result;
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 		T maxValue = A[0];
@@ -123,7 +126,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> AxisSoftmax(const TensorCore::Tensor<T>& A, size_t axis) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisSoftmax: Axis out of bounds");
 		}
@@ -131,10 +134,11 @@ namespace MLCore::Operations {
 		const std::vector<size_t>& dims = A.Dims();
 		size_t rank = A.Rank();
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ dims, allocator };
 		result.Fill(static_cast<T>(0));
 
-		// Outer and inner size calculation
+		/// Outer and inner size calculation
 		size_t outer = 1;
 		for (size_t i = 0; i < axis; ++i) {
 			outer *= dims[i];
@@ -180,24 +184,24 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> AxisLogSoftmax(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> AxisLogSoftmax(const TensorCore::Tensor<T>& A, size_t axis) {
 		if (axis >= A.Rank()) {
 			throw std::out_of_range("ERROR: AxisLogSoftmax: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> axisMax = AxisMax(A, axis, allocator, true); /// For "numerical stability"
-		TensorCore::Tensor<T> maxExpanded = ExpandToShape(axisMax, A.GetShape(), allocator);
+		TensorCore::Tensor<T> axisMax = AxisMax(A, axis, true); /// For "numerical stability"
+		TensorCore::Tensor<T> maxExpanded = ExpandToShape(axisMax, A.GetShape());
 
-		TensorCore::Tensor<T> sub = Subtract(A, maxExpanded, allocator);
+		TensorCore::Tensor<T> sub = Subtract(A, maxExpanded);
 
-		TensorCore::Tensor<T> exp = Exp(sub, allocator);
+		TensorCore::Tensor<T> exp = Exp(sub);
 
-		TensorCore::Tensor<T> sum = AxisSum(exp, axis, allocator, true);
+		TensorCore::Tensor<T> sum = AxisSum(exp, axis, true);
 
-		TensorCore::Tensor<T> log = Log(sum, allocator);
+		TensorCore::Tensor<T> log = Log(sum);
 
-		TensorCore::Tensor<T> logExpanded = ExpandToShape(log, A.GetShape(), allocator);
-		TensorCore::Tensor<T> result = Subtract(sub, logExpanded, allocator);
+		TensorCore::Tensor<T> logExpanded = ExpandToShape(log, A.GetShape());
+		TensorCore::Tensor<T> result = Subtract(sub, logExpanded);
 
 		return result;
 	}

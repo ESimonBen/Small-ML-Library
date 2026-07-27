@@ -42,10 +42,9 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 	/// <param name="A">The input tensor to squeeze. Its dimension at index 'axis' must be 1.</param>
 	/// <param name="axis">The index of the dimension to remove. Must refer to a valid dimension of A whose size is 1.</param>
-	/// <param name="allocator">Memory::ArenaAllocator used to allocate storage for the returned tensor.</param>
 	/// <returns>A new TensorCore::Tensor<T> with the specified axis removed. If removing the axis results in no dimensions, the function returns a tensor with a single dimension of size 1. The returned tensor contains the same elements as the input and, if the input required gradients, the result will be marked to require gradients and will have its backward function set accordingly.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis);
 
 	/// <summary>
 	/// Returns a new tensor with a size-1 dimension inserted at the specified axis, copying the elements of the input tensor and propagating gradient information when present. Throws std::runtime_error if the axis is out of range or if the checked dimension is not 1.
@@ -53,10 +52,9 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">Element type of the tensor.</typeparam>
 	/// <param name="A">The input tensor to unsqueeze. Its contents are copied into the returned tensor.</param>
 	/// <param name="axis">The position at which to insert the new dimension (valid values: 0 .. A.Rank()). Throws std::runtime_error if axis > A.Rank() or if the dimension check in the function fails.</param>
-	/// <param name="allocator">Allocator used to allocate memory for the returned tensor.</param>
 	/// <returns>A TensorCore::Tensor<T> with a new dimension of size 1 inserted at the specified axis, containing the same elements as A. If A.RequiresGrad() is true, the result will require gradients and will have its gradient function set appropriately.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis);
 
 	/// <summary>
 	/// Reduces the input gradient tensor by summing along axes until its shape matches targetShape, following broadcasting rules. Throws std::runtime_error if targetShape is not broadcast-compatible with the gradient shape.
@@ -66,7 +64,7 @@ namespace MLCore::Operations {
 	/// <param name="targetShape">The desired shape after reduction. Must be broadcast-compatible with gradient.GetShape(); dimensions of size 1 in targetShape cause the corresponding gradient dimensions to be summed. If targetShape has fewer ranks, leading gradient axes are summed.</param>
 	/// <returns>A new tensor with shape equal to targetShape containing the reduced sums. The returned tensor has requiresGrad set to false.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape);
 
 	/// <summary>
 	/// Broadcasts the input gradient tensor to the specified target shape and returns a new tensor containing the expanded values.
@@ -76,7 +74,7 @@ namespace MLCore::Operations {
 	/// <param name="targetShape">The desired shape for the output tensor. Must be compatible with the input tensor's shape according to the broadcasting rules used by Operations::ComputeBroadcastTo.</param>
 	/// <returns>A new TensorCore::Tensor<T> with shape targetShape containing values from gradient replicated according to broadcasting rules (using the same allocator as the detached input).</returns>
 	template <typename T>
-	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape, Memory::ArenaAllocator& allocator);
+	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape);
 }
 
 #include "broadcast.inl"

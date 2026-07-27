@@ -18,7 +18,7 @@ public:
         : GradFn<T>(std::move(impls))
     {}
 
-    void Backward(const MLCore::TensorCore::Tensor<T>&, MLCore::Memory::ArenaAllocator&) override{
+    void Backward(const MLCore::TensorCore::Tensor<T>&) override{
         /// No implementation here
     }
 

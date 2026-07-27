@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AddGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0] || !this->inputs[1]) {
 			throw std::runtime_error("ERROR: AddGradFn: Null input");
 		}
@@ -18,12 +18,12 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> b{ this->inputs[1] };
 
 		if (a.RequiresGrad()) {
-			auto gradA = Operations::ReduceSumToShape(gradOutput, a.GetShape(), allocator);
+			auto gradA = Operations::ReduceSumToShape(gradOutput, a.GetShape());
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
-			auto gradB = Operations::ReduceSumToShape(gradOutput, b.GetShape(), allocator);
+			auto gradB = Operations::ReduceSumToShape(gradOutput, b.GetShape());
 			b.Backward(gradB);
 		}
 	}
@@ -34,7 +34,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void SubGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0] || !this->inputs[1]) {
 			throw std::runtime_error("ERROR: SubGradFn: Null input");
 		}
@@ -45,12 +45,12 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		if (a.RequiresGrad()) {
-			auto gradA = Operations::ReduceSumToShape(gradientOut, a.GetShape(), allocator);
+			auto gradA = Operations::ReduceSumToShape(gradientOut, a.GetShape());
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
-			auto gradB = Operations::ReduceSumToShape(Operations::Negate(gradientOut, allocator), b.GetShape(), allocator);
+			auto gradB = Operations::ReduceSumToShape(Operations::Negate(gradientOut), b.GetShape());
 			b.Backward(gradB);
 		}
 	}
@@ -61,7 +61,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void MulGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0] || !this->inputs[1]) {
 			throw std::runtime_error("ERROR: MulGradFn: Null input");
 		}
@@ -74,13 +74,13 @@ namespace MLCore::AutoGrad {
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
-			auto gradA = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedB, allocator), a.GetShape(), allocator);
+			auto gradA = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedB), a.GetShape());
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
 			auto detachedA = a.Detach();
-			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedA, allocator), b.GetShape(), allocator);
+			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(gradientOut, detachedA), b.GetShape());
 			b.Backward(gradB);
 		}
 	}
@@ -91,7 +91,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void DivGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0] || !this->inputs[1]) {
 			throw std::runtime_error("ERROR: DivGradFn: Null input");
 		}
@@ -104,7 +104,7 @@ namespace MLCore::AutoGrad {
 
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
-			auto gradA = Operations::ReduceSumToShape(Operations::Divide(gradientOut, detachedB, allocator), a.GetShape(), allocator);
+			auto gradA = Operations::ReduceSumToShape(Operations::Divide(gradientOut, detachedB), a.GetShape());
 			a.Backward(gradA);
 		}
 
@@ -112,10 +112,10 @@ namespace MLCore::AutoGrad {
 			auto detachedA = a.Detach();
 			auto detachedB = b.Detach();
 
-			auto negGradOutput = Operations::Negate(gradientOut, allocator);
-			auto bSquared = Operations::Square(detachedB, allocator);
+			auto negGradOutput = Operations::Negate(gradientOut);
+			auto bSquared = Operations::Square(detachedB);
 			
-			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(negGradOutput, Operations::Divide(detachedA, bSquared, allocator), allocator), b.GetShape(), allocator);
+			auto gradB = Operations::ReduceSumToShape(Operations::Multiply(negGradOutput, Operations::Divide(detachedA, bSquared)), b.GetShape());
 			b.Backward(gradB);
 		}
 	}
@@ -126,7 +126,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void PowerGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: PowerGradFn: Null input");
 		}
@@ -141,10 +141,10 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		auto coeff = Operations::MultiplyScalar(gradientOut, exponent, allocator);
-		auto expMinus1 = Operations::Power(base, exponent - static_cast<T>(1), allocator);
+		auto coeff = Operations::MultiplyScalar(gradientOut, exponent);
+		auto expMinus1 = Operations::Power(base, exponent - static_cast<T>(1));
 
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(coeff, expMinus1, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(coeff, expMinus1);
 
 		input.Backward(gradInput);
 	}
@@ -155,7 +155,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AbsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AbsGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: AbsGradFn: Null input");
 		}
@@ -166,7 +166,7 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 
 		size_t size = gradInput.NumElements();
 
@@ -186,7 +186,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void ClampGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void ClampGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: ClampGradFn: Null input");
 		}
@@ -197,7 +197,7 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 
 		size_t size = gradInput.NumElements();
 
@@ -221,7 +221,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void LogGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void LogGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: LogGradFn: Null input");
 		}
@@ -235,8 +235,8 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor inp = input.Detach();
 		TensorCore::Tensor gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> reciprocal = Operations::DivideScalar(inp, static_cast<T>(1), allocator, true);
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(gradientOut, reciprocal, allocator);
+		TensorCore::Tensor<T> reciprocal = Operations::DivideScalar(inp, static_cast<T>(1), true);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(gradientOut, reciprocal);
 
 		input.Backward(gradInput);
 	}
@@ -247,7 +247,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void ExpGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void ExpGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (!this->inputs[0]) {
 			throw std::runtime_error("ERROR: LogGradFn: Null input");
 		}
@@ -261,8 +261,8 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor inp = input.Detach();
 		TensorCore::Tensor gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> exponential = Operations::Exp(inp, allocator);
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(exponential, gradientOut, allocator);
+		TensorCore::Tensor<T> exponential = Operations::Exp(inp);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(exponential, gradientOut);
 
 		input.Backward(gradInput);
 	}

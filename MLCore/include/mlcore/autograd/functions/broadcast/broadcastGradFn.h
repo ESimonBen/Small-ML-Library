@@ -24,8 +24,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (for example, float or double).</typeparam>
 		/// <param name="gradOutput">Const reference to the gradient tensor with respect to the operation's output; used to compute the gradient for the input.</param>
-		/// <param name="allocator">Reference to an arena allocator used to allocate temporary tensors (e.g., for the unsqueezed gradient).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		size_t m_Axis; /// Represents the axis that was squeezed.
@@ -51,8 +50,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double, int).</typeparam>
 		/// <param name="gradOutput">The gradient with respect to the operation's output. This tensor is detached and used to compute the input gradient by applying a squeeze along the member axis.</param>
-		/// <param name="allocator">Arena allocator used to allocate any temporary tensors required during the squeeze operation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		size_t m_Axis; /// Represents the axis that was unsqueezed.
@@ -78,8 +76,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (for example, float or double).</typeparam>
 		/// <param name="gradOutput">Gradient tensor with respect to this function's output. It is detached and then expanded to the input's original shape to form the input gradient.</param>
-		/// <param name="allocator">Allocator used to allocate memory when expanding the detached output gradient to the input's original shape.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape m_OriginalShape; /// The shape of the input tensor
@@ -105,8 +102,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (for example float or double).</typeparam>
 		/// <param name="gradOutput">The gradient tensor with respect to the operation's output. It is detached and used as the source for reduction back to the input shape.</param>
-		/// <param name="allocator">Memory arena allocator used for temporary allocations during the reduction (e.g., by ReduceSumToShape).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape m_OriginalShape; /// The shape of the input tensor

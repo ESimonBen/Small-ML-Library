@@ -11,7 +11,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void SumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void SumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: SumGradFn: Expected scalar tensor");
 		}
@@ -24,7 +24,7 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor gradientOut = gradOutput.Detach();
 
-		auto gradInput = Operations::ExpandToShape(gradientOut, inputShape, allocator);
+		auto gradInput = Operations::ExpandToShape(gradientOut, inputShape);
 
 		input.Backward(gradInput);
 	}
@@ -35,7 +35,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void MaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void MaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MaxGradFn: Expected a 1D tensor");
 		}
@@ -47,7 +47,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ inputShape, allocator };
+		TensorCore::Tensor<T> gradInput{ inputShape, input.GetAllocator() };
 
 		T gradScalar = gradOutput[0];
 
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void MinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void MinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		if (gradOutput.NumElements() != 1) {
 			throw std::runtime_error("ERROR: MinGradFn: Expected a 1D tensor");
 		}
@@ -87,7 +87,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ inputShape, allocator };
+		TensorCore::Tensor<T> gradInput{ inputShape, input.GetAllocator() };
 
 		T gradScalar = gradOutput[0];
 
@@ -116,7 +116,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	void AxisSumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AxisSumGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{this->inputs[0]};
 
 		if (!input.RequiresGrad()) {
@@ -126,10 +126,10 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		if (!m_KeepDims) {
-			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis);
 		}
 
-		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, inputShape, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, inputShape);
 
 		input.Backward(gradInput);
 	}
@@ -140,7 +140,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AxisMaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AxisMaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -151,21 +151,21 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		if (!m_KeepDims) {
-			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis);
 		}
 
-		TensorCore::Tensor<T> axisMax = Operations::AxisMax(inp, m_Axis, allocator, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
-		TensorCore::Tensor<T> maxExpanded = Operations::ExpandToShape(axisMax, inp.GetShape(), allocator);
+		TensorCore::Tensor<T> axisMax = Operations::AxisMax(inp, m_Axis, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
+		TensorCore::Tensor<T> maxExpanded = Operations::ExpandToShape(axisMax, inp.GetShape());
 
-		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape(), allocator);
+		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape());
 
-		TensorCore::Tensor<T> mask = Operations::Equal(input, maxExpanded, allocator);
+		TensorCore::Tensor<T> mask = Operations::Equal(input, maxExpanded);
 
-		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
-		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape(), allocator);
+		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, true);
+		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape());
 
-		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div, allocator);
+		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div);
 
 		input.Backward(gradInput);
 	}
@@ -176,7 +176,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AxisMinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AxisMinGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -187,21 +187,21 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		if (!m_KeepDims) {
-			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis);
 		}
 
-		TensorCore::Tensor<T> axisMin = Operations::AxisMin(inp, m_Axis, allocator, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
-		TensorCore::Tensor<T> minExpanded = Operations::ExpandToShape(axisMin, inp.GetShape(), allocator);
+		TensorCore::Tensor<T> axisMin = Operations::AxisMin(inp, m_Axis, true); /// Recalculating the max we got (maybe save the max ahead of time rather than recalculating)
+		TensorCore::Tensor<T> minExpanded = Operations::ExpandToShape(axisMin, inp.GetShape());
 
-		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape(), allocator);
+		TensorCore::Tensor<T> gradExpanded = Operations::ExpandToShape(gradientOut, input.GetShape());
 
-		TensorCore::Tensor<T> mask = Operations::Equal(input, minExpanded, allocator);
+		TensorCore::Tensor<T> mask = Operations::Equal(input, minExpanded);
 
-		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, allocator, true);
-		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape(), allocator);
+		TensorCore::Tensor<T> count = Operations::AxisSum(mask, m_Axis, true);
+		TensorCore::Tensor<T> countExpanded = Operations::ExpandToShape(count, inp.GetShape());
 
-		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded, allocator);
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div, allocator);
+		TensorCore::Tensor<T> div = Operations::Divide(gradExpanded, countExpanded);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(mask, div);
 
 		input.Backward(gradInput);
 	}

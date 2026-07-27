@@ -16,9 +16,7 @@ using namespace MLCore::Operations;
 TEST_SUITE("Optimizer Tests") {
 	TEST_CASE("Base Optimizer Tests") {
 		SUBCASE("Constructor initializes parameter groups") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(4.0f);
 
 			Parameter<float> p{ A };
@@ -45,16 +43,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("ZeroGrad zeros out parameter gradients") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(0.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 			
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -62,8 +58,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			DummyOptimizer opt{ params, 0.1f, .05f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -80,16 +76,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("Gradient clipping correctly scales gradients") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -97,8 +91,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			DummyOptimizer opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -118,12 +112,10 @@ TEST_SUITE("Optimizer Tests") {
 
 	TEST_CASE("SGD Tests") {
 		SUBCASE("SGD takes in multiple parameters") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(4.0f);
 
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> B({ 2, 3 });
 			B.Fill(7.0f);
 
 			Parameter paramA{ A };
@@ -155,16 +147,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGD step correctly updates parameters") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter param{ weight };
@@ -172,8 +162,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGD opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -190,16 +180,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGD weight decay correctly updates weight parameter") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -207,8 +195,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGD opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -225,30 +213,28 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGD correctly modifies multiple parameters") {
-			ArenaAllocator allocator;
-
 			/// Param A
-			Tensor<float> weightA{ {1}, allocator };
+			Tensor<float> weightA{ {1} };
 			weightA.Fill(1.0f);
 			weightA.SetRequiresGrad(true);
 
-			Tensor<float> inputA{ {1}, allocator };
+			Tensor<float> inputA{ {1} };
 			inputA.Fill(3.0f);
 
-			Tensor<float> targetA{ {1}, allocator };
+			Tensor<float> targetA{ {1} };
 			targetA.Fill(5.0f);
 
 			Parameter<float> paramA{ weightA };
 
 			/// Param B
-			Tensor<float> weightB{ {1}, allocator };
+			Tensor<float> weightB{ {1} };
 			weightB.Fill(2.0f);
 			weightB.SetRequiresGrad(true);
 
-			Tensor<float> inputB{ {1}, allocator };
+			Tensor<float> inputB{ {1} };
 			inputB.Fill(4.0f);
 
-			Tensor<float> targetB{ {1}, allocator };
+			Tensor<float> targetB{ {1} };
 			targetB.Fill(1.0f);
 
 			Parameter<float> paramB{ weightB };
@@ -258,13 +244,13 @@ TEST_SUITE("Optimizer Tests") {
 			SGD opt{ params, 0.1f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA, allocator);
-			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean, allocator);
+			auto predictA = Multiply(inputA, weightA);
+			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB, allocator);
-			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean, allocator);
+			auto predictB = Multiply(inputB, weightB);
+			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
 			auto weightAGrad = weightA.Grad();
@@ -292,12 +278,10 @@ TEST_SUITE("Optimizer Tests") {
 
 	TEST_CASE("SGDMomentum Tests") {
 		SUBCASE("SGDMomentum takes in multiple parameters") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(4.0f);
 
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> B({ 2, 3 });
 			B.Fill(7.0f);
 
 			Parameter paramA{ A };
@@ -329,16 +313,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGDMomentum step correctly updates parameters with velocity") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter param{ weight };
@@ -346,8 +328,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGDMomentum opt{ params, 0.1f, 0.5f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -374,16 +356,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGDMomentum weight decay correctly updates weight parameter") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -391,8 +371,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGDMomentum opt{ params, 0.1f, 0.5f, 0.05f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -409,30 +389,28 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("SGDMomentum correctly modifies multiple parameters") {
-			ArenaAllocator allocator;
-
 			/// Param A
-			Tensor<float> weightA{ {1}, allocator };
+			Tensor<float> weightA{ {1} };
 			weightA.Fill(1.0f);
 			weightA.SetRequiresGrad(true);
 
-			Tensor<float> inputA{ {1}, allocator };
+			Tensor<float> inputA{ {1} };
 			inputA.Fill(3.0f);
 
-			Tensor<float> targetA{ {1}, allocator };
+			Tensor<float> targetA{ {1} };
 			targetA.Fill(5.0f);
 
 			Parameter<float> paramA{ weightA };
 
 			/// Param B
-			Tensor<float> weightB{ {1}, allocator };
+			Tensor<float> weightB{ {1} };
 			weightB.Fill(2.0f);
 			weightB.SetRequiresGrad(true);
 
-			Tensor<float> inputB{ {1}, allocator };
+			Tensor<float> inputB{ {1} };
 			inputB.Fill(4.0f);
 
-			Tensor<float> targetB{ {1}, allocator };
+			Tensor<float> targetB{ {1} };
 			targetB.Fill(1.0f);
 
 			Parameter<float> paramB{ weightB };
@@ -442,13 +420,13 @@ TEST_SUITE("Optimizer Tests") {
 			SGDMomentum opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA, allocator);
-			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean, allocator);
+			auto predictA = Multiply(inputA, weightA);
+			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB, allocator);
-			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean, allocator);
+			auto predictB = Multiply(inputB, weightB);
+			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
 			auto weightAGrad = weightA.Grad();
@@ -476,12 +454,10 @@ TEST_SUITE("Optimizer Tests") {
 
 	TEST_CASE("Adam Tests") {
 		SUBCASE("Adam takes in multiple parameters") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(4.0f);
 
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> B({ 2, 3 });
 			B.Fill(7.0f);
 
 			Parameter paramA{ A };
@@ -513,16 +489,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("Adam step correctly updates parameters with 1st and 2nd moments") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter param{ weight };
@@ -530,8 +504,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			Adam opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -558,16 +532,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("Adam weight decay correctly updates weight parameter") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -575,8 +547,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			Adam opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -593,30 +565,28 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("Adam correctly modifies multiple parameters") {
-			ArenaAllocator allocator;
-
 			/// Param A
-			Tensor<float> weightA{ {1}, allocator };
+			Tensor<float> weightA{ {1} };
 			weightA.Fill(1.0f);
 			weightA.SetRequiresGrad(true);
 
-			Tensor<float> inputA{ {1}, allocator };
+			Tensor<float> inputA{ {1} };
 			inputA.Fill(3.0f);
 
-			Tensor<float> targetA{ {1}, allocator };
+			Tensor<float> targetA{ {1} };
 			targetA.Fill(5.0f);
 
 			Parameter<float> paramA{ weightA };
 
 			/// Param B
-			Tensor<float> weightB{ {1}, allocator };
+			Tensor<float> weightB{ {1} };
 			weightB.Fill(2.0f);
 			weightB.SetRequiresGrad(true);
 
-			Tensor<float> inputB{ {1}, allocator };
+			Tensor<float> inputB{ {1} };
 			inputB.Fill(4.0f);
 
-			Tensor<float> targetB{ {1}, allocator };
+			Tensor<float> targetB{ {1} };
 			targetB.Fill(1.0f);
 
 			Parameter<float> paramB{ weightB };
@@ -626,13 +596,13 @@ TEST_SUITE("Optimizer Tests") {
 			Adam opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA, allocator);
-			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean, allocator);
+			auto predictA = Multiply(inputA, weightA);
+			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB, allocator);
-			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean, allocator);
+			auto predictB = Multiply(inputB, weightB);
+			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
 			auto weightAGrad = weightA.Grad();
@@ -660,12 +630,10 @@ TEST_SUITE("Optimizer Tests") {
 
 	TEST_CASE("AdamW Tests") {
 		SUBCASE("AdamW takes in multiple parameters") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(4.0f);
 
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> B({ 2, 3 });
 			B.Fill(7.0f);
 
 			Parameter paramA{ A };
@@ -697,16 +665,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("AdamW step correctly updates parameters with 1st and 2nd moments") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter param{ weight };
@@ -714,8 +680,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			AdamW opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -742,16 +708,14 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("AdamW weight decay correctly updates weight parameter") {
-			ArenaAllocator allocator;
-
-			Tensor<float> weight{ {1}, allocator };
+			Tensor<float> weight{ {1} };
 			weight.Fill(1.0f);
 			weight.SetRequiresGrad(true);
 
-			Tensor<float> input{ {1}, allocator };
+			Tensor<float> input{ {1} };
 			input.Fill(3.0f);
 
-			Tensor<float> target{ {1}, allocator };
+			Tensor<float> target{ {1} };
 			target.Fill(5.0f);
 
 			Parameter<float> param{ weight };
@@ -759,8 +723,8 @@ TEST_SUITE("Optimizer Tests") {
 
 			AdamW opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight, allocator);
-			auto loss = MeanSquaredError(predict, target, Reduction::Mean, allocator);
+			auto predict = Multiply(input, weight);
+			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
 			auto weightGrad = weight.Grad();
@@ -777,30 +741,28 @@ TEST_SUITE("Optimizer Tests") {
 		}
 
 		SUBCASE("AdamW correctly modifies multiple parameters") {
-			ArenaAllocator allocator;
-
 			/// Param A
-			Tensor<float> weightA{ {1}, allocator };
+			Tensor<float> weightA{ {1} };
 			weightA.Fill(1.0f);
 			weightA.SetRequiresGrad(true);
 
-			Tensor<float> inputA{ {1}, allocator };
+			Tensor<float> inputA{ {1} };
 			inputA.Fill(3.0f);
 
-			Tensor<float> targetA{ {1}, allocator };
+			Tensor<float> targetA{ {1} };
 			targetA.Fill(5.0f);
 
 			Parameter<float> paramA{ weightA };
 
 			/// Param B
-			Tensor<float> weightB{ {1}, allocator };
+			Tensor<float> weightB{ {1} };
 			weightB.Fill(2.0f);
 			weightB.SetRequiresGrad(true);
 
-			Tensor<float> inputB{ {1}, allocator };
+			Tensor<float> inputB{ {1} };
 			inputB.Fill(4.0f);
 
-			Tensor<float> targetB{ {1}, allocator };
+			Tensor<float> targetB{ {1} };
 			targetB.Fill(1.0f);
 
 			Parameter<float> paramB{ weightB };
@@ -810,13 +772,13 @@ TEST_SUITE("Optimizer Tests") {
 			AdamW opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA, allocator);
-			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean, allocator);
+			auto predictA = Multiply(inputA, weightA);
+			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB, allocator);
-			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean, allocator);
+			auto predictB = Multiply(inputB, weightB);
+			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
 			auto weightAGrad = weightA.Grad();

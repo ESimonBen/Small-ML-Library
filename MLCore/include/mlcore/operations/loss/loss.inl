@@ -6,7 +6,11 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (predictions.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -19,9 +23,9 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: MeanSquaredError: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
-		TensorCore::Tensor<T> square = Operations::Square(diff, allocator);
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(square, axis, allocator, true);
+		TensorCore::Tensor<T> diff = Subtract(targets, predictions);
+		TensorCore::Tensor<T> square = Square(diff);
+		TensorCore::Tensor<T> perSample = AxisMean(square, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -30,12 +34,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -44,7 +48,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (predictions.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -57,9 +65,9 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: MeanAbsoluteError: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> diff = Operations::Subtract(targets, predictions, allocator);
-		TensorCore::Tensor<T> abs = Operations::Abs(diff, allocator);
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(abs, axis, allocator, true);
+		TensorCore::Tensor<T> diff = Subtract(targets, predictions);
+		TensorCore::Tensor<T> abs = Abs(diff);
+		TensorCore::Tensor<T> perSample = AxisMean(abs, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -68,12 +76,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -82,7 +90,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (predictions.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -98,20 +110,20 @@ namespace MLCore::Operations {
 		const T epsilon = static_cast<T>(1e-7);
 
 		/// term1 = targets * ln(clamp(preds, 1e-7, (1 - 1e-7)))
-		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
-		TensorCore::Tensor<T> logP = Operations::Log(clamp, allocator);
-		TensorCore::Tensor<T> term1 = Operations::Multiply(targets, logP, allocator);
+		TensorCore::Tensor<T> clamp = Clamp(predictions, epsilon, static_cast<T>(1) - epsilon);
+		TensorCore::Tensor<T> logP = Log(clamp);
+		TensorCore::Tensor<T> term1 = Multiply(targets, logP);
 
 		/// term2 = (1 - targets) * ln(1 - preds)
-		TensorCore::Tensor<T> oneMinusT = Operations::SubtractScalar(targets, static_cast<T>(1), allocator, true);
-		TensorCore::Tensor<T> oneMinusP = Operations::SubtractScalar(clamp, static_cast<T>(1), allocator, true);
-		TensorCore::Tensor<T> logOneMinusP = Operations::Log(oneMinusP, allocator);
-		TensorCore::Tensor<T> term2 = Operations::Multiply(oneMinusT, logOneMinusP, allocator);
+		TensorCore::Tensor<T> oneMinusT = SubtractScalar(targets, static_cast<T>(1), true);
+		TensorCore::Tensor<T> oneMinusP = SubtractScalar(clamp, static_cast<T>(1), true);
+		TensorCore::Tensor<T> logOneMinusP = Log(oneMinusP);
+		TensorCore::Tensor<T> term2 = Multiply(oneMinusT, logOneMinusP);
 
-		TensorCore::Tensor<T> addition = Operations::Add(term1, term2, allocator);
-		TensorCore::Tensor<T> loss = Operations::Negate(addition, allocator);
+		TensorCore::Tensor<T> addition = Add(term1, term2);
+		TensorCore::Tensor<T> loss = Negate(addition);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
+		TensorCore::Tensor<T> perSample = AxisMean(loss, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -120,12 +132,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -134,7 +146,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&logits.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (logits.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -147,19 +163,19 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: BinaryCrossEntropyWithLogits: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> max = Operations::ReLU(logits, allocator);
-		TensorCore::Tensor<T> abs = Operations::Abs(logits, allocator);
-		TensorCore::Tensor<T> negateAbs = Operations::Negate(abs, allocator);
-		TensorCore::Tensor<T> exp = Operations::Exp(negateAbs, allocator);
-		TensorCore::Tensor<T> sum = Operations::AddScalar(exp, static_cast<T>(1), allocator);
-		TensorCore::Tensor<T> term1 = Operations::Log(sum, allocator);
+		TensorCore::Tensor<T> max = ReLU(logits);
+		TensorCore::Tensor<T> abs = Abs(logits);
+		TensorCore::Tensor<T> negateAbs = Negate(abs);
+		TensorCore::Tensor<T> exp = Exp(negateAbs);
+		TensorCore::Tensor<T> sum = AddScalar(exp, static_cast<T>(1));
+		TensorCore::Tensor<T> term1 = Log(sum);
 
-		TensorCore::Tensor<T> mul = Operations::Multiply(logits, targets, allocator);
-		TensorCore::Tensor<T> sub = Operations::Subtract(max, mul, allocator);
+		TensorCore::Tensor<T> mul = Multiply(logits, targets);
+		TensorCore::Tensor<T> sub = Subtract(max, mul);
 
-		TensorCore::Tensor<T> loss = Operations::Add(sub, term1, allocator);
+		TensorCore::Tensor<T> loss = Add(sub, term1);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
+		TensorCore::Tensor<T> perSample = AxisMean(loss, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -168,12 +184,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -182,7 +198,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (predictions.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -197,13 +217,13 @@ namespace MLCore::Operations {
 
 		const T epsilon = static_cast<T>(1e-7);
 
-		TensorCore::Tensor<T> clamp = Operations::Clamp(predictions, epsilon, static_cast<T>(1) - epsilon, allocator);
-		TensorCore::Tensor<T> logClamp = Operations::Log(clamp, allocator);
+		TensorCore::Tensor<T> clamp = Clamp(predictions, epsilon, static_cast<T>(1) - epsilon);
+		TensorCore::Tensor<T> logClamp = Log(clamp);
 
-		TensorCore::Tensor<T> negate = Operations::Negate(targets, allocator);
-		TensorCore::Tensor<T> loss = Operations::Multiply(negate, logClamp, allocator);
+		TensorCore::Tensor<T> negate = Negate(targets);
+		TensorCore::Tensor<T> loss = Multiply(negate, logClamp);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(loss, axis, allocator, true);
+		TensorCore::Tensor<T> perSample = AxisMean(loss, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -212,12 +232,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -226,7 +246,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+		if (&logits.GetAllocator() != &targets.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (logits.Dims().empty() || targets.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -239,12 +263,12 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: CrossEntropyWithLogits: Axis out of bounds");
 		}
 
-		TensorCore::Tensor<T> logSoftmax = Operations::AxisLogSoftmax(logits, axis, allocator);
+		TensorCore::Tensor<T> logSoftmax = AxisLogSoftmax(logits, axis);
 
-		TensorCore::Tensor<T> mul = Operations::Multiply(targets, logSoftmax, allocator);
-		TensorCore::Tensor<T> neg = Operations::Negate(mul, allocator);
+		TensorCore::Tensor<T> mul = Multiply(targets, logSoftmax);
+		TensorCore::Tensor<T> neg = Negate(mul);
 
-		TensorCore::Tensor<T> perSample = Operations::AxisMean(neg, axis, allocator, true);
+		TensorCore::Tensor<T> perSample = AxisMean(neg, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -253,12 +277,12 @@ namespace MLCore::Operations {
 		}
 		case Reduction::Mean:
 		{
-			return Operations::MeanAll(perSample, allocator);
+			return MeanAll(perSample);
 		}
 
 		case Reduction::Sum:
 		{
-			return Operations::SumAll(perSample, allocator);
+			return SumAll(perSample);
 		}
 
 		default:
@@ -269,32 +293,32 @@ namespace MLCore::Operations {
 	/// Assuming axis = last axis here
 
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return MeanSquaredError(predictions, targets, predictions.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return MeanSquaredError(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return MeanAbsoluteError(predictions, targets, predictions.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return MeanAbsoluteError(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return BinaryCrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return BinaryCrossEntropy(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return BinaryCrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return BinaryCrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, Memory::ArenaAllocator& allocator) {
-		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, allocator);
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config) {
+		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config);
 	}
 }

@@ -23,8 +23,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (the numeric type of input and gradient values).</typeparam>
 		/// <param name="gradOutput">Gradient tensor for the operation's output. Must be a scalar (NumElements() == 1). The function detaches this tensor and expands it to the original input shape before propagating.</param>
-		/// <param name="allocator">Arena allocator used for temporary memory allocations during gradient construction/expansion (passed to any tensor allocation operations).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
 
 	private:
 		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
@@ -50,8 +49,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double, int).</typeparam>
 		/// <param name="gradOutput">A tensor containing the gradient of the output. Must be a scalar (NumElements() == 1); otherwise the function throws std::runtime_error.</param>
-		/// <param name="allocator">An ArenaAllocator used to allocate the temporary gradInput tensor.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
@@ -78,8 +76,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double, int) used for values and gradients.</typeparam>
 		/// <param name="gradOutput">A 1-element (scalar) gradient tensor for the result of the min operation. Must contain exactly one element; if not, the function throws std::runtime_error. The single scalar value is read and divided among the input elements equal to the minimum.</param>
-		/// <param name="allocator">Allocator used to allocate the gradient tensor for the input (used when constructing gradInput).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
@@ -107,8 +104,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (e.g., float, double) handled by the function.</typeparam>
 		/// <param name="gradOutput">Gradient tensor with respect to the operation's output. It is detached and then reshaped or expanded as needed to match the input shape before propagation.</param>
-		/// <param name="allocator">Allocator used for temporary memory operations (for example, when unsqueezing or otherwise reshaping intermediate tensors).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
@@ -137,8 +133,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (for example float or double) handled by this specialization.</typeparam>
 		/// <param name="gradOutput">Gradient tensor with respect to the output of the AxisMax operation. If the output was reduced (m_KeepDims == false), this function will unsqueeze/expand gradOutput as needed before distributing it back to the input shape.</param>
-		/// <param name="allocator">Arena allocator used to allocate temporary tensors and buffers during the backward computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		size_t m_Axis; /// Represents the axis that was checked for a maximum
@@ -166,8 +161,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The scalar element type of the tensors (for example, float or double).</typeparam>
 		/// <param name="gradOutput">Gradient tensor from the next layer with respect to the output of the axis-min operation. May be unsqueezed if the original reduction removed dimensions.</param>
-		/// <param name="allocator">Arena allocator used for temporary tensor allocations during the gradient computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		size_t m_Axis; /// Represents the axis that was checked for a minimum

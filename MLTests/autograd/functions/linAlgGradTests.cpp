@@ -10,10 +10,8 @@ using namespace MLCore::Operations;
 TEST_SUITE("Linear Algebra Gradient Tests") {
 	TEST_CASE("MatMultiply Gradient") {
 		SUBCASE("MatMultiply Gradient Operation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 3, 1 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 3, 1 });
 			
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
@@ -22,11 +20,11 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MatMultiply(A, B, allocator);
+			auto C = MatMultiply(A, B);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -45,10 +43,8 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 		}
 
 		SUBCASE("MatMultiply throws on dimension mismatch/non-matrix tensors") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 
 			A.Fill(4.0f);
 			B.Fill(3.0f);
@@ -56,37 +52,33 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(MatMultiply(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MatMultiply(A, B), std::runtime_error);
 		}
 
 		SUBCASE("Empty tensor MatMultiply throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(MatMultiply(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MatMultiply(A, B), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("Transpose Gradient") {
 		SUBCASE("Transpose Gradient Operation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			
 			A.SetRequiresGrad(true);
 
-			auto B = Transpose(A, allocator);
+			auto B = Transpose(A);
 			CHECK(B.GetShape() == Shape(3, 2));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 
 			loss.Backward();
 
@@ -100,37 +92,31 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 		}
 
 		SUBCASE("Transpose throws on non-matrix tensors") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({2, 3, 4}, allocator);
+			Tensor<float> A({2, 3, 4});
 			A.Fill(2.0f);
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(Transpose(A, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Transpose(A), std::runtime_error);
 		}
 
 		SUBCASE("Empty tensor Transpose throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
+			Tensor<float> A(Shape{});
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(Transpose(A, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Transpose(A), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("Dot Product Gradient") {
 		SUBCASE("Dot Product Gradient Operation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 3 }, allocator);
-			Tensor<float> B({ 3 }, allocator);
+			Tensor<float> A({ 3 });
+			Tensor<float> B({ 3 });
 			A.Fill(4.0f);
 			B.Fill(3.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = Dot(A, B, allocator);
+			auto C = Dot(A, B);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -152,27 +138,23 @@ TEST_SUITE("Linear Algebra Gradient Tests") {
 		}
 
 		SUBCASE("Dot product throws on dimension mismatch/non-vector tensors") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 3, 2 }, allocator);
-			Tensor<float> B({ 3, 1 }, allocator);
+			Tensor<float> A({ 3, 2 });
+			Tensor<float> B({ 3, 1 });
 			A.Fill(4.0f);
 			B.Fill(3.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(Dot(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Dot(A, B), std::runtime_error);
 		}
 
 		SUBCASE("Empty tensor Dot throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(Dot(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Dot(A, B), std::runtime_error);
 		}
 	}
 }

@@ -7,9 +7,7 @@ using namespace MLCore::TensorCore;
 
 TEST_SUITE("Tensor Tests") {
 	TEST_CASE("Testing constructor from initializer list") {
-		ArenaAllocator allocator;
-
-		Tensor<float> t({ 2, 3 }, allocator);
+		Tensor<float> t({ 2, 3 });
 
 		CHECK(t.Rank() == 2);
 		CHECK(t.NumElements() == 6);
@@ -18,9 +16,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Tensor construction from vector") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t(std::vector<size_t>{4, 5}, allocator);
+		Tensor<int> t(std::vector<size_t>{4, 5});
 
 		CHECK(t.Rank() == 2);
 		CHECK(t.NumElements() == 20);
@@ -30,9 +26,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Tensor construction from vector") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t(std::vector<size_t>{4, 5}, allocator);
+		Tensor<int> t(std::vector<size_t>{4, 5});
 
 		CHECK(t.Rank() == 2);
 		CHECK(t.NumElements() == 20);
@@ -42,9 +36,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Linear indexing stores values correctly") {
-		ArenaAllocator allocator;
-
-		Tensor<float> t({ 2,2 }, allocator);
+		Tensor<float> t({ 2,2 });
 
 		t[0] = 1.0f;
 		t[1] = 2.0f;
@@ -58,17 +50,15 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Linear indexing throws when out of bounds") {
-		ArenaAllocator allocator;
+		
 
-		Tensor<float> t({ 2,2 }, allocator);
+		Tensor<float> t({ 2,2 });
 
 		CHECK_THROWS_AS(t[4], std::out_of_range);
 	}
 
 	TEST_CASE("Vector indexing accesses correct elements") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t({ 2,3 }, allocator);
+		Tensor<int> t({ 2,3 });
 
 		int value = 0;
 
@@ -87,9 +77,9 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Variadic indexing accesses correct elements") {
-		ArenaAllocator allocator;
+		
 
-		Tensor<int> t({ 2,3 }, allocator);
+		Tensor<int> t({ 2,3 });
 
 		for (size_t i = 0; i < t.NumElements(); ++i)
 		{
@@ -104,9 +94,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Variadic indexing throws on dimension mismatch") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t({ 2,3 }, allocator);
+		Tensor<int> t({ 2,3 });
 
 		CHECK_THROWS_AS(t(0), std::runtime_error);
 
@@ -114,9 +102,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Clone performs deep copy") {
-		ArenaAllocator allocator;
-
-		Tensor<float> original({ 2,2 }, allocator);
+		Tensor<float> original({ 2,2 });
 
 		original.Fill(5.0f);
 
@@ -130,9 +116,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Detach shares storage") {
-		ArenaAllocator allocator;
-
-		Tensor<float> original({ 2,2 }, allocator);
+		Tensor<float> original({ 2,2 });
 
 		original.Fill(1.0f);
 
@@ -146,9 +130,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("SliceRows produces a view") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t({ 4,2 }, allocator);
+		Tensor<int> t({ 4,2 });
 
 		for (size_t i = 0; i < t.NumElements(); ++i)
 		{
@@ -167,9 +149,7 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("SliceRows shares underlying storage") {
-		ArenaAllocator allocator;
-
-		Tensor<int> t({ 4,2 }, allocator);
+		Tensor<int> t({ 4,2 });
 
 		t.Fill(0);
 
@@ -181,10 +161,8 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Concat combines tensors") {
-		ArenaAllocator allocator;
-
-		Tensor<int> a({ 2,2 }, allocator);
-		Tensor<int> b({ 1,2 }, allocator);
+		Tensor<int> a({ 2,2 });
+		Tensor<int> b({ 1,2 });
 
 		a[0] = 1;
 		a[1] = 2;
@@ -208,10 +186,8 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Concat throws on incompatible shapes") {
-		ArenaAllocator allocator;
-
-		Tensor<int> a({ 2,2 }, allocator);
-		Tensor<int> b({ 2,3 }, allocator);
+		Tensor<int> a({ 2,2 });
+		Tensor<int> b({ 2,3 });
 
 		CHECK_THROWS_AS(
 			Tensor<int>::Concat({ a,b }),
@@ -220,17 +196,13 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("RequiresGrad defaults to false") {
-		ArenaAllocator allocator;
-
-		Tensor<float> t({ 2,2 }, allocator);
+		Tensor<float> t({ 2,2 });
 
 		CHECK_FALSE(t.RequiresGrad());
 	}
 
 	TEST_CASE("SetRequiresGrad changes state") {
-		ArenaAllocator allocator;
-
-		Tensor<float> t({ 2,2 }, allocator);
+		Tensor<float> t({ 2,2 });
 
 		t.SetRequiresGrad(true);
 
@@ -238,13 +210,11 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("AccumulateGrad creates gradients") {
-		ArenaAllocator allocator;
-
-		Tensor<float> t({ 2 }, allocator);
+		Tensor<float> t({ 2 });
 
 		t.SetRequiresGrad(true);
 
-		Tensor<float> grad({ 2 }, allocator);
+		Tensor<float> grad({ 2 });
 
 		grad.Fill(1.0f);
 

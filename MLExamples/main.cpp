@@ -21,14 +21,14 @@ using namespace MLCore::Training;
 using namespace MLCore::Schedulers;
 using namespace MLCore::Serialization;
 
-void TestXORSave(ArenaAllocator& allocator) {
+int main() {
     std::cout << "=== XOR Nonlinear Test ===\n";
 
     /// -----------------------------
     /// 1. Dataset (XOR)
     /// -----------------------------
-    Tensor<float> x{ {4, 2}, allocator };
-    Tensor<float> y{ {4, 1}, allocator };
+    Tensor<float> x{ {4, 2} };
+    Tensor<float> y{ {4, 1} };
 
     /// (0,0) -> 0
     x[0] = 0;
@@ -55,17 +55,17 @@ void TestXORSave(ArenaAllocator& allocator) {
     /// -----------------------------
     Sequential<float> model;
 
-    model.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    model.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, InitType::HeUniform);
     model.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    model.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+    model.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, InitType::HeUniform);
 
     Checkpoint::Save(model, "../../models/base_model.ckpt");
 
     /// Model A (Test Continuous)
     Sequential<float> modelA;
-    modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelA.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, InitType::HeUniform);
     modelA.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+    modelA.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, InitType::HeUniform);
 
     Checkpoint::Load(modelA, "../../models/base_model.ckpt");
 
@@ -99,7 +99,7 @@ void TestXORSave(ArenaAllocator& allocator) {
     /// -----------------------------
     Trainer<float> trainerA{ modelA, optA,
         [&](const auto& pred, const auto& target) {
-            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean);
         }
     };
 
@@ -121,28 +121,28 @@ void TestXORSave(ArenaAllocator& allocator) {
         });
 
     trainerA.OnEpochEnd =
-         [](const EpochStats<float>& stats) {
+        [](const EpochStats<float>& stats) {
 
-         if (stats.epoch % 500 == 0) {
-             std::cout
-                 << "Epoch " << stats.epoch
-                 << " | Train Loss: " << stats.trainLoss
-                 << " | Train Accuracy: "
-                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
-                 << " | Val Loss: " << stats.valLoss
-                 << " | Val Accuracy: "
-                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
-                 << '\n';
+        if (stats.epoch % 500 == 0) {
+            std::cout
+                << "Epoch " << stats.epoch
+                << " | Train Loss: " << stats.trainLoss
+                << " | Train Accuracy: "
+                << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                << " | Val Loss: " << stats.valLoss
+                << " | Val Accuracy: "
+                << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                << '\n';
 
-             std::cout << "Learning Rates: ";
+            std::cout << "Learning Rates: ";
 
-             for (auto& lr : stats.learningRates) {
-                 std::cout << lr << " ";
-             }
+            for (auto& lr : stats.learningRates) {
+                std::cout << lr << " ";
+            }
 
-             std::cout << std::endl;
-         }
-     };
+            std::cout << std::endl;
+        }
+        };
 
     trainerA.Fit(x, y, x, y, 10000, 4);
 
@@ -168,9 +168,9 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     /// Model B (Pause/Resume)
     Sequential<float> modelB;
-    modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelB.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, InitType::HeUniform);
     modelB.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+    modelB.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, InitType::HeUniform);
 
     Checkpoint::Load(modelB, "../../models/base_model.ckpt");
 
@@ -204,7 +204,7 @@ void TestXORSave(ArenaAllocator& allocator) {
     /// -----------------------------
     Trainer<float> trainerB{ modelB, optB,
         [&](const auto& pred, const auto& target) {
-            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean);
         }
     };
 
@@ -226,29 +226,29 @@ void TestXORSave(ArenaAllocator& allocator) {
         });
 
     trainerB.OnEpochEnd =
-         [](const EpochStats<float>& stats) {
+        [](const EpochStats<float>& stats) {
 
-         if (stats.epoch % 500 == 0) {
-             std::cout
-                 << "Epoch " << stats.epoch
-                 << " | Train Loss: " << stats.trainLoss
-                 << " | Train Accuracy: "
-                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
-                 << " | Val Loss: "
-                 << stats.valLoss
-                 << " | Val Accuracy: "
-                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
-                 << '\n';
+        if (stats.epoch % 500 == 0) {
+            std::cout
+                << "Epoch " << stats.epoch
+                << " | Train Loss: " << stats.trainLoss
+                << " | Train Accuracy: "
+                << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                << " | Val Loss: "
+                << stats.valLoss
+                << " | Val Accuracy: "
+                << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                << '\n';
 
-             std::cout << "Learning Rates: ";
+            std::cout << "Learning Rates: ";
 
-             for (auto& lr : stats.learningRates) {
-                 std::cout << lr << " ";
-             }
+            for (auto& lr : stats.learningRates) {
+                std::cout << lr << " ";
+            }
 
-             std::cout << std::endl;
-         }
-     };
+            std::cout << std::endl;
+        }
+        };
 
     trainerB.Fit(x, y, x, y, 5000, 4);
 
@@ -258,9 +258,9 @@ void TestXORSave(ArenaAllocator& allocator) {
 
     /// Resume Model
     Sequential<float> modelC;
-    modelC.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, allocator, InitType::HeUniform);
+    modelC.EmplaceNamed<LinearLayer<float>>("layer1", 2, 8, InitType::HeUniform);
     modelC.EmplaceNamed<LeakyReLULayer<float>>("leakyReLU");
-    modelC.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, allocator, InitType::HeUniform);
+    modelC.EmplaceNamed<LinearLayer<float>>("layer2", 8, 1, InitType::HeUniform);
 
     /// Collect parameters
     auto paramsC = modelC.GetParameters();
@@ -275,7 +275,7 @@ void TestXORSave(ArenaAllocator& allocator) {
     /// -----------------------------
     Trainer<float> trainerC{ modelC, optC,
         [&](const auto& pred, const auto& target) {
-            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean, allocator);
+            return BinaryCrossEntropyWithLogits(pred, target, Reduction::Mean);
         }
     };
 
@@ -294,32 +294,32 @@ void TestXORSave(ArenaAllocator& allocator) {
         }
 
         return static_cast<float>(correct) / size;
-    });
+        });
 
     trainerC.OnEpochEnd =
-         [](const EpochStats<float>& stats) {
+        [](const EpochStats<float>& stats) {
 
-         if (stats.epoch % 500 == 0) {
-             std::cout
-                 << "Epoch " << stats.epoch
-                 << " | Train Loss: " << stats.trainLoss
-                 << " | Train Accuracy: "
-                 << (stats.trainMetrics.at("Accuracy") * 100) << "%"
-                 << " | Val Loss: "
-                 << stats.valLoss
-                 << " | Val Accuracy: "
-                 << (stats.valMetrics.at("Accuracy") * 100) << "%"
-                 << '\n';
+        if (stats.epoch % 500 == 0) {
+            std::cout
+                << "Epoch " << stats.epoch
+                << " | Train Loss: " << stats.trainLoss
+                << " | Train Accuracy: "
+                << (stats.trainMetrics.at("Accuracy") * 100) << "%"
+                << " | Val Loss: "
+                << stats.valLoss
+                << " | Val Accuracy: "
+                << (stats.valMetrics.at("Accuracy") * 100) << "%"
+                << '\n';
 
-             std::cout << "Learning Rates: ";
+            std::cout << "Learning Rates: ";
 
-             for (auto& lr : stats.learningRates) {
-                 std::cout << lr << " ";
-             }
+            for (auto& lr : stats.learningRates) {
+                std::cout << lr << " ";
+            }
 
-             std::cout << std::endl;
-         }
-     };
+            std::cout << std::endl;
+        }
+        };
 
     TrainerState<float> stateC;
 
@@ -345,13 +345,6 @@ void TestXORSave(ArenaAllocator& allocator) {
             }
         }
     }
-}
-
-int main() {
-    ArenaAllocator allocator;
-    
-    /// Model Training Test
-    TestXORSave(allocator);
 
     return 0;
 }

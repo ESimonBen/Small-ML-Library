@@ -10,21 +10,19 @@ using namespace MLCore::Operations;
 TEST_SUITE("Loss Function Gradient Tests") {
 	TEST_CASE("MeanSquaredError Gradient") {
 		SUBCASE("MeanSquaredError Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanSquaredError(A, B, Reduction::None, allocator);
+			auto C = MeanSquaredError(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -48,17 +46,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("MeanSquaredError Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanSquaredError(A, B, Reduction::Sum, allocator);
+			auto C = MeanSquaredError(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -85,17 +81,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("MeanSquaredError Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanSquaredError(A, B, Reduction::Mean, allocator);
+			auto C = MeanSquaredError(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -122,34 +116,30 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor MeanSquaredError throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(MeanSquaredError(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MeanSquaredError(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("MeanAbsoluteError Gradient") {
 		SUBCASE("MeanAbsoluteError Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanAbsoluteError(A, B, Reduction::None, allocator);
+			auto C = MeanAbsoluteError(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -173,17 +163,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("MeanAbsoluteError Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanAbsoluteError(A, B, Reduction::Sum, allocator);
+			auto C = MeanAbsoluteError(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -210,17 +198,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("MeanAbsoluteError Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = MeanAbsoluteError(A, B, Reduction::Mean, allocator);
+			auto C = MeanAbsoluteError(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -247,34 +233,30 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor MeanAbsoluteError throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(MeanAbsoluteError(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MeanAbsoluteError(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("BinaryCrossEntropy Gradient") {
 		SUBCASE("BinaryCrossEntropy Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropy(A, B, Reduction::None, allocator);
+			auto C = BinaryCrossEntropy(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -298,17 +280,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("BinaryCrossEntropy Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropy(A, B, Reduction::Sum, allocator);
+			auto C = BinaryCrossEntropy(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -335,17 +315,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("BinaryCrossEntropy Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropy(A, B, Reduction::Mean, allocator);
+			auto C = BinaryCrossEntropy(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -372,34 +350,30 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor BinaryCrossEntropy throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(BinaryCrossEntropy(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(BinaryCrossEntropy(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("BinaryCrossEntropyWithLogits Gradient") {
 		SUBCASE("BinaryCrossEntropyWithLogits Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::None, allocator);
+			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -423,17 +397,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("BinaryCrossEntropyWithLogits Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::Sum, allocator);
+			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -460,17 +432,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("BinaryCrossEntropyWithLogits Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::Mean, allocator);
+			auto C = BinaryCrossEntropyWithLogits(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -497,34 +467,30 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor BinaryCrossEntropyWithLogits throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(BinaryCrossEntropyWithLogits(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(BinaryCrossEntropyWithLogits(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("CrossEntropy Gradient") {
 		SUBCASE("CrossEntropy Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropy(A, B, Reduction::None, allocator);
+			auto C = CrossEntropy(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -548,17 +514,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("CrossEntropy Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropy(A, B, Reduction::Sum, allocator);
+			auto C = CrossEntropy(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -585,17 +549,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("CrossEntropy Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
 			A[3] = A[4] = A[5] = 0.5f;
 			B.Fill(0.4f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropy(A, B, Reduction::Mean, allocator);
+			auto C = CrossEntropy(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -622,34 +584,30 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor CrossEntropy throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(CrossEntropy(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(CrossEntropy(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("CrossEntropyWithLogits Gradient") {
 		SUBCASE("CrossEntropyWithLogits Gradient Operation (No Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropyWithLogits(A, B, Reduction::None, allocator);
+			auto C = CrossEntropyWithLogits(A, B, Reduction::None);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
-			auto loss = SumAll(C, allocator);
+			auto loss = SumAll(C);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -668,17 +626,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("CrossEntropyWithLogits Gradient Operation (SumAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropyWithLogits(A, B, Reduction::Sum, allocator);
+			auto C = CrossEntropyWithLogits(A, B, Reduction::Sum);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -700,17 +656,15 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("CrossEntropyWithLogits Gradient Operation (MeanAll Reduction)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
 			A[3] = A[4] = A[5] = 5.0f;
 			B.Fill(4.0f);
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			auto C = CrossEntropyWithLogits(A, B, Reduction::Mean, allocator);
+			auto C = CrossEntropyWithLogits(A, B, Reduction::Mean);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -732,14 +686,12 @@ TEST_SUITE("Loss Function Gradient Tests") {
 		}
 
 		SUBCASE("Empty tensor CrossEntropyWithLogits throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
-			Tensor<float> B(Shape(), allocator);
+			Tensor<float> A(Shape{});
+			Tensor<float> B(Shape{});
 			A.SetRequiresGrad(true);
 			B.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(CrossEntropyWithLogits(A, B, Reduction::None, allocator), std::runtime_error);
+			CHECK_THROWS_AS(CrossEntropyWithLogits(A, B, Reduction::None), std::runtime_error);
 		}
 	}
 }

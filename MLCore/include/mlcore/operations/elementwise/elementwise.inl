@@ -7,7 +7,11 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	inline TensorCore::Tensor<T> Add(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Add(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -17,6 +21,9 @@ namespace MLCore::Operations {
 		}
 
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+
+		/// Because both tensors are on the same alloactor, the result will be allocated with them
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
 		const size_t size = C.NumElements();
@@ -51,7 +58,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -61,6 +72,8 @@ namespace MLCore::Operations {
 		}
 
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
 		const size_t size = C.NumElements();
@@ -95,7 +108,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -105,6 +122,8 @@ namespace MLCore::Operations {
 		}
 
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
 		const size_t size = C.NumElements();
@@ -139,7 +158,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -149,6 +172,8 @@ namespace MLCore::Operations {
 		}
 
 		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
 
 		const size_t size = C.NumElements();
@@ -183,11 +208,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		const size_t size = B.NumElements();
 
@@ -204,11 +230,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> B{ A.GetShape(), allocator };
 		size_t size = B.NumElements();
 
@@ -226,11 +253,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
@@ -248,11 +276,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
@@ -269,11 +298,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ A.GetShape(), allocator };
 		size_t size = A.NumElements();
 
@@ -290,7 +320,11 @@ namespace MLCore::Operations {
 	}
 	
 	template<typename T>
-	inline TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	inline TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -299,6 +333,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Equal: Tensors are not the same shape");
 		}
 		
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ A.GetShape(), allocator};
 
 		size_t size = A.NumElements();
@@ -313,8 +348,8 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result = MultiplyScalar(A, static_cast<T>(-1), allocator);
+	inline TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A) {
+		TensorCore::Tensor<T> result = MultiplyScalar(A, static_cast<T>(-1));
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -324,8 +359,8 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result = Power(A, static_cast<T>(2), allocator);
+	inline TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A) {
+		TensorCore::Tensor<T> result = Power(A, static_cast<T>(2));
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -335,8 +370,8 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
-		TensorCore::Tensor<T> result = DivideScalar(A, static_cast<T>(1), allocator, true);
+	inline TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A) {
+		TensorCore::Tensor<T> result = DivideScalar(A, static_cast<T>(1), true);
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);

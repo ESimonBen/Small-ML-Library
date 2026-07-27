@@ -11,9 +11,7 @@ using namespace MLCore::TensorCore;
 TEST_SUITE("Base Gradient Function Tests") {
 	TEST_CASE("Base Gradient Function Tests") {
 		SUBCASE("GradFn stores single input") {
-			ArenaAllocator allocator;
-
-			Tensor<float> tensor({ 2, 3 }, allocator);
+			Tensor<float> tensor({ 2, 3 });
 			auto impl = tensor.GetImpl();
 
 			DummyGradFn<float> gradFn(impl);
@@ -25,10 +23,8 @@ TEST_SUITE("Base Gradient Function Tests") {
 		}
 
 		SUBCASE("GradFn stores multiple inputs") {
-			ArenaAllocator allocator;
-
-			Tensor<float> tensor1({ 2, 3 }, allocator);
-			Tensor<float> tensor2({ 2, 3 }, allocator);
+			Tensor<float> tensor1({ 2, 3 });
+			Tensor<float> tensor2({ 2, 3 });
 
 			auto impl1 = tensor1.GetImpl();
 			auto impl2 = tensor2.GetImpl();

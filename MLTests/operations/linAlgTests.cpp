@@ -10,10 +10,8 @@ using namespace MLCore::Operations;
 TEST_SUITE("Linear Algebra Operation Tests") {
 	TEST_CASE("Matrix Multiply") {
 		SUBCASE("MatMultiply Calculation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
-			Tensor<float> B({ 3, 2 }, allocator);
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 3, 2 });
 
 			float aVals[] = { 1,2,3,4,5,6 };
 			float bVals[] = { 7,8,9,10,11,12 };
@@ -23,7 +21,7 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 				B[i] = bVals[i];
 			}
 
-			auto C = MatMultiply(A, B, allocator);
+			auto C = MatMultiply(A, B);
 
 			CHECK(C.GetShape() == Shape({ 2,2 }));
 
@@ -34,43 +32,35 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 		}
 
 		SUBCASE("MatMultiply throws on non-2D tensors") {
-			ArenaAllocator allocator;
+			Tensor<float> A({ 3 });
+			Tensor<float> B({ 3 });
 
-			Tensor<float> A({ 3 }, allocator);
-			Tensor<float> B({ 3 }, allocator);
-
-			CHECK_THROWS_AS(MatMultiply(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MatMultiply(A, B), std::runtime_error);
 		}
 
 		SUBCASE("MatMultiply throws on incompatible dimensions") {
-			ArenaAllocator allocator;
+			Tensor<float> A({ 3, 2 });
+			Tensor<float> B({ 4, 5 });
 
-			Tensor<float> A({ 3, 2 }, allocator);
-			Tensor<float> B({ 4, 5 }, allocator);
-
-			CHECK_THROWS_AS(MatMultiply(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MatMultiply(A, B), std::runtime_error);
 		}
 
 		SUBCASE("MatMultiply propagates requires-grad") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 2 }, allocator);
-			Tensor<float> B({ 2, 2 }, allocator);
+			Tensor<float> A({ 2, 2 });
+			Tensor<float> B({ 2, 2 });
 			A.Fill(4.0f);
 			B.Fill(1.0f);
 
 			A.SetRequiresGrad(true);
 
-			auto C = MatMultiply(A, B, allocator);
+			auto C = MatMultiply(A, B);
 
 			CHECK(C.RequiresGrad());
 		}
 
 		SUBCASE("MatMultiply with Identity Matrix") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 2 }, allocator);
-			Tensor<float> B({ 2, 2 }, allocator);
+			Tensor<float> A({ 2, 2 });
+			Tensor<float> B({ 2, 2 });
 			A.Fill(4.0f);
 			
 			B[0] = 1;
@@ -78,7 +68,7 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 			B[2] = 0;
 			B[3] = 1;
 
-			auto C = MatMultiply(A, B, allocator);
+			auto C = MatMultiply(A, B);
 
 			CHECK(C.GetShape() == A.GetShape());
 			CHECK(C[0] == A[0]);
@@ -90,16 +80,14 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 
 	TEST_CASE("Transpose") {
 		SUBCASE("Transpose Operation") {
-			ArenaAllocator allocator;
-			
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			size_t size = A.NumElements();
 
 			for (size_t i = 0; i < size; ++i) {
 				A[i] = static_cast<float>(i + 1);
 			}
 
-			auto B = Transpose(A, allocator);
+			auto B = Transpose(A);
 
 			CHECK(B.GetShape() == Shape({ 3,2 }));
 			CHECK(B[0] == 1);
@@ -111,37 +99,31 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 		}
 
 		SUBCASE("Transpose throws on non-2D tensors") {
-			ArenaAllocator allocator;
+			Tensor<float> A({ 3 });
 
-			Tensor<float> A({ 3 }, allocator);
-
-			CHECK_THROWS_AS(Transpose(A, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Transpose(A), std::runtime_error);
 		}
 
 		SUBCASE("Transpose propagates requires-grad") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2,2 }, allocator);
+			Tensor<float> A({ 2,2 });
 
 			A.Fill(1.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = Transpose(A, allocator);
+			auto B = Transpose(A);
 
 			CHECK(B.RequiresGrad());
 		}
 
 		SUBCASE("Double transpose returns the original tensor") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			size_t size = A.NumElements();
 
 			for (size_t i = 0; i < size; ++i) {
 				A[i] = static_cast<float>(i + 1);
 			}
 
-			auto B = Transpose(Transpose(A, allocator), allocator);
+			auto B = Transpose(Transpose(A));
 
 			CHECK(B.GetShape() == A.GetShape());
 			CHECK(B[0] == A[0]);
@@ -155,10 +137,8 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 
 	TEST_CASE("Dot Product") {
 		SUBCASE("Dot Product Calculation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 3 }, allocator);
-			Tensor<float> B({ 3 }, allocator);
+			Tensor<float> A({ 3 });
+			Tensor<float> B({ 3 });
 
 			A[0] = 1;
 			A[1] = 2;
@@ -168,58 +148,50 @@ TEST_SUITE("Linear Algebra Operation Tests") {
 			B[1] = 5;
 			B[2] = 6;
 
-			auto C = Dot(A, B, allocator);
+			auto C = Dot(A, B);
 
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C[0] == 32);
 		}
 
 		SUBCASE("Dot throws on non-1D tensors") {
-			ArenaAllocator allocator;
+			Tensor<float> A({ 2,2 });
+			Tensor<float> B({ 2,2 });
 
-			Tensor<float> A({ 2,2 }, allocator);
-			Tensor<float> B({ 2,2 }, allocator);
-
-			CHECK_THROWS_AS(Dot(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Dot(A, B), std::runtime_error);
 		}
 
 		SUBCASE("Dot throws on unequal lengths") {
-			ArenaAllocator allocator;
+			Tensor<float> A({ 3 });
+			Tensor<float> B({ 4 });
 
-			Tensor<float> A({ 3 }, allocator);
-			Tensor<float> B({ 4 }, allocator);
-
-			CHECK_THROWS_AS(Dot(A, B, allocator), std::runtime_error);
+			CHECK_THROWS_AS(Dot(A, B), std::runtime_error);
 		}
 
 		SUBCASE("Dot propagates requires-grad") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 3 }, allocator);
-			Tensor<float> B({ 3 }, allocator);
+			Tensor<float> A({ 3 });
+			Tensor<float> B({ 3 });
 
 			A.Fill(1.0f);
 			B.Fill(2.0f);
 
 			B.SetRequiresGrad(true);
 
-			auto C = Dot(A, B, allocator);
+			auto C = Dot(A, B);
 
 			CHECK(C.RequiresGrad());
 		}
 
 		SUBCASE("Dot Orthogonality") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2 }, allocator);
-			Tensor<float> B({ 2 }, allocator);
+			Tensor<float> A({ 2 });
+			Tensor<float> B({ 2 });
 
 			A[0] = 1;
 			A[1] = 0;
 			B[0] = 0;
 			B[1] = 1;
 
-			auto C = Dot(A, B, allocator);
+			auto C = Dot(A, B);
 
 			CHECK(C[0] == 0);
 		}

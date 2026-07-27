@@ -1,6 +1,7 @@
  /// storage.h
 #pragma once
 #include <cstddef>
+#include <mlCore/runtime/context.h>
 #include <mlCore/memory/allocator.h>
 
 namespace MLCore::Memory {
@@ -107,6 +108,19 @@ namespace MLCore::Memory {
 	/// <returns>A Storage<T> constructed from the allocated raw pointer and the element count (the buffer pointer and its size).</returns>
 	template <typename T>
 	inline Storage<T> MakeStorage(ArenaAllocator& allocator, size_t size) {
+		T* raw = allocator.Allocate<T>(size);
+		return Storage<T>(raw, size);
+	}
+
+	/// <summary>
+	/// Allocates storage for a specified number of elements of type T using the runtime arena allocator and returns it wrapped in a Storage<T>.
+	/// </summary>
+	/// <typeparam name="T">The element type stored in the returned Storage.</typeparam>
+	/// <param name="size">The number of elements of type T to allocate.</param>
+	/// <returns>A Storage<T> that wraps the pointer to the allocated array and its size; the memory is obtained from the runtime arena allocator.</returns>
+	template <typename T>
+	inline Storage<T> MakeStorage(size_t size) {
+		ArenaAllocator& allocator = Runtime::MLContext::GetContext().GetAllocator();
 		T* raw = allocator.Allocate<T>(size);
 		return Storage<T>(raw, size);
 	}

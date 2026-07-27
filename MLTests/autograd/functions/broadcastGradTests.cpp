@@ -10,17 +10,15 @@ using namespace MLCore::TensorCore;
 TEST_SUITE("Broadcast Gradient Tests") {
     TEST_CASE("Squeeze Gradient") {
         SUBCASE("Squeeze Gradient Operation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2, 1 }, allocator);
+            Tensor<float> A({ 2, 1 });
             A.Fill(3.0f);
             A.SetRequiresGrad(true);
 
-            auto B = Squeeze(A, 1, allocator);
+            auto B = Squeeze(A, 1);
             CHECK(B.GetShape() == Shape(2));
             CHECK(B.RequiresGrad());
 
-            auto loss = SumAll(B, allocator);
+            auto loss = SumAll(B);
             loss.Backward();
 
             auto gradA = A.Grad();
@@ -32,27 +30,23 @@ TEST_SUITE("Broadcast Gradient Tests") {
         }
 
         SUBCASE("Empty tensor Squeeze throws") {
-            ArenaAllocator allocator;
+            Tensor<float> A(Shape{});
 
-            Tensor<float> A(Shape(), allocator);
-
-            CHECK_THROWS_AS(Squeeze(A, 1, allocator), std::out_of_range);
+            CHECK_THROWS_AS(Squeeze(A, 1), std::out_of_range);
         }
     }
 
     TEST_CASE("Unsqueeze Gradient") {
         SUBCASE("Unsqueeze Gradient Operation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2, 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
             A.Fill(7.0f);
             A.SetRequiresGrad(true);
 
-            auto B = Unsqueeze(A, 0, allocator);
+            auto B = Unsqueeze(A, 0);
             CHECK(B.GetShape() == Shape(1, 2, 3));
             CHECK(B.RequiresGrad());
 
-            auto loss = SumAll(B, allocator);
+            auto loss = SumAll(B);
             loss.Backward();
 
             auto gradA = A.Grad();
@@ -65,27 +59,23 @@ TEST_SUITE("Broadcast Gradient Tests") {
         }
 
         SUBCASE("Empty tensor Unsqueeze throws") {
-            ArenaAllocator allocator;
+            Tensor<float> A(Shape{});
 
-            Tensor<float> A(Shape(), allocator);
-
-            CHECK_THROWS_AS(Unsqueeze(A, 1, allocator), std::out_of_range);
+            CHECK_THROWS_AS(Unsqueeze(A, 1), std::out_of_range);
         }
     }
 
 	TEST_CASE("ReduceSumToShape Gradient") {
         SUBCASE("ReduceSumToShape Gradient Operation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2, 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
             A.Fill(2.0f);
             A.SetRequiresGrad(true);
 
-            auto B = ReduceSumToShape(A, Shape(2, 1), allocator);
+            auto B = ReduceSumToShape(A, Shape(2, 1));
             CHECK(B.GetShape() == Shape(2, 1));
             CHECK(B.RequiresGrad());
 
-            auto loss = SumAll(B, allocator);
+            auto loss = SumAll(B);
             loss.Backward();
 
             auto gradA = A.Grad();
@@ -98,28 +88,24 @@ TEST_SUITE("Broadcast Gradient Tests") {
         }
 
         SUBCASE("Empty tensor ReduceSumToShape throws") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A(Shape(), allocator);
+            Tensor<float> A(Shape{});
             A.SetRequiresGrad(true);
 
-            CHECK_THROWS_AS(ReduceSumToShape(A, Shape(1), allocator), std::runtime_error);
+            CHECK_THROWS_AS(ReduceSumToShape(A, Shape(1)), std::runtime_error);
         }
 	}
 
 	TEST_CASE("ExpandToShape Gradient") {
         SUBCASE("ExpandToShape Gradient Operation") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A({ 2, 1 }, allocator);
+            Tensor<float> A({ 2, 1 });
             A.Fill(2.0f);
             A.SetRequiresGrad(true);
 
-            auto B = ExpandToShape(A, Shape(2, 5), allocator);
+            auto B = ExpandToShape(A, Shape(2, 5));
             CHECK(B.GetShape() == Shape(2, 5));
             CHECK(B.RequiresGrad());
 
-            auto loss = SumAll(B, allocator);
+            auto loss = SumAll(B);
             loss.Backward();
 
             auto gradA = A.Grad();
@@ -132,12 +118,10 @@ TEST_SUITE("Broadcast Gradient Tests") {
         }
 
         SUBCASE("Empty tensor ExpandToShape throws") {
-            ArenaAllocator allocator;
-
-            Tensor<float> A(Shape(), allocator);
+            Tensor<float> A(Shape{});
             A.SetRequiresGrad(true);
 
-            CHECK_THROWS_AS(ExpandToShape(A, Shape(1), allocator), std::runtime_error);
+            CHECK_THROWS_AS(ExpandToShape(A, Shape(1)), std::runtime_error);
         }
 	}
 }

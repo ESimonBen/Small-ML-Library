@@ -24,8 +24,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double, etc.).</typeparam>
 		/// <param name="gradOutput">The gradient tensor with respect to the output of the addition; will be reduced to match each input's shape as needed.</param>
-		/// <param name="allocator">Arena allocator used for any temporary memory allocations during gradient computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -48,8 +47,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double) handled by this gradient function.</typeparam>
 		/// <param name="gradOutput">The gradient tensor propagated from subsequent layers (const reference). This gradient is detached and then reduced or negated as required before being applied to inputs.</param>
-		/// <param name="allocator">Arena allocator used for temporary allocations during gradient operations (e.g., for reductions or negation).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
 	};
 
 	/// <summary>
@@ -72,8 +70,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The scalar element type of the tensors (e.g., float, double, int).</typeparam>
 		/// <param name="gradOutput">The gradient tensor with respect to this node's output. Used to compute input gradients and should match the output shape.</param>
-		/// <param name="allocator">Allocator used for temporary memory during gradient computations (passed to operations such as Multiply).</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -96,8 +93,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double).</typeparam>
 		/// <param name="gradOutput">The gradient of the loss with respect to the output of the division (const Tensor<T>&). Used to compute gradients for the inputs.</param>
-		/// <param name="allocator">Memory::ArenaAllocator used to allocate intermediate tensors during gradient computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -120,8 +116,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The numeric element type of the tensors (e.g., float or double).</typeparam>
 		/// <param name="gradOutput">The gradient tensor with respect to the output of the power operation (const reference). Used to compute the gradient with respect to the input.</param>
-		/// <param name="allocator">Memory::ArenaAllocator used to allocate intermediate tensors during gradient computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		T exponent; /// Exponent of the input tensor of type T.
@@ -146,8 +141,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (numeric type). Must support comparison with zero and multiplication.</typeparam>
 		/// <param name="gradOutput">Constant reference to the gradient of the loss with respect to the output of the absolute-value operation; expected to have the same shape as the input/output.</param>
-		/// <param name="allocator">Allocator used to construct the gradInput tensor that will be passed to the input's backward method.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -171,8 +165,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (e.g., float, double, int) used for values and gradients.</typeparam>
 		/// <param name="gradOutput">Const reference to the gradient tensor for the output. Must have the same shape as the original input; its values are propagated to gradInput where the input values are in (m_Min, m_Max).</param>
-		/// <param name="allocator">Reference to an ArenaAllocator used to allocate the temporary gradInput tensor storage.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		T m_Min;  /// Minimum value to clamp to
@@ -198,8 +191,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (e.g., float, double).</typeparam>
 		/// <param name="gradOutput">Constant reference to the gradient tensor with respect to the output; used to compute the input gradient.</param>
-		/// <param name="allocator">Arena allocator used to allocate temporary tensors during the gradient computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>
@@ -221,8 +213,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element/data type of the tensors (e.g., float, double, etc.).</typeparam>
 		/// <param name="gradOutput">The gradient of the loss with respect to this node's output (const reference). It is detached and multiplied element-wise by exp(input) to produce the input gradient.</param>
-		/// <param name="allocator">Allocator used for temporary tensor allocations during exponential and multiplication operations.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) override;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 }
 

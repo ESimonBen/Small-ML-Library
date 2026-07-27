@@ -4,9 +4,7 @@
 namespace MLCore::NN {
 	template <typename T>
 	TensorCore::Tensor<T> ReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		return Operations::ReLU(input, allocator);
+		return Operations::ReLU(input);
 	}
 	
 	template <typename T>
@@ -17,9 +15,7 @@ namespace MLCore::NN {
 	
 	template <typename T>
 	TensorCore::Tensor<T> LeakyReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		return Operations::LeakyReLU(input, m_Alpha, allocator);
+		return Operations::LeakyReLU(input, m_Alpha);
 	}
 	
 	template <typename T>
@@ -29,15 +25,11 @@ namespace MLCore::NN {
 	
 	template <typename T>
 	TensorCore::Tensor<T> TanhLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		return Operations::Tanh(input, allocator);
+		return Operations::Tanh(input);
 	}
 	
 	template <typename T>
 	TensorCore::Tensor<T> SigmoidLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		return Operations::Sigmoid(input, allocator);
+		return Operations::Sigmoid(input);
 	}
 }

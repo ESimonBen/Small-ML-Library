@@ -39,8 +39,7 @@ namespace MLCore::AutoGrad {
 		/// Pure virtual method that performs the backward pass: computes gradients w.r.t. this layer/state using the provided output gradient and may allocate temporaries from the given allocator. Must be overridden by derived classes.
 		/// </summary>
 		/// <param name="gradOutput">Constant reference to the tensor containing the gradient of the loss with respect to this layer's output.</param>
-		/// <param name="allocator">Arena-style allocator to be used for any temporary or persistent memory allocations during the backward computation.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) = 0;
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) = 0;
 
 		/// <summary>
 		/// Virtual default destructor for GradFn that ensures proper cleanup of derived classes.

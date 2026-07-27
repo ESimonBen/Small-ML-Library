@@ -8,7 +8,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void SqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void SqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -18,7 +18,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
-		TensorCore::Tensor<T> gradInput = Operations::Unsqueeze(gradientOut, m_Axis, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Unsqueeze(gradientOut, m_Axis);
 
 		input.Backward(gradInput);
 	}
@@ -29,7 +29,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void UnsqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void UnsqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -39,7 +39,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
-		TensorCore::Tensor<T> gradInput = Operations::Squeeze(gradientOut, m_Axis, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Squeeze(gradientOut, m_Axis);
 
 		input.Backward(gradInput);
 	}
@@ -50,7 +50,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void ReduceToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void ReduceToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -58,7 +58,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, m_OriginalShape, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, m_OriginalShape);
 
 		input.Backward(gradInput);
 	}
@@ -69,7 +69,7 @@ namespace MLCore::AutoGrad {
 	{}
 
 	template <typename T>
-	void ExpandToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void ExpandToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -77,7 +77,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput = Operations::ReduceSumToShape(gradientOut, m_OriginalShape, allocator);
+		TensorCore::Tensor<T> gradInput = Operations::ReduceSumToShape(gradientOut, m_OriginalShape);
 
 		input.Backward(gradInput);
 	}

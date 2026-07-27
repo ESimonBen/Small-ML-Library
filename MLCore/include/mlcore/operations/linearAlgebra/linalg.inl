@@ -5,7 +5,11 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Rank() != 2 || B.Rank() != 2) {
 			throw std::runtime_error("ERROR: MatMultiply: Only 2D tensors supported for now");
 		}
@@ -18,6 +22,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MatMultiply: Inner dimensions do not match");
 		}
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ {M, N}, allocator };
 
 		for (size_t i = 0; i < M; ++i) {
@@ -39,7 +44,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Transpose(const TensorCore::Tensor<T>& A, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> Transpose(const TensorCore::Tensor<T>& A) {
 		if (A.Rank() != 2) {
 			throw std::runtime_error("ERROR: Transpose: Only 2D tensors supported");
 		}
@@ -47,6 +52,7 @@ namespace MLCore::Operations {
 		size_t M = A.Dims()[0];
 		size_t N = A.Dims()[1];
 
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> B{ {N, M}, allocator };
 
 		for (size_t i = 0; i < M; ++i) {
@@ -64,7 +70,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B, Memory::ArenaAllocator& allocator) {
+	TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		if (&A.GetAllocator() != &B.GetAllocator()) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
 		if (A.Dims().empty() || B.Dims().empty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
@@ -78,6 +88,8 @@ namespace MLCore::Operations {
 		for (size_t i = 0; i < A.NumElements(); ++i) {
 			sum += A[i] * B[i];
 		}
+
+		Memory::ArenaAllocator& allocator = A.GetAllocator();
 
 		TensorCore::Tensor<T> C{ {1}, allocator };
 		C[0] = sum;

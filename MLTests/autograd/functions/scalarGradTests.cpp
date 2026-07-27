@@ -10,17 +10,15 @@ using namespace MLCore::Operations;
 TEST_SUITE("Scalar Gradient Tests") {
 	TEST_CASE("Scalar Add Gradient") {
 		SUBCASE("Scalar Add Gradient Operation") {
-			ArenaAllocator allocator;
-			
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = AddScalar(A, 4.0f, allocator);
+			auto B = AddScalar(A, 4.0f);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -32,28 +30,24 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Null input throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
+			Tensor<float> A(Shape{});
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(AddScalar(A, 2.0f, allocator), std::runtime_error);
+			CHECK_THROWS_AS(AddScalar(A, 2.0f), std::runtime_error);
 		}
 	}
 	
 	TEST_CASE("Scalar Subtract Gradient") {
 		SUBCASE("Scalar Subtract Gradient Operation (Scalar on Right)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = SubtractScalar(A, 4.0f, allocator, false);
+			auto B = SubtractScalar(A, 4.0f, false);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -65,17 +59,15 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Scalar Subtract Gradient Operation (Scalar on Left)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = SubtractScalar(A, 4.0f, allocator, true);
+			auto B = SubtractScalar(A, 4.0f, true);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -87,28 +79,24 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Null input throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
+			Tensor<float> A(Shape{});
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(SubtractScalar(A, 2.0f, allocator, false), std::runtime_error);
+			CHECK_THROWS_AS(SubtractScalar(A, 2.0f, false), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("Scalar Multiply Gradient") {
 		SUBCASE("Scalar Multiply Gradient Operation") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = MultiplyScalar(A, 4.0f, allocator);
+			auto B = MultiplyScalar(A, 4.0f);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -120,28 +108,24 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Null input throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
+			Tensor<float> A(Shape{});
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(MultiplyScalar(A, 2.0f, allocator), std::runtime_error);
+			CHECK_THROWS_AS(MultiplyScalar(A, 2.0f), std::runtime_error);
 		}
 	}
 
 	TEST_CASE("Scalar Divide Gradient") {
 		SUBCASE("Scalar Divide Gradient Operation (Scalar on Right)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = DivideScalar(A, 4.0f, allocator, false);
+			auto B = DivideScalar(A, 4.0f, false);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -153,17 +137,15 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Scalar Divide Gradient Operation (Scalar on Left)") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A({ 2, 3 }, allocator);
+			Tensor<float> A({ 2, 3 });
 			A.Fill(3.0f);
 			A.SetRequiresGrad(true);
 
-			auto B = DivideScalar(A, 4.0f, allocator, true);
+			auto B = DivideScalar(A, 4.0f, true);
 			CHECK(B.GetShape() == Shape(2, 3));
 			CHECK(B.RequiresGrad());
 
-			auto loss = SumAll(B, allocator);
+			auto loss = SumAll(B);
 			loss.Backward();
 
 			auto gradA = A.Grad();
@@ -175,12 +157,10 @@ TEST_SUITE("Scalar Gradient Tests") {
 		}
 
 		SUBCASE("Null input throws") {
-			ArenaAllocator allocator;
-
-			Tensor<float> A(Shape(), allocator);
+			Tensor<float> A(Shape{});
 			A.SetRequiresGrad(true);
 
-			CHECK_THROWS_AS(DivideScalar(A, 2.0f, allocator, false), std::runtime_error);
+			CHECK_THROWS_AS(DivideScalar(A, 2.0f, false), std::runtime_error);
 		}
 	}
 }

@@ -10,10 +10,8 @@ using namespace MLCore::TensorCore;
 TEST_SUITE("Elementwise Operations") {
     TEST_CASE("Elementwise Add") {
         SUBCASE("Elementwise Add: same shapes") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 2 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 2 });
+            Tensor<float> B({ 2, 2 });
 
             A[0] = 1; A[1] = 2;
             A[2] = 3; A[3] = 4;
@@ -21,7 +19,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Add(A, B, allocator);
+            auto C = Add(A, B);
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -32,10 +30,8 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Add: broadcasting") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 3 });
 
             for (size_t i = 0; i < 6; ++i)
                 A[i] = static_cast<float>(i + 1);
@@ -44,7 +40,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Add(A, B, allocator);
+            auto C = Add(A, B);
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -57,26 +53,22 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Add: incompatible shapes throw") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 2, 2 });
 
             CHECK_THROWS_AS(
-                Add(A, B, allocator),
+                Add(A, B),
                 std::runtime_error
             );
         }
 
         SUBCASE("Elementwise Add propagates requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2 }, allocator);
-            Tensor<float> B({ 2 }, allocator);
+            Tensor<float> A({ 2 });
+            Tensor<float> B({ 2 });
 
             A.SetRequiresGrad(true);
 
-            auto C = Add(A, B, allocator);
+            auto C = Add(A, B);
 
             CHECK(C.RequiresGrad());
         }
@@ -84,10 +76,8 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Subtract") {
         SUBCASE("Elementwise Subtract: same shapes") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 2 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 2 });
+            Tensor<float> B({ 2, 2 });
 
             A[0] = 1; A[1] = 2;
             A[2] = 3; A[3] = 4;
@@ -95,7 +85,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Subtract(B, A, allocator);
+            auto C = Subtract(B, A);
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -106,10 +96,8 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Subtract: broadcasting") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 3 });
 
             for (size_t i = 0; i < 6; ++i)
                 A[i] = static_cast<float>(i + 1);
@@ -118,7 +106,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Subtract(B, A, allocator);
+            auto C = Subtract(B, A);
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -131,29 +119,25 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Subtract: incompatible shapes throw") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 2, 2 });
 
             A.Fill(5.0f);
             B.Fill(3.0f);
 
-            CHECK_THROWS_AS(Subtract(A, B, allocator), std::runtime_error);
+            CHECK_THROWS_AS(Subtract(A, B), std::runtime_error);
         }
 
         SUBCASE("Elementwise Subtract propagates requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2 }, allocator);
-            Tensor<float> B({ 2 }, allocator);
+            Tensor<float> A({ 2 });
+            Tensor<float> B({ 2 });
 
             A.Fill(5.0f);
             B.Fill(3.0f);
 
             A.SetRequiresGrad(true);
 
-            auto C = Subtract(A, B, allocator);
+            auto C = Subtract(A, B);
 
             CHECK(C.RequiresGrad());
         }
@@ -161,10 +145,8 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Multiply") {
         SUBCASE("Elementwise Multiply: same shapes") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 2 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 2 });
+            Tensor<float> B({ 2, 2 });
 
             A[0] = 1; A[1] = 2;
             A[2] = 3; A[3] = 4;
@@ -172,7 +154,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Multiply(A, B, allocator);
+            auto C = Multiply(A, B);
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -183,10 +165,8 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Multiply: broadcasting") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 3 });
 
             for (size_t i = 0; i < 6; ++i)
                 A[i] = static_cast<float>(i + 1);
@@ -195,7 +175,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Multiply(A, B, allocator);
+            auto C = Multiply(A, B);
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -208,32 +188,28 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Multiply: incompatible shapes throw") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 2, 2 });
 
             A.Fill(5.0f);
             B.Fill(3.0f);
 
             CHECK_THROWS_AS(
-                Multiply(A, B, allocator),
+                Multiply(A, B),
                 std::runtime_error
             );
         }
 
         SUBCASE("Elementwise Multiply propagates requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2 }, allocator);
-            Tensor<float> B({ 2 }, allocator);
+            Tensor<float> A({ 2 });
+            Tensor<float> B({ 2 });
 
             A.Fill(5.0f);
             B.Fill(3.0f);
 
             A.SetRequiresGrad(true);
 
-            auto C = Multiply(A, B, allocator);
+            auto C = Multiply(A, B);
 
             CHECK(C.RequiresGrad());
         }
@@ -241,10 +217,8 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Divide") {
         SUBCASE("Elementwise Divide: same shapes") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 2 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 2 });
+            Tensor<float> B({ 2, 2 });
 
             A[0] = 1; A[1] = 2;
             A[2] = 3; A[3] = 4;
@@ -252,7 +226,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 2; B[1] = 4;
             B[2] = 10; B[3] = 10;
 
-            auto C = Divide(A, B, allocator);
+            auto C = Divide(A, B);
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -263,10 +237,8 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Divide: broadcasting") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 3 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 3 });
 
             for (size_t i = 0; i < 6; ++i)
                 A[i] = static_cast<float>(i + 1);
@@ -275,7 +247,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Divide(B, A, allocator);
+            auto C = Divide(B, A);
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -288,32 +260,28 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Divide: incompatible shapes throw") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2, 3 }, allocator);
-            Tensor<float> B({ 2, 2 }, allocator);
+            Tensor<float> A({ 2, 3 });
+            Tensor<float> B({ 2, 2 });
 
             A.Fill(10.0f);
             B.Fill(5.0f);
 
             CHECK_THROWS_AS(
-                Divide(A, B, allocator),
+                Divide(A, B),
                 std::runtime_error
             );
         }
 
         SUBCASE("Elementwise Divide propagates requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 2 }, allocator);
-            Tensor<float> B({ 2 }, allocator);
+            Tensor<float> A({ 2 });
+            Tensor<float> B({ 2 });
 
             A.Fill(10.0f);
             B.Fill(5.0f);
 
             A.SetRequiresGrad(true);
 
-            auto C = Divide(A, B, allocator);
+            auto C = Divide(A, B);
 
             CHECK(C.RequiresGrad());
         }
@@ -321,16 +289,14 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Power") {
         SUBCASE("Elementwise Power Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Power(A, 2.0f, allocator);
+            auto B = Power(A, 2.0f);
 
             CHECK(B[0] == doctest::Approx(9));
             CHECK(B[1] == doctest::Approx(1));
@@ -339,24 +305,20 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Power shape preservation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Power(A, 2.0f, allocator);
+            auto B = Power(A, 2.0f);
 
             CHECK_EQ(B.GetShape(), Shape(4));
         }
 
         SUBCASE("Elementwise Power propogates requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
@@ -365,7 +327,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto B = Power(A, 2.0f, allocator);
+            auto B = Power(A, 2.0f);
 
             CHECK(B.RequiresGrad());
         }
@@ -373,16 +335,14 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Abs") {
         SUBCASE("Elementwise Abs Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Abs(A, allocator);
+            auto B = Abs(A);
 
             CHECK(B[0] == doctest::Approx(3));
             CHECK(B[1] == doctest::Approx(1));
@@ -391,24 +351,20 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Abs shape preservation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Abs(A, allocator);
+            auto B = Abs(A);
 
             CHECK(B.GetShape() == Shape(4));
         }
 
         SUBCASE("Elementwise Abs propogates requires-grads") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
@@ -417,7 +373,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto B = Abs(A, allocator);
+            auto B = Abs(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -425,16 +381,14 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Clamp") {
         SUBCASE("Elementwise Clamp Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Clamp(A, -1.0f, 1.0f, allocator);
+            auto B = Clamp(A, -1.0f, 1.0f);
 
             CHECK(B[0] == doctest::Approx(-1));
             CHECK(B[1] == doctest::Approx(-1));
@@ -443,24 +397,20 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Clamp shape preservation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
             A[2] = 0;
             A[3] = 2;
 
-            auto B = Clamp(A, -1.0f, 1.0f, allocator);
+            auto B = Clamp(A, -1.0f, 1.0f);
 
             CHECK(B.GetShape() == Shape(4));
         }
 
         SUBCASE("Elementwise Clamp propogates requires-grads") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = -3;
             A[1] = -1;
@@ -469,7 +419,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto B = Clamp(A, -1.0f, 1.0f, allocator);
+            auto B = Clamp(A, -1.0f, 1.0f);
 
             CHECK(B.RequiresGrad());
         }
@@ -477,16 +427,14 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Log") {
         SUBCASE("Elementwise Log Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 10;
             A[2] = 5;
             A[3] = 2;
 
-            auto B = Log(A, allocator);
+            auto B = Log(A);
 
             CHECK(B[0] == doctest::Approx(1.09861228867));
             CHECK(B[1] == doctest::Approx(2.30258509299));
@@ -495,24 +443,20 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Log shape preservation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 1;
             A[2] = 5;
             A[3] = 2;
 
-            auto B = Log(A, allocator);
+            auto B = Log(A);
 
             CHECK(B.GetShape() == Shape(4));
         }
 
         SUBCASE("Elementwise Log propogates requires-grads") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 1;
@@ -521,7 +465,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto B = Log(A, allocator);
+            auto B = Log(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -529,16 +473,14 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Exp") {
         SUBCASE("Elementwise Exp Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 10;
             A[2] = 5;
             A[3] = 2;
 
-            auto B = Exp(A, allocator);
+            auto B = Exp(A);
 
             CHECK(B[0] == doctest::Approx(20.0855369232));
             CHECK(B[1] == doctest::Approx(22026.4657948));
@@ -547,24 +489,20 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Exp shape preservation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 1;
             A[2] = 5;
             A[3] = 2;
 
-            auto B = Exp(A, allocator);
+            auto B = Exp(A);
 
             CHECK(B.GetShape() == Shape(4));
         }
 
         SUBCASE("Elementwise Exp propogates requires-grads") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
+            Tensor<float> A({ 4 });
 
             A[0] = 3;
             A[1] = 1;
@@ -573,7 +511,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto B = Exp(A, allocator);
+            auto B = Exp(A);
 
             CHECK(B.RequiresGrad());
         }
@@ -581,10 +519,8 @@ TEST_SUITE("Elementwise Operations") {
 
     TEST_CASE("Elementwise Equal") {
         SUBCASE("Elementwise Equal Calculation") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
-            Tensor<float> B({ 4 }, allocator);
+            Tensor<float> A({ 4 });
+            Tensor<float> B({ 4 });
 
             A[0] = 3;
             A[1] = 10;
@@ -596,7 +532,7 @@ TEST_SUITE("Elementwise Operations") {
             B[2] = 5;
             B[3] = 4;
 
-            auto C = Equal(A, B, allocator);
+            auto C = Equal(A, B);
 
             CHECK(C[0] == 1);
             CHECK(C[1] == 1);
@@ -605,10 +541,8 @@ TEST_SUITE("Elementwise Operations") {
         }
 
         SUBCASE("Elementwise Equal with invalid shapes") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
-            Tensor<float> B({ 5 }, allocator);
+            Tensor<float> A({ 4 });
+            Tensor<float> B({ 5 });
 
             A[0] = 3;
             A[1] = 10;
@@ -621,14 +555,12 @@ TEST_SUITE("Elementwise Operations") {
             B[3] = 4;
             B[4] = 1;
 
-            CHECK_THROWS_AS(Equal(A, B, allocator), std::runtime_error);
+            CHECK_THROWS_AS(Equal(A, B), std::runtime_error);
         }
 
         SUBCASE("Elementwise Equal has no requires-grad") {
-            ArenaAllocator allocator(1024);
-
-            Tensor<float> A({ 4 }, allocator);
-            Tensor<float> B({ 4 }, allocator);
+            Tensor<float> A({ 4 });
+            Tensor<float> B({ 4 });
 
             A[0] = 3;
             A[1] = 10;
@@ -642,7 +574,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto C = Equal(A, B, allocator);
+            auto C = Equal(A, B);
 
             CHECK_FALSE(C.RequiresGrad());
         }

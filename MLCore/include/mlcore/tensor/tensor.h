@@ -77,11 +77,44 @@ namespace MLCore::TensorCore {
 		explicit Tensor(std::vector<size_t> dims, Memory::ArenaAllocator& allocator);
 
 		/// <summary>
+		/// Constructs a Tensor with the specified shape and allocates internal storage using the runtime allocator.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="shape">The shape of the tensor to create; determines the number of elements and storage size.</param>
+		Tensor(const Utils::Shape& shape);
+
+		/// <summary>
+		/// Constructs a Tensor with the specified dimensions by delegating to Tensor(Utils::Shape{dims}).
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="dims">An initializer list of dimension sizes (size_t) that defines the tensor's shape.</param>
+		explicit Tensor(std::initializer_list<size_t> dims);
+
+		/// <summary>
+		/// Constructs a Tensor<T> from a list of dimension sizes.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="dims">A vector of dimension sizes (each element is the size of a corresponding tensor dimension). The vector is used to initialize the underlying Shape.</param>
+		explicit Tensor(std::vector<size_t> dims);
+
+		/// <summary>
 		/// Constructs a Tensor<T> from a shared implementation pointer, taking ownership of the provided implementation by moving it into the internal member.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 		/// <param name="impl">A std::shared_ptr to the underlying implementation. The pointer is moved into the Tensor's internal implementation member (m_Impl).</param>
 		Tensor(std::shared_ptr<Impl> impl);
+
+		static Tensor<T> Zeros(const Utils::Shape& shape);
+
+		static Tensor<T> Zeros(std::initializer_list<size_t> dims);
+
+		static Tensor<T> Ones(const Utils::Shape& shape);
+
+		static Tensor<T> Ones(std::initializer_list<size_t> dims);
+
+		static Tensor<T> Custom(const Utils::Shape& shape, const T& value);
+
+		static Tensor<T> Custom(std::initializer_list<size_t> dims, const T& value);
 
 		/// <summary>
 		/// Creates and returns a deep copy of this tensor.

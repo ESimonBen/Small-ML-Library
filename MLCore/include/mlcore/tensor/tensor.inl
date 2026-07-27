@@ -1,12 +1,13 @@
  /// tensor.inl
 #include <stdexcept>
+#include <mlCore/runtime/context.h>
 
 namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape, Memory::ArenaAllocator& allocator) {
 		auto storage = Memory::MakeStorage<T>(allocator, shape.NumElements());
 
-		m_Impl = std::make_shared<Impl>( shape, std::move(storage), &allocator, 0, false, nullptr, nullptr);
+		m_Impl = std::make_shared<Impl>( shape, std::move(storage), &allocator);
 	}
 	
 	template <typename T>
@@ -20,10 +21,64 @@ namespace MLCore::TensorCore {
 	{}
 	
 	template <typename T>
+	inline Tensor<T>::Tensor(const Utils::Shape& shape) {
+		Memory::ArenaAllocator& allocator = Runtime::MLContext::GetContext().GetAllocator();
+		auto storage = Memory::MakeStorage<T>(shape.NumElements());
+
+		m_Impl = std::make_shared<Impl>(shape, std::move(storage), &allocator);
+	}
+
+	template <typename T>
+	inline Tensor<T>::Tensor(std::initializer_list<size_t> dims)
+		: Tensor(Utils::Shape{dims})
+	{}
+	
+	template <typename T>
+	inline Tensor<T>::Tensor(std::vector<size_t> dims)
+		: Tensor(Utils::Shape{dims})
+	{}
+
+	template <typename T>
 	inline Tensor<T>::Tensor(std::shared_ptr<Impl> impl)
 		: m_Impl(std::move(impl))
 	{}
 	
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Zeros(const Utils::Shape& shape) {
+		Tensor<T> result{ shape };
+		result.Fill(static_cast<T>(0));
+		return result;
+	}
+
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Zeros(std::initializer_list<size_t> dims) {
+		return Tensor<T>::Zeros(Utils::Shape{dims});
+	}
+
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Ones(const Utils::Shape& shape) {
+		Tensor<T> result{ shape };
+		result.Fill(static_cast<T>(0));
+		return result;
+	}
+
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Ones(std::initializer_list<size_t> dims) {
+		return Tensor<T>::Zeros(Utils::Shape{ dims });
+	}
+
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Custom(const Utils::Shape& shape, const T& value) {
+		Tensor<T> result{ shape };
+		result.Fill(value);
+		return result;
+	}
+
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Custom(std::initializer_list<size_t> dims, const T& value) {
+		return Tensor<T>::Custom(Utils::Shape{ dims }, value);
+	}
+
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Clone() const {
 		Tensor<T> out{ m_Impl->shape, (*m_Impl->allocator) };
@@ -325,7 +380,7 @@ namespace MLCore::TensorCore {
 		AccumulateGrad(gradOutput);
 
 		if (m_Impl->gradFn) {
-			m_Impl->gradFn->Backward(gradOutput, *(m_Impl->allocator));
+			m_Impl->gradFn->Backward(gradOutput);
 		}
 	}
 	

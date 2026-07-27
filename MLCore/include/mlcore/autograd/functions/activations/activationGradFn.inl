@@ -9,7 +9,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void ReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void ReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (gradOutput.GetShape() != input.GetShape()) {
@@ -21,10 +21,9 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 
 
-		// Want to replace this with a more readable version (replace static_cast<T>(0) with Tensor::Zero or something)
 		for (size_t i = 0; i < gradInput.NumElements(); ++i) {
 			gradInput[i] = (input[i] > static_cast<T>(0)) ? gradientOut[i] : static_cast<T>(0);
 		}
@@ -38,7 +37,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void LeakyReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void LeakyReLUGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (gradOutput.GetShape() != input.GetShape()) {
@@ -50,7 +49,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 
 		size_t size = gradInput.NumElements();
 
@@ -67,7 +66,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void SoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void SoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		static_assert(std::is_floating_point_v<T>, "Softmax requires floating point type");
 
 		TensorCore::Tensor<T> input{ this->inputs[0] };
@@ -91,7 +90,7 @@ namespace MLCore::AutoGrad {
 			sum += gradientOut[i] * output[i];
 		}
 
-		TensorCore::Tensor<T> gradInput = Operations::Multiply(output, Operations::SubtractScalar(gradientOut, sum, allocator, false), allocator);
+		TensorCore::Tensor<T> gradInput = Operations::Multiply(output, Operations::SubtractScalar(gradientOut, sum, false));
 
 
 		input.Backward(gradInput);
@@ -103,7 +102,7 @@ namespace MLCore::AutoGrad {
 	{}
 	
 	template <typename T>
-	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput, Memory::ArenaAllocator& allocator) {
+	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -113,13 +112,13 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
 
-		TensorCore::Tensor<T> gradInput{ input.GetShape(), allocator };
+		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 		gradInput.Fill(0.0f);
 
 		const std::vector<size_t>& dims = input.Dims();
 		size_t rank = input.Rank();
 
-		// Outer and inner size calculation
+		/// Outer and inner size calculation
 		size_t outer = 1;
 		for (size_t i = 0; i < axis; ++i) {
 			outer *= dims[i];
