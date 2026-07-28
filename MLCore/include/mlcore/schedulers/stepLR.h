@@ -24,7 +24,7 @@ namespace MLCore::Schedulers {
 		/// Updates learning rates using a piecewise-constant schedule. Increments an internal step counter and, when it reaches m_StepSize, multiplies each parameter group's learning rate by m_Gamma, stores the previous values in m_LastLRs, clamps non-finite learning rates to 1e-8 and non-positive values to 1e-12, and resets the step counter.
 		/// </summary>
 		virtual void UpdateLR() override {
-			// LR is a piecewise constant
+			/// LR is a piecewise constant
 			if (++m_Step >= m_StepSize) {
 				std::vector<Optimizers::ParameterGroup<T>>& paramGroups = this->m_Opt.ParamGroups();
 				size_t size = paramGroups.size();

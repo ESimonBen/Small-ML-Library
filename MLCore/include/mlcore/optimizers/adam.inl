@@ -1,8 +1,6 @@
  /// adam.inl
 #include <cmath>
-#include <unordered_map>
 #include <mlCore/serialization/binaryArchive.h>
-#include "adam.h"
 
 namespace MLCore::Optimizers {
 	template <typename T>

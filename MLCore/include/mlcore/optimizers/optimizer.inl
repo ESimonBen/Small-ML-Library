@@ -1,6 +1,5 @@
  /// optimizer.inl
 #include <cmath>
-#include "optimizer.h"
 
 namespace MLCore::Optimizers {
 	template <typename T>

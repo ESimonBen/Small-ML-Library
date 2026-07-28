@@ -360,7 +360,7 @@ The library is structured to clearly separate responsibilities:
     
         TrainerState<float> stateB = trainerB.GetState();
     
-        Checkpoint::Save(modelB, "../../models/modelB.ckpt", &optB, &schedulerB, &stateB);
+        Checkpoint::Save(modelB, "../../models/saved_model.ckpt", &optB, &schedulerB, &stateB);
     
         /// Resume Model
         Sequential<float> modelC;
@@ -429,7 +429,7 @@ The library is structured to clearly separate responsibilities:
     
         TrainerState<float> stateC;
     
-        Checkpoint::Load(modelC, "../../models/modelB.ckpt", &optC, &schedulerC, &stateC);
+        Checkpoint::Load(modelC, "../../models/saved_model.ckpt", &optC, &schedulerC, &stateC);
         trainerC.LoadState(stateC);
     
         trainerC.Fit(x, y, x, y, 5000, 4);

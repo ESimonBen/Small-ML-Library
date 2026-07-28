@@ -1,5 +1,4 @@
  /// sgd.inl
-#include "sgd.h"
 
 namespace MLCore::Optimizers {
 	template <typename T>

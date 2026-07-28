@@ -15,13 +15,6 @@ namespace MLCore::NN {
 		const ParamID id; /// An ID for the Parameter
 
 		/// <summary>
-		/// Parameter's default (parameterless) constructor that initializes the member 'id' by calling NextID().
-		/// </summary>
-		Parameter()
-			: id(NextID())
-		{}
-
-		/// <summary>
 		/// Explicit constructor that initializes a Parameter from a Tensor, copying the tensor into the data member and assigning a new identifier.
 		/// </summary>
 		/// <param name="tensor">Reference to a TensorCore::Tensor<T> used to initialize the Parameter's data member.</param>

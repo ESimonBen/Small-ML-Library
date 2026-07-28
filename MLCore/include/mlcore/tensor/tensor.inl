@@ -49,7 +49,7 @@ namespace MLCore::TensorCore {
 		result.Fill(static_cast<T>(0));
 		return result;
 	}
-
+	
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Zeros(std::initializer_list<size_t> dims) {
 		return Tensor<T>::Zeros(Utils::Shape{dims});
@@ -73,7 +73,7 @@ namespace MLCore::TensorCore {
 		result.Fill(value);
 		return result;
 	}
-
+	
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Custom(std::initializer_list<size_t> dims, const T& value) {
 		return Tensor<T>::Custom(Utils::Shape{ dims }, value);

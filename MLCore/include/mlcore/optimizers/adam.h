@@ -1,8 +1,9 @@
 /// adam.h
 #pragma once
-#include "optimizer.h"
 #include <unordered_map>
 #include <mlCore/module/module.h>
+
+#include "optimizer.h"
 
 namespace MLCore::Optimizers {
 	/// <summary>

@@ -104,16 +104,54 @@ namespace MLCore::TensorCore {
 		/// <param name="impl">A std::shared_ptr to the underlying implementation. The pointer is moved into the Tensor's internal implementation member (m_Impl).</param>
 		Tensor(std::shared_ptr<Impl> impl);
 
+		/// <summary>
+		/// Creates a Tensor<T> with the specified shape and fills all elements with zero (using static_cast<T>(0)).
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="shape">The shape or dimensions of the tensor to create (passed by const reference).</param>
+		/// <returns>A Tensor<T> of the given shape with every element initialized to zero.</returns>
 		static Tensor<T> Zeros(const Utils::Shape& shape);
 
+		/// <summary>
+		/// Creates a Tensor<T> filled with zeros using the specified dimensions.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor (type of each entry).</typeparam>
+		/// <param name="dims">An initializer_list of dimension sizes; each element specifies the size of a corresponding tensor dimension.</param>
+		/// <returns>A Tensor<T> with the given shape where all elements are initialized to the zero value of type T.</returns>
 		static Tensor<T> Zeros(std::initializer_list<size_t> dims);
 
+		/// <summary>
+		/// Creates a Tensor<T> with the specified shape. (Note: the implementation initializes elements to zero; the method name suggests ones.)
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="shape">The desired shape of the tensor to create.</param>
+		/// <returns>A Tensor<T> with the given shape. The current implementation fills all elements with value 0 (despite the method name).</returns>
 		static Tensor<T> Ones(const Utils::Shape& shape);
 
+		/// <summary>
+		/// Creates a Tensor<T> with the specified dimensions where all elements are initialized to one.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the returned tensor.</typeparam>
+		/// <param name="dims">An initializer_list of dimension sizes; each value specifies the size of the corresponding tensor dimension (converted to a Utils::Shape).</param>
+		/// <returns>A Tensor<T> with the given shape and all elements set to one.</returns>
 		static Tensor<T> Ones(std::initializer_list<size_t> dims);
 
+		/// <summary>
+		/// Creates a Tensor of the specified shape with all elements initialized to a given value.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="shape">The shape (dimensions and sizes) of the tensor to create.</param>
+		/// <param name="value">The value used to initialize every element of the tensor.</param>
+		/// <returns>A Tensor<T> instance with the specified shape and every element set to value.</returns>
 		static Tensor<T> Custom(const Utils::Shape& shape, const T& value);
 
+		/// <summary>
+		/// Creates a tensor with the specified dimensions, with every element initialized to the given value.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="dims">An initializer_list of sizes that specifies the shape (size of each dimension) of the tensor.</param>
+		/// <param name="value">The value used to initialize every element in the returned tensor.</param>
+		/// <returns>A Tensor<T> of the specified shape with all elements set to value.</returns>
 		static Tensor<T> Custom(std::initializer_list<size_t> dims, const T& value);
 
 		/// <summary>
