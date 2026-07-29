@@ -16,12 +16,11 @@ using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::NN;
-using namespace MLCore::Init;
 using namespace MLCore::Training;
 using namespace MLCore::Schedulers;
 using namespace MLCore::Serialization;
 
-int main() {
+void TestXOR() {
     std::cout << "=== XOR Nonlinear Test ===\n";
 
     /// -----------------------------
@@ -345,6 +344,16 @@ int main() {
             }
         }
     }
+}
+
+int main() {
+    /*TestXOR();*/
+
+    Sequential<float> model;
+
+    model.Emplace<LinearLayer<float>>(2, 4, InitType::Zero);
+
+    std::cout << model.GetParameters().size();
 
     return 0;
 }

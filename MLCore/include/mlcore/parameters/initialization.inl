@@ -2,7 +2,7 @@
 #include <cmath>
 #include <random>
 
-namespace MLCore::Init {
+namespace MLCore::NN {
 	template <typename T>
 	void Init(TensorCore::Tensor<T>& tensor, size_t fan_in, size_t fan_out, InitType type) {
 		std::random_device rd;

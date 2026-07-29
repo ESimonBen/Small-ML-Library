@@ -2,7 +2,7 @@
 #pragma once
 #include <mlCore/tensor/tensor.h>
 
-namespace MLCore::Init {
+namespace MLCore::NN {
 	/// <summary>
 	/// Specifies common weight-initialization strategies used for neural network layers.
 	/// </summary>

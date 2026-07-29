@@ -4,17 +4,17 @@
 
 namespace MLCore::NN {
 	template <typename T>
-	LinearLayer<T>::LinearLayer(size_t in, size_t out, Init::InitType weightInit, Init::InitType biasInit)
+	inline LinearLayer<T>::LinearLayer(size_t in, size_t out, InitType weightInit, InitType biasInit)
 		: m_Weight(TensorCore::Tensor<T>{{in, out}}), m_Bias(TensorCore::Tensor<T>{{1, out}}){
 		m_Weight.Data().SetRequiresGrad(true);
 		m_Bias.Data().SetRequiresGrad(true);
 
-		Init::Init(m_Weight.Data(), in, out, weightInit);
-		Init::Init(m_Bias.Data(), 1, out, biasInit);
+		Init(m_Weight.Data(), in, out, weightInit);
+		Init(m_Bias.Data(), 1, out, biasInit);
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> LinearLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> LinearLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
 		TensorCore::Tensor<T> mul = Operations::MatMultiply(input, m_Weight.Data()); /// Matrix multiply weight with input
 		TensorCore::Tensor<T> result = Operations::Add(mul, m_Bias.Data()); /// Add the bias
 
@@ -34,7 +34,7 @@ namespace MLCore::NN {
 	}
 	
 	template <typename T>
-	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
+	inline void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
 		auto MakeName = [&](const std::string& suffix) {
 			return (name.empty()) ? suffix : name + "." + suffix;
 		};
@@ -44,7 +44,7 @@ namespace MLCore::NN {
 	}
 	
 	template <typename T>
-	void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
+	inline void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
 		auto MakeName = [&](const std::string& suffix) {
 			return (name.empty()) ? suffix : name + "." + suffix;
 			};
