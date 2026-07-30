@@ -58,13 +58,13 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Ones(const Utils::Shape& shape) {
 		Tensor<T> result{ shape };
-		result.Fill(static_cast<T>(0));
+		result.Fill(static_cast<T>(1));
 		return result;
 	}
 
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Ones(std::initializer_list<size_t> dims) {
-		return Tensor<T>::Zeros(Utils::Shape{ dims });
+		return Tensor<T>::Ones(Utils::Shape{ dims });
 	}
 
 	template <typename T>
@@ -418,7 +418,7 @@ namespace MLCore::TensorCore {
 			throw std::runtime_error("ERROR: Cannot concatenate empty tensors");
 		}
 
-		// Reference tensor
+		/// Reference tensor
 		const Tensor<T>& firstTensor = tensors[0];
 
 		const auto& baseDims = firstTensor.Dims();

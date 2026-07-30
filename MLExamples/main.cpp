@@ -9,7 +9,8 @@
 #include <mlCore/serialization/checkpoint.h>
 
 using namespace MLCore;
-using namespace MLCore::Memory;
+using namespace MLCore::Data;
+
 using namespace MLCore::Utils;
 using namespace MLCore::AutoGrad;
 using namespace MLCore::TensorCore;
@@ -347,13 +348,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-
-    Sequential<float> model;
-
-    model.Emplace<LinearLayer<float>>(2, 4, InitType::Zero);
-
-    std::cout << model.GetParameters().size();
+    TestXOR();
 
     return 0;
 }

@@ -5,7 +5,7 @@
 
 namespace MLCore::Data {
 	template <typename T>
-	DataLoader<T>::DataLoader(const Dataset<T>& dataset, size_t batchSize, bool shuffle)
+	inline DataLoader<T>::DataLoader(const Dataset<T>& dataset, size_t batchSize, bool shuffle)
 		: m_Dataset(dataset), m_BatchSize(batchSize), m_Shuffle(shuffle) {
 		if (m_BatchSize == 0) {
 			throw std::runtime_error("ERROR: Batch size cannot be 0");
@@ -15,7 +15,7 @@ namespace MLCore::Data {
 	}
 	
 	template <typename T>
-	void DataLoader<T>::Reset(bool reshuffle) {
+	inline void DataLoader<T>::Reset(bool reshuffle) {
 		m_CurrentIndex = 0;
 		m_Shuffle = reshuffle;
 
@@ -30,12 +30,12 @@ namespace MLCore::Data {
 	}
 	
 	template <typename T>
-	bool DataLoader<T>::HasNext() const {
+	inline bool DataLoader<T>::HasNext() const {
 		return m_CurrentIndex < m_Indices.size();
 	}
 	
 	template <typename T>
-	std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> DataLoader<T>::Next() {
+	inline std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> DataLoader<T>::Next() {
 		if (!HasNext()) {
 			throw std::out_of_range("ERROR: No batches remaining");
 		}

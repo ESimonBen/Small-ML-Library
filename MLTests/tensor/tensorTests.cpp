@@ -2,7 +2,7 @@
 #include <doctest/doctest.h>
 #include <mlCore/tensor/tensor.h>
 
-using namespace MLCore::Memory;
+
 using namespace MLCore::TensorCore;
 
 TEST_SUITE("Tensor Tests") {

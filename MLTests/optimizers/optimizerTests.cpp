@@ -8,7 +8,7 @@
 
 using namespace MLCore::NN;
 using namespace MLCore::Utils;
-using namespace MLCore::Memory;
+
 using namespace MLCore::TensorCore;
 using namespace MLCore::Optimizers;
 using namespace MLCore::Operations;

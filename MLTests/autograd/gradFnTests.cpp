@@ -5,7 +5,7 @@
 #include "dummyGradFn.h"
 
 using namespace MLCore::Utils;
-using namespace MLCore::Memory;
+
 using namespace MLCore::TensorCore;
 
 TEST_SUITE("Base Gradient Function Tests") {

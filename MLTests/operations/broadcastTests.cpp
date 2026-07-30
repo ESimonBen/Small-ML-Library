@@ -3,7 +3,7 @@
 #include <mlCore/operations/broadcast/broadcast.h>
 
 using namespace MLCore::Utils;
-using namespace MLCore::Memory;
+
 using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
 
