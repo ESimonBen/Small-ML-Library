@@ -135,8 +135,10 @@ namespace MLCore::Training {
 		/// <returns>true if m_Scheduler is not null (a scheduler is present); otherwise false.</returns>
 		bool HasScheduler() const;
 
+		Optimizers::Optimizer<T>& GetOptimizer() const;
+
 		/// <summary>
-		/// Returns the trainer's learning-rate scheduler.
+		/// Returns the pointer to trainer's learning-rate scheduler.
 		/// </summary>
 		/// <typeparam name="T">Type parameter used by Trainer and the scheduler.</typeparam>
 		/// <returns>Pointer to the Trainer's Schedulers::LRScheduler<T> instance. May be nullptr if no scheduler is set.</returns>

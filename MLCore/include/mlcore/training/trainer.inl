@@ -22,23 +22,23 @@ namespace MLCore::Training {
 			std::unordered_map<std::string, T> epochMetrics;
 
 			while (dataLoader.HasNext()) {
-				// Load data
+				/// Load data
 				auto [x, y] = dataLoader.Next();
 
-				// Forward
+				/// Forward
 				auto pred = m_Model.Forward(x);
 
-				// Loss
+				/// Loss
 				auto loss = m_LossFn(pred, y);
 
-				// Metrics
+				/// Metrics
 				auto metrics = ComputeMetrics(pred, y);
 
 				for (const auto& [name, value] : metrics) {
 					epochMetrics[name] += value;
 				}
 
-				// Backward
+				/// Backward
 				m_Optimizer.ZeroGrad();
 				loss.Backward();
 				m_Optimizer.Step();
@@ -110,23 +110,23 @@ namespace MLCore::Training {
 			std::unordered_map<std::string, T> epochMetrics;
 
 			while (trainLoader.HasNext()) {
-				// Load data
+				/// Load data
 				auto [x, y] = trainLoader.Next();
 
-				// Forward
+				/// Forward
 				auto pred = m_Model.Forward(x);
 
-				// Loss
+				/// Loss
 				auto loss = m_LossFn(pred, y);
 
-				// Metrics
+				/// Metrics
 				auto metrics = ComputeMetrics(pred, y);
 
 				for (const auto& [name, value] : metrics) {
 					epochMetrics[name] += value;
 				}
 
-				// Backward
+				/// Backward
 				m_Optimizer.ZeroGrad();
 				loss.Backward();
 				m_Optimizer.Step();
@@ -164,7 +164,7 @@ namespace MLCore::Training {
 
 					T metric = it->second;
 
-					if (!m_HasBestMetric || valResult.loss < m_BestValidationMetric) {
+					if (!m_HasBestMetric || m_BestValidationMetric == static_cast<T>(0) || valResult.loss < m_BestValidationMetric) {
 						m_BestValidationMetric = valResult.loss;
 						m_HasBestMetric = true;
 					}
@@ -215,6 +215,11 @@ namespace MLCore::Training {
 	}
 	
 	template <typename T>
+	inline Optimizers::Optimizer<T>& Trainer<T>::GetOptimizer() const {
+		return m_Optimizer;
+	}
+
+	template <typename T>
 	inline Schedulers::LRScheduler<T>* Trainer<T>::GetScheduler() const {
 		return m_Scheduler;
 	}
@@ -256,17 +261,17 @@ namespace MLCore::Training {
 		size_t batches = 0;
 
 		while (dataLoader.HasNext()) {
-			// Load data
+			/// Load data
 			auto [x, y] = dataLoader.Next();
 
-			// Forward
+			/// Forward
 			auto pred = m_Model.Forward(x);
 
-			// Loss
+			/// Loss
 			auto loss = m_LossFn(pred, y);
 			evalResult.loss += loss[0];
 
-			// Metrics
+			/// Metrics
 			auto metrics = ComputeMetrics(pred, y);
 
 			for (const auto& [name, value] : metrics) {
