@@ -39,4 +39,4 @@ jobs:
       # Run unit tests
       - name: Run unit tests
         run:
-          ./bin/Release-Linux/MLTests
+          ./bin/RelWithDebInfo-Linux/MLTests
