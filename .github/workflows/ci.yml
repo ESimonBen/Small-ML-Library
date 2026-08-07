@@ -15,7 +15,6 @@ jobs:
   linux_test:
     runs-on: ubuntu-latest
     steps:
-
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,3 +33,29 @@ jobs:
       - name: Run unit tests
         run:
           ctest --test-dir build --output-on-failure -C RelWithDebInfo
+
+  linux_test_sanitized:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configure with sanitizers
+      - name: Configure CMake with sanitizers
+        run: |
+          cmake -B build-sanitize \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+        
+      # Build sanitizer configuration
+      - name: Build sanitizer configuration
+        run: |
+          cmake --build build-sanitize
+
+      # Run sanitizer tests
+      - name: Run sanitizer tests
+        run: | 
+          ctest --test-dir build-sanitize --output-on-failure
+
+      
