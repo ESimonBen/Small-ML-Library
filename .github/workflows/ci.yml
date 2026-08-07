@@ -1,0 +1,42 @@
+# ci.yml
+
+# ML Framework CI Pipeline
+name: Small ML Library CI Pipeline
+
+# Makes workflow run on pull and push
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+# Jobs
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install dependencies
+      - name: Install dependencies
+        run:
+          sudo apt-get update
+          sudo apt-get install -y cmake g++
+
+      # Configure CMake
+      - name: Configure CMake
+        run:
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      # Build project
+      - name: Build project
+        run:
+          cmake --build build --config Release
+
+      # Run unit tests
+      - name: Run unit tests
+        run:
+          ./bin/Release-Linux/MLTests
