@@ -57,6 +57,22 @@ namespace MLCore::Schedulers {
 		}
 
 		/// <summary>
+		/// Returns the step size (number of steps between learning-rate decays) for this StepLR scheduler. This is a const getter that does not modify the object's state.
+		/// </summary>
+		/// <returns> The step size as an integer. </returns>
+		int StepSize() const {
+			return m_StepSize;
+		}
+
+		/// <summary>
+		/// Returns the gamma value (multiplicative decay factor) for this StepLR scheduler. This is a const getter that does not modify the object's state.
+		/// </summary>
+		/// <returns> The gamma value as a type T. </returns>
+		T Gamma() const {
+			return m_Gamma;
+		}
+
+		/// <summary>
 		/// Serializes the object's internal state to a binary writer.
 		/// </summary>
 		/// <param name="writer">Reference to a Serialization::BinaryWriter used to write the object's state (m_StepSize, m_Gamma, m_Step, the count of last LRs, and the array of last LRs).</param>

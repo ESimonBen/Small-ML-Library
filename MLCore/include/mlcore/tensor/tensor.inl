@@ -429,7 +429,7 @@ namespace MLCore::TensorCore {
 		}
 
 		for (size_t i = 1; i < tensors.size(); ++i) {
-			// Current Tensor
+			/// Current Tensor
 			const Tensor<T>& currentTensor = tensors[i];
 
 			if (&currentTensor.GetAllocator() != &firstTensor.GetAllocator()) {

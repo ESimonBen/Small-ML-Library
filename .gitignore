@@ -68,3 +68,8 @@ Thumbs.db
 # Test Models
 # =========================
 models/
+
+# ==================================
+# Test Files For Serialization Tests
+# ==================================
+MLTests/serialization/testFiles

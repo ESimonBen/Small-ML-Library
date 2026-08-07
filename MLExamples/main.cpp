@@ -1,4 +1,5 @@
 /// main.cpp
+#include <set> // remove once done testing
 #include <iostream>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>

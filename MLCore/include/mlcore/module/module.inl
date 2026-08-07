@@ -9,7 +9,7 @@ namespace MLCore::NN {
 	
 	template <typename T>
 	void Module<T>::Add(std::unique_ptr<Module<T>> mod) {
-		Add("layer" + std::to_string(m_NameCounter++), std::move(mod));
+		Add("layer" + std::to_string(++m_NameCounter), std::move(mod));
 	}
 	
 	template <typename T>
@@ -46,22 +46,22 @@ namespace MLCore::NN {
 	
 	template <typename T>
 	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out){
-		// Don't need an implementation here
+		/// Don't need an implementation here
 	}
 	
 	template <typename T>
 	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
-		// Don't need an implementation here
+		/// Don't need an implementation here
 	}
 	
 	template <typename T>
 	void Module<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
-		// Don't need an implementation here
+		/// Don't need an implementation here
 	}
 	
 	template <typename T>
 	void Module<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
-		// Don't need an implementation here
+		/// Don't need an implementation here
 	}
 	
 	template <typename T>

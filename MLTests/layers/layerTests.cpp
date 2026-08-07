@@ -58,10 +58,10 @@ TEST_SUITE("Module/Layer Tests") {
 
 			auto namedParams = model.GetNamedParameters();
 
-			CHECK(namedParams[0].first == "layer0.weight");
-			CHECK(namedParams[1].first == "layer0.bias");
-			CHECK(namedParams[2].first == "layer1.weight");
-			CHECK(namedParams[3].first == "layer1.bias");
+			CHECK(namedParams[0].first == "layer1.weight");
+			CHECK(namedParams[1].first == "layer1.bias");
+			CHECK(namedParams[2].first == "layer2.weight");
+			CHECK(namedParams[3].first == "layer2.bias");
 		}
 
 		SUBCASE("Sequential module takes in layer names") {

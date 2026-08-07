@@ -6,12 +6,16 @@ namespace MLCore::NN {
 	template <typename T>
 	template <typename ModuleType, typename... Args>
 	inline void Sequential<T>::EmplaceNamed(const std::string& name, Args&&... args) {
+		static_assert(std::is_base_of_v<Module<T>, ModuleType>, "ModuleType must be of type Module");
+
 		this->Add(name, std::make_unique<ModuleType>(std::forward<Args>(args)...));
 	}
 
 	template <typename T>
 	template <typename ModuleType, typename... Args>
 	inline void Sequential<T>::Emplace(Args&&... args) {
+		static_assert(std::is_base_of_v<Module<T>, ModuleType>, "ModuleType must be of type Module");
+
 		this->Add(std::make_unique<ModuleType>(std::forward<Args>(args)...));
 	}
 
