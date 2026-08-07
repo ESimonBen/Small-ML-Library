@@ -29,12 +29,12 @@ jobs:
       # Configure CMake
       - name: Configure CMake
         run:
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       # Build project
       - name: Build project
         run:
-          cmake --build build --config Release
+          cmake --build build --config RelWithDebInfo
 
       # Run unit tests
       - name: Run unit tests
