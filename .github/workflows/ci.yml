@@ -22,7 +22,7 @@ jobs:
 
       # Install dependencies
       - name: Install dependencies
-        run:
+        run: |
           sudo apt-get update
           sudo apt-get install -y cmake g++
 
