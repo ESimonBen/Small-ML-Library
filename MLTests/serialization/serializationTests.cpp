@@ -200,7 +200,7 @@ TEST_SUITE("Serialization Tests") {
 
 			auto parameters2 = model2.GetParameters();
 
-			SGD opt2{ parameters, 0.2f, 0.2f }; /// Learning rate and weight decay should be different after loading
+			SGD opt2{ parameters2, 0.2f, 0.2f }; /// Learning rate and weight decay should be different after loading
 
 			Checkpoint::Load(model2, "models/testFiles/checkpointTest3.ckpt", &opt2);
 
