@@ -17,8 +17,6 @@ target_include_directories(MLTests
         ${CMAKE_SOURCE_DIR}/external
 )
 
-enable_testing()
-
 add_test(
     NAME MLTests
     COMMAND MLTests

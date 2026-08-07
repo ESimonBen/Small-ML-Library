@@ -24,6 +24,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/bin/MinSizeRel
 # Intermediate directory
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug>:ProgramDatabase>")
 
+# Enable testing
+enable_testing()
+
 add_subdirectory(MLCore)
 add_subdirectory(MLExamples)
 add_subdirectory(MLTests)

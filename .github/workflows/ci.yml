@@ -12,19 +12,13 @@ on:
 
 # Jobs
 jobs:
-  build-and-test:
+  linux_test:
     runs-on: ubuntu-latest
     steps:
 
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # Install dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake g++
 
       # Configure CMake
       - name: Configure CMake
@@ -39,4 +33,4 @@ jobs:
       # Run unit tests
       - name: Run unit tests
         run:
-          ./bin/RelWithDebInfo-Linux/MLTests
+          ctest --test-dir build --output-on-failure -C RelWithDebInfo
