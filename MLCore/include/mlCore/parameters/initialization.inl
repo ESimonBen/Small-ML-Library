@@ -5,6 +5,14 @@
 namespace MLCore::NN {
 	template <typename T>
 	void Init(TensorCore::Tensor<T>& tensor, size_t fan_in, size_t fan_out, InitType type) {
+		if (fan_in == 0) {
+			throw std::runtime_error("ERROR: Init: fan_in cannot be 0");
+		}
+
+		if (fan_out == 0) {
+			throw std::runtime_error("ERROR: Init: fan_out cannot be 0");
+		}
+
 		std::random_device rd;
 		std::mt19937 gen(rd());
 

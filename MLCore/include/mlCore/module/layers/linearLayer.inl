@@ -47,7 +47,7 @@ namespace MLCore::NN {
 	inline void LinearLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
 		auto MakeName = [&](const std::string& suffix) {
 			return (name.empty()) ? suffix : name + "." + suffix;
-			};
+		};
 
 		out.emplace_back(MakeName("weight"), std::ref(m_Weight));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));

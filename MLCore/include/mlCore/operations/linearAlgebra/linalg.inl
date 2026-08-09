@@ -5,7 +5,7 @@
 
 namespace MLCore::Operations {
 	template <typename T>
-	TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+	inline TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
 		if (&A.GetAllocator() != &B.GetAllocator()) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
@@ -44,7 +44,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Transpose(const TensorCore::Tensor<T>& A) {
+	inline TensorCore::Tensor<T> Transpose(const TensorCore::Tensor<T>& A) {
 		if (A.Rank() != 2) {
 			throw std::runtime_error("ERROR: Transpose: Only 2D tensors supported");
 		}
@@ -70,7 +70,7 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+	inline TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
 		if (&A.GetAllocator() != &B.GetAllocator()) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}

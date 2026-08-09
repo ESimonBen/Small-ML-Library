@@ -348,54 +348,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
+    TestXOR();
 
-    Tensor<float> input{ {1, 2, 2, 2} };
-    Tensor<float> kernel{ {2, 2, 1, 1} };
-
-    /// Channel 0
-    input[0] = 1.0f;
-    input[1] = 2.0f;
-    input[2] = 3.0f;
-    input[3] = 4.0f;
-
-    /// Channel 1
-    input[4] = 5.0f;
-    input[5] = 6.0f;
-    input[6] = 7.0f;
-    input[7] = 8.0f;
-
-    kernel[0] = 1.0f;
-    kernel[1] = 2.0f;
-    kernel[2] = 3.0f;
-    kernel[3] = 4.0f;
-
-    input.SetRequiresGrad(true);
-    kernel.SetRequiresGrad(true);
-
-    auto output = Conv2D(input, kernel);
-    auto& dims = output.Dims();
-
-    for (auto& val : dims) {
-        std::cout << val << " ";
-    }
-
-    std::cout << "\n";
-
-    auto gradOutput = Tensor<float>::Ones({ 1, 2, 2, 2 });
-    output.Backward(gradOutput);
-
-    auto gradInput = input.Grad();
-    auto gradKernel = kernel.Grad();
-
-    for (auto& val : gradInput) {
-        std::cout << val << " ";
-    }
-
-    std::cout << "\n";
-
-    for (auto& val : gradKernel) {
-        std::cout << val << " ";
-    }
     return 0;
 }
