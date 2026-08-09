@@ -41,7 +41,7 @@ namespace MLCore::NN {
 			return (name.empty()) ? suffix : name + "." + suffix;
 		};
 
-		out.emplace_back(MakeName("kernel"), std::ref(m_Weight));
+		out.emplace_back(MakeName("kernel"), std::ref(m_Kernel));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));
 	}
 
@@ -51,7 +51,7 @@ namespace MLCore::NN {
 			return (name.empty()) ? suffix : name + "." + suffix;
 		};
 
-		out.emplace_back(MakeName("kernel"), std::ref(m_Weight));
+		out.emplace_back(MakeName("kernel"), std::ref(m_Kernel));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));
 	}
 }
