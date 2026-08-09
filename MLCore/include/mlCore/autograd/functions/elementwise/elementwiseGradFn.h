@@ -119,7 +119,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		T exponent; /// Exponent of the input tensor of type T.
+		T m_Exponent; /// Exponent of the input tensor of type T.
 	};
 
 	/// <summary>

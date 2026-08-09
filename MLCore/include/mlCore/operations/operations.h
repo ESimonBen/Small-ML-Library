@@ -8,3 +8,4 @@
 #include <mlCore/operations/linearAlgebra/linalg.h>
 #include <mlCore/operations/activations/activation.h>
 #include <mlCore/operations/elementwise/elementwise.h>
+#include <mlCore/operations/convolution/convolution.h>

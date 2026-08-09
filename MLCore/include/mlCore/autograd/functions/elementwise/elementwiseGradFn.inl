@@ -122,7 +122,7 @@ namespace MLCore::AutoGrad {
 	
 	template <typename T>
 	PowerGradFn<T>::PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent)
-		: GradFn<T>(a), exponent(exponent)
+		: GradFn<T>(a), m_Exponent(exponent)
 	{}
 	
 	template <typename T>
@@ -141,8 +141,8 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		auto coeff = Operations::MultiplyScalar(gradientOut, exponent);
-		auto expMinus1 = Operations::Power(base, exponent - static_cast<T>(1));
+		auto coeff = Operations::MultiplyScalar(gradientOut, m_Exponent);
+		auto expMinus1 = Operations::Power(base, m_Exponent - static_cast<T>(1));
 
 		TensorCore::Tensor<T> gradInput = Operations::Multiply(coeff, expMinus1);
 

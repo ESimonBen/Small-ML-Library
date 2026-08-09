@@ -24,8 +24,7 @@ namespace MLCore::Data {
 		/// Resets the data loader to the start of the dataset and optionally reshuffles the sample indices.
 		/// </summary>
 		/// <typeparam name="T">The type of elements managed by the DataLoader (the dataset sample type).</typeparam>
-		/// <param name="reshuffle">If true, repopulates and randomly shuffles the internal index order; if false, leaves indices in sequential order.</param>
-		void Reset(bool reshuffle = true);
+		void Reset();
 
 		/// <summary>
 		/// Checks whether the DataLoader has more items available to load.

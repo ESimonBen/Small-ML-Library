@@ -24,9 +24,9 @@ namespace MLCore::Runtime {
 		}
 
 		/// <summary>
-		/// Returns a reference to the CPU arena allocator.
+		/// Returns a reference to a thread-local Memory::ArenaAllocator instance.
 		/// </summary>
-		/// <returns>A non-const reference to the Memory::ArenaAllocator instance used for CPU allocations (m_CPUAllocator).</returns>
+		/// <returns>A reference to a thread-local Memory::ArenaAllocator. The allocator is constructed on first call per thread and persists until the thread exits.</returns>
 		static Memory::ArenaAllocator& GetAllocator() {
 			thread_local Memory::ArenaAllocator threadAllocator;
 			return threadAllocator;

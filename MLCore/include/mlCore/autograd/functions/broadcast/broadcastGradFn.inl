@@ -16,7 +16,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
 		TensorCore::Tensor<T> gradInput = Operations::Unsqueeze(gradientOut, m_Axis);
 
@@ -37,7 +36,6 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		/*TensorCore::Tensor<T> inp = input.Detach();*/
 
 		TensorCore::Tensor<T> gradInput = Operations::Squeeze(gradientOut, m_Axis);
 

@@ -1,6 +1,5 @@
  /// trainer.inl
 #include <mlCore/data/tensorDataset.h>
-#include "trainer.h"
 
 namespace MLCore::Training {
 	template <typename T>
@@ -255,7 +254,7 @@ namespace MLCore::Training {
 
 		m_Model.Evaluate();
 
-		dataLoader.Reset(false);
+		dataLoader.Reset();
 
 		EvaluationResult<T> evalResult;
 		size_t batches = 0;

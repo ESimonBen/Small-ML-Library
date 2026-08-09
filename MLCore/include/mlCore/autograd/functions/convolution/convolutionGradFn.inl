@@ -1,0 +1,155 @@
+/// convolutionGradFn.inl
+#include <optional>
+
+namespace MLCore::AutoGrad {
+	template <typename T>
+	inline Conv2DGradFn<T>::Conv2DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+										 size_t strideH, size_t strideW, size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW)
+		: GradFn<T>({ input, kernel, bias }), m_StrideH(strideH), m_StrideW(strideW), m_PaddingH(paddingH), m_PaddingW(paddingW), m_DilationH(dilationH), m_DilationW(dilationW)
+	{}
+	
+	template <typename T>
+	inline void Conv2DGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+		if (!this->inputs[0]) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Null input");
+		}
+
+		if (!this->inputs[1]) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Null kernel");
+		}
+		
+		TensorCore::Tensor<T> input{ this->inputs[0] };
+		TensorCore::Tensor<T> kernel{ this->inputs[1] };
+
+		std::optional<TensorCore::Tensor<T>> bias;
+		
+		if (this->inputs.size() > 2 && this->inputs[2]) {
+			bias.emplace(TensorCore::Tensor<T>{this->inputs[2]});
+		}
+
+		const bool requiresInputGrad = input.RequiresGrad();
+		const bool requiresKernelGrad = kernel.RequiresGrad();
+		const bool requiresBiasGrad = bias ? bias.value().RequiresGrad() : false;
+
+		if (!requiresInputGrad && !requiresKernelGrad && !requiresBiasGrad) {
+			return;
+		}
+
+		if (gradOutput.Rank() != 4) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Gradient output must have 4 dimensions");
+		}
+
+		/// input:
+		/// [N, C_in, H, W]
+		///
+		/// kernel:
+		/// [C_out, C_in, K_h, K_w]
+		///
+		/// gradOutput:
+		/// [N, C_out, H_out, W_out]
+
+		const size_t batchSize = input.Dims()[0];
+		const size_t inputChannels = input.Dims()[1];
+		const size_t inputHeight = input.Dims()[2];
+		const size_t inputWidth = input.Dims()[3];
+
+		const size_t outputChannels = kernel.Dims()[0];
+		const size_t kernelChannels = kernel.Dims()[1];
+		const size_t kernelHeight = kernel.Dims()[2];
+		const size_t kernelWidth = kernel.Dims()[3];
+
+		const size_t outputHeight = gradOutput.Dims()[2];
+		const size_t outputWidth = gradOutput.Dims()[3];
+
+		if (inputChannels != kernelChannels) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Input channels do not match kernel channels");
+		}
+
+		if (gradOutput.Dims()[0] != batchSize) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Gradient output batch size mismatch");
+		}
+
+		if (gradOutput.Dims()[1] != outputChannels) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Gradient output channel count mismatch");
+		}
+
+		Memory::ArenaAllocator& allocator = input.GetAllocator();
+
+		std::optional<TensorCore::Tensor<T>> gradInput;
+		std::optional<TensorCore::Tensor<T>> gradKernel;
+		std::optional<TensorCore::Tensor<T>> gradBias;
+
+		if (requiresInputGrad) {
+			gradInput.emplace(TensorCore::Tensor<T>{{batchSize, inputChannels, inputHeight, inputWidth}, allocator});
+			gradInput.value().Fill(0.0f);
+		}
+
+		if (requiresKernelGrad) {
+			gradKernel.emplace(TensorCore::Tensor<T>{{outputChannels, inputChannels, kernelHeight, kernelWidth}, allocator});
+			gradKernel.value().Fill(0.0f);
+		}
+
+		if (requiresBiasGrad) {
+			gradBias.emplace(TensorCore::Tensor<T>{{outputChannels}, allocator});
+			gradBias.value().Fill(0.0f);
+		}
+
+		for (size_t n = 0; n < batchSize; ++n) {
+			for (size_t oc = 0; oc < outputChannels; ++oc) {
+				for (size_t oh = 0; oh < outputHeight; ++oh) {
+					for (size_t ow = 0; ow < outputWidth; ++ow) {
+						size_t gradIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
+
+						const T grad = gradOutput[gradIndex];
+
+						if (requiresBiasGrad) {
+							auto& gb = gradBias.value();
+							gb[oc] += grad;
+						}
+
+						for (size_t ic = 0; ic < inputChannels; ++ic) {
+							for (size_t kh = 0; kh < kernelHeight; ++kh) {
+								for (size_t kw = 0; kw < kernelWidth; ++kw) {
+									const size_t kernelOffsetH = kh * m_DilationH;
+									const size_t kernelOffsetW = kw * m_DilationW;
+
+									const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kh * m_DilationH) - static_cast<int>(m_PaddingH);
+									const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kw * m_DilationW) - static_cast<int>(m_PaddingW);
+
+									if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+										continue;
+									}
+
+									const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+									const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+
+									if (requiresInputGrad) {
+										auto& gi = gradInput.value();
+										gi[inputIndex] += grad * kernel[kernelIndex];
+									}
+
+									if (requiresKernelGrad) {
+										auto& gk = gradKernel.value();
+										gk[kernelIndex] += grad * input[inputIndex];
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (requiresInputGrad) {
+			input.Backward(gradInput.value());
+		}
+
+		if (requiresKernelGrad) {
+			kernel.Backward(gradKernel.value());
+		}
+
+		if (requiresBiasGrad) {
+			bias.value().Backward(gradBias.value());
+		}
+	}
+}
