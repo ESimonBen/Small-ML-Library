@@ -17,24 +17,24 @@ namespace MLCore::NN {
 		Init(m_Kernel.Data(), fanIn, fanOut, kernelInit);
 		Init(m_Bias.Data(), 1, outChannels, biasInit);
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Conv2DLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
 		return Operations::Conv2D(input, m_Kernel.Data(), &(m_Bias.Data()), m_StrideH, m_StrideW, m_PaddingH, m_PaddingW, m_DilationH, m_DilationW);
 	}
-
+	
 	template <typename T>
 	inline void Conv2DLayer<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) {
 		out.push_back(std::ref(m_Kernel));
 		out.push_back(std::ref(m_Bias));
 	}
-
+	
 	template <typename T>
 	inline void Conv2DLayer<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
 		out.push_back(std::cref(m_Kernel));
 		out.push_back(std::cref(m_Bias));
 	}
-
+	
 	template <typename T>
 	inline void Conv2DLayer<T>::CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) {
 		auto MakeName = [&](const std::string& suffix) {
@@ -44,7 +44,7 @@ namespace MLCore::NN {
 		out.emplace_back(MakeName("kernel"), std::ref(m_Kernel));
 		out.emplace_back(MakeName("bias"), std::ref(m_Bias));
 	}
-
+	
 	template <typename T>
 	inline void Conv2DLayer<T>::CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const {
 		auto MakeName = [&](const std::string& suffix) {
