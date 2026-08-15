@@ -10,10 +10,8 @@ namespace MLCore::NN {
 	/// </summary>
 	/// <typeparam name="T">The element type stored in the tensor (e.g., float, double, int).</typeparam>
 	template <typename T>
-	struct Parameter {
-		TensorCore::Tensor<T> data; /// A Tensor that stores values of type T.
-		const ParamID id; /// An ID for the Parameter
-
+	class Parameter {
+	public:
 		/// <summary>
 		/// Explicit constructor that initializes a Parameter from a Tensor, copying the tensor into the data member and assigning a new identifier.
 		/// </summary>
@@ -68,5 +66,9 @@ namespace MLCore::NN {
 		const T* RawData() const {
 			return data.Data();
 		}
+
+	private:
+		TensorCore::Tensor<T> data; /// A Tensor that stores values of type T.
+		const ParamID id; /// An ID for the Parameter
 	};
 }
