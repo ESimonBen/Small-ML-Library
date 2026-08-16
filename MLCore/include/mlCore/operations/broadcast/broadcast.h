@@ -8,9 +8,18 @@ namespace MLCore::Operations {
 	/// </summary>
 	struct BroadcastInfo {
 		Utils::Shape shape; /// Declares an instance of Utils::Shape.
-		std::vector<size_t> strideA; /// A vector that holds stride values for array A; each element represents the stride for a corresponding dimension.
-		std::vector<size_t> strideB; /// A vector that holds stride values for array B; each element represents the stride for a corresponding dimension.
+		std::vector<size_t> strideA; /// A vector that holds stride values for tensor A; each element represents the stride for a corresponding dimension.
+		std::vector<size_t> strideB; /// A vector that holds stride values for tensor B; each element represents the stride for a corresponding dimension.
 	};
+
+	/// <summary>
+	/// Returns the aligned dimension for a given index: if the index is before the offset it returns 1, otherwise it returns the corresponding dimension from the provided shape.
+	/// </summary>
+	/// <param name="shape">A reference to a Utils::Shape that provides the underlying dimension sizes.</param>
+	/// <param name="i">The index in the aligned dimension space to query.</param>
+	/// <param name="offset">The number of leading aligned dimensions treated as size 1; indices less than this are considered padding.</param>
+	/// <returns>The dimension size for index i after alignment: 1 when i is less than offset, otherwise shape[i - offset].</returns>
+	static size_t GetAlignedDim(const Utils::Shape& shape, size_t i, size_t offset);
 
 	/// <summary>
 	/// Compute broadcast metadata for two shapes using right-aligned broadcasting rules. Determines the broadcasted shape and the per-input strides, setting strides to zero for broadcasted (size-1) dimensions.

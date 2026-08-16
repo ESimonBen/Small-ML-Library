@@ -52,6 +52,14 @@ namespace MLCore::NN {
 		}
 
 		/// <summary>
+		/// Returns the object's ParamID. This is a const member function and does not modify the object.
+		/// </summary>
+		/// <returns>A ParamID identifying the object (returned by value).</returns>
+		ParamID GetID() const {
+			return id;
+		}
+
+		/// <summary>
 		/// Returns a raw pointer to the underlying data buffer.
 		/// </summary>
 		/// <returns>A pointer to the first element of the underlying data (T*). May be nullptr if the buffer is empty.</returns>

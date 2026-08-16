@@ -473,4 +473,31 @@ namespace MLCore::TensorCore {
 
 		return result;
 	}
+	
+	template <typename T>
+	inline bool Tensor<T>::IsContiguous() const {
+		const std::vector<size_t>& dims = m_Impl->shape.Dims();
+		const std::vector<size_t>& strides = m_Impl->shape.Strides();
+
+		if (dims.empty() || dims.size() == 1) {
+			return true;
+		}
+
+		size_t dimsSize = dims.size();
+		size_t expectedStride = 1;
+
+		for (size_t i = dimsSize; i-- > 0;) {
+			if (dims[i] == 0) {
+				return true;
+			}
+
+			if (strides[i] != expectedStride) {
+				return false;
+			}
+
+			expectedStride *= dims[i]
+		}
+
+		return true;
+	}
 }

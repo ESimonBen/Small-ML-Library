@@ -348,37 +348,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-
-    Tensor<float> input{ {1, 1, 5} };
-    size_t size = input.NumElements();
-
-    for (size_t i = 0; i < size; ++i) {
-        input[i] = static_cast<float>(i + 1);
-    }
-
-    input.SetRequiresGrad(true);
-
-    auto kernel = Tensor<float>::Ones({ 1, 1, 2 });
-    kernel.SetRequiresGrad(true);
-
-    auto output = Conv1D<float>(input, kernel, nullptr, 1, 0, 2);
-
-    auto gradOutput = Tensor<float>::Ones({ 1, 1, 3 });
-    output.Backward(gradOutput);
-
-    auto gradInput = input.Grad();
-    auto gradKernel = kernel.Grad();
-
-    for (auto& val : gradInput) {
-        std::cout << val << " ";
-    }
-
-    std::cout << "\n";
-
-    for (auto& val : gradKernel) {
-        std::cout << val << " ";
-    }
+    TestXOR();
 
     return 0;
 }

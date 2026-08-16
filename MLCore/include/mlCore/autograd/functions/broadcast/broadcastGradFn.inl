@@ -3,12 +3,12 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	SqueezeGradFn<T>::SqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
+	inline SqueezeGradFn<T>::SqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
 		: GradFn<T>(a), m_Axis(axis)
 	{}
 	
 	template <typename T>
-	void SqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	inline void SqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -23,12 +23,12 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	UnsqueezeGradFn<T>::UnsqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
+	inline UnsqueezeGradFn<T>::UnsqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
 		: GradFn<T>(a), m_Axis(axis)
 	{}
 	
 	template <typename T>
-	void UnsqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	inline void UnsqueezeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -43,12 +43,12 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a), m_OriginalShape(a->shape)
 	{}
 	
 	template <typename T>
-	void ReduceToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	inline void ReduceToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {
@@ -62,12 +62,12 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a), m_OriginalShape(a->shape)
 	{}
 
 	template <typename T>
-	void ExpandToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
+	inline void ExpandToShapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
 		if (!input.RequiresGrad()) {

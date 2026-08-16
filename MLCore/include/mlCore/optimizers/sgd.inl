@@ -80,7 +80,7 @@ namespace MLCore::Optimizers {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
 					NN::Parameter<T>& p = ref.get();
-					NN::ParamID paramID = p.id;
+					NN::ParamID paramID = p.GetID();
 					TensorCore::Tensor<T>& param = p.Data();
 
 					TensorCore::Tensor<T> velocity{ param.GetShape(), param.GetAllocator() };
@@ -116,7 +116,7 @@ namespace MLCore::Optimizers {
 
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				auto velocityIt = m_Velocities.find(paramID);
@@ -170,7 +170,7 @@ namespace MLCore::Optimizers {
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
 		for (const auto& [name, param] : namedParams) {
-			idToName[param.get().id] = name;
+			idToName[param.get().GetID()] = name;
 		}
 
 		writer.Write(m_Momentum);
@@ -190,12 +190,12 @@ namespace MLCore::Optimizers {
 			for (const std::reference_wrapper<NN::Parameter<T>>& ref : group.params) {
 				const NN::Parameter<T>& param = ref.get();
 
-				const std::string& name = idToName.at(param.id);
+				const std::string& name = idToName.at(param.GetID());
 				const size_t nameLength = name.size();
 				writer.Write(nameLength);
 				writer.WriteArray(name.data(), nameLength);
 
-				auto velocityIter = m_Velocities.find(param.id);
+				auto velocityIter = m_Velocities.find(param.GetID());
 
 				if (velocityIter == m_Velocities.end()) {
 					throw std::runtime_error("ERROR: Velocity not found");
@@ -253,7 +253,7 @@ namespace MLCore::Optimizers {
 					throw std::runtime_error("ERROR: Optimizer parameter '" + name + "' not found");
 				}
 
-				NN::ParamID paramID = paramIt->second->id;
+				NN::ParamID paramID = paramIt->second->GetID();
 
 				auto velocityIt = m_Velocities.find(paramID);
 

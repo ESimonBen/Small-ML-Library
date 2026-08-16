@@ -25,13 +25,11 @@ namespace MLCore::Utils {
 	
 	inline Shape::Shape(const Shape& other) noexcept
 		: m_Dims(other.m_Dims), m_Strides(other.m_Strides), m_NumElements(other.m_NumElements)
-	{
-	}
+	{}
 	
 	inline Shape::Shape(Shape&& other) noexcept
 		: m_Dims(std::move(other.m_Dims)), m_Strides(std::move(other.m_Strides)), m_NumElements(other.m_NumElements)
-	{
-	}
+	{}
 	
 	inline Shape& Shape::operator=(const Shape& other) noexcept {
 		if (*this != other) {

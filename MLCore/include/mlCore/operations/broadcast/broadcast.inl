@@ -5,13 +5,6 @@
 #include <mlCore/autograd/functions/broadcast/broadcastGradFn.h>
 
 namespace MLCore::Operations {
-	/// <summary>
-	/// Returns the aligned dimension for a given index: if the index is before the offset it returns 1, otherwise it returns the corresponding dimension from the provided shape.
-	/// </summary>
-	/// <param name="shape">A reference to a Utils::Shape that provides the underlying dimension sizes.</param>
-	/// <param name="i">The index in the aligned dimension space to query.</param>
-	/// <param name="offset">The number of leading aligned dimensions treated as size 1; indices less than this are considered padding.</param>
-	/// <returns>The dimension size for index i after alignment: 1 when i < offset, otherwise shape[i - offset].</returns>
 	inline static size_t GetAlignedDim(const Utils::Shape& shape, size_t i, size_t offset) {
 		return (i < offset) ? 1 : shape[i - offset];
 	}
@@ -173,7 +166,7 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
+	inline TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Input tensor cannot be null");
 		}
@@ -214,7 +207,7 @@ namespace MLCore::Operations {
 	}
 
 	template <typename T>
-	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
+	inline TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
 		if (A.Dims().empty()) {
 			throw std::runtime_error("ERROR: ExpandToShape: Input tensor cannot be null");
 		}

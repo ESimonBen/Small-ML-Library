@@ -415,6 +415,13 @@ namespace MLCore::TensorCore {
 		/// <returns>A new Tensor<T> whose shape equals the input shape with dimension 0 set to the sum of the input tensors' dimension-0 sizes. The returned tensor contains copies of the input elements in order.</returns>
 		static Tensor<T> Concat(const std::vector<Tensor<T>>& tensors);
 
+		/// <summary>
+		/// Checks whether the tensor's elements are stored contiguously in memory.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <returns>true if the tensor's memory layout is contiguous (including empty shapes and any dimension of size zero); false if a stride mismatch indicates a non-contiguous layout.</returns>
+		bool IsContiguous() const;
+
 	private:
 		std::shared_ptr<Impl> m_Impl; /// A shared pointer that holds or references the Impl instance associated with this object.
 	};
