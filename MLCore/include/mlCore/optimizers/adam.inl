@@ -236,7 +236,7 @@ namespace MLCore::Optimizers {
 
 				auto secMomIter = m_SecondMoment.find(paramID);
 
-				if (firstMomIter == m_FirstMoment.end()) {
+				if (secMomIter == m_SecondMoment.end()) {
 					throw std::runtime_error("ERROR: Second moment not found");
 				}
 

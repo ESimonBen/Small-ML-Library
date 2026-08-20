@@ -49,24 +49,29 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Transpose: Only 2D tensors supported");
 		}
 
-		size_t M = A.Dims()[0];
-		size_t N = A.Dims()[1];
+		std::vector<size_t> dims = { A.Dims()[1], A.Dims()[0] };
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> B{ {N, M}, allocator };
+		std::vector<size_t> strides = { A.Strides()[1], A.Strides()[0] };
 
-		for (size_t i = 0; i < M; ++i) {
-			for (size_t j = 0; j < N; ++j) {
-				B[j * M + i] = A[i * N + j];
-			}
-		}
+		auto impl = std::make_shared<TensorCore::TensorImpl<T>>(
+			Utils::Shape{ dims },
+			strides,
+			A.GetImpl()->storage,
+			A.GetImpl()->allocator,
+			A.GetImpl()->offset,
+			A.RequiresGrad(),
+			nullptr,
+			nullptr
+		);
+
+		TensorCore::Tensor<T> result{impl};
 
 		if (A.RequiresGrad()) {
-			B.SetRequiresGrad(true);
-			B.SetGradFn(std::make_shared<AutoGrad::TransposeGradFn<T>>(A.GetImpl()));
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::TransposeGradFn<T>>(A.GetImpl()));
 		}
 
-		return B;
+		return result;
 	}
 	
 	template <typename T>

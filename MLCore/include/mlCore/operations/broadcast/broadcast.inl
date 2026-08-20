@@ -9,7 +9,8 @@ namespace MLCore::Operations {
 		return (i < offset) ? 1 : shape[i - offset];
 	}
 	
-	inline BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB) {
+	inline BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const std::vector<size_t>& stridesA, 
+										  const Utils::Shape& shapeB, const std::vector<size_t>& stridesB) {
 		BroadcastInfo info;
 
 		const size_t rankA = shapeA.Rank();
@@ -19,11 +20,7 @@ namespace MLCore::Operations {
 		info.strideA.resize(rank);
 		info.strideB.resize(rank);
 
-		//info.shape.resize(rank);
 		std::vector<size_t> resultDims(rank);
-
-		const auto& stridesA = shapeA.Strides();
-		const auto& stridesB = shapeB.Strides();
 
 		const size_t offsetA = rank - rankA;
 		const size_t offsetB = rank - rankB;
@@ -47,32 +44,30 @@ namespace MLCore::Operations {
 		return info;
 	}
 	
-	inline BroadcastInfo ComputeBroadcastTo(const Utils::Shape& smaller, const Utils::Shape& target) {
+	inline BroadcastInfo ComputeBroadcastTo(const Utils::Shape& sourceShape, const std::vector<size_t>& sourceStrides, const Utils::Shape& targetShape) {
 		BroadcastInfo info;
 
-		const size_t smallerRank = smaller.Rank();
-		const size_t targetRank = target.Rank();
+		const size_t sourceRank = sourceShape.Rank();
+		const size_t targetRank = targetShape.Rank();
 
-		if (smallerRank > targetRank) {
+		if (sourceRank > targetRank) {
 			throw std::runtime_error("ERROR: Cannot broadcast to smaller shape");
 		}
 
+		const size_t offset = targetRank - sourceRank;
+
+		info.shape = targetShape;
 		info.strideA.resize(targetRank);
-		info.shape = target;
-
-		const auto& smallStrides = smaller.Strides();
-
-		size_t offset = targetRank - smallerRank;
 
 		for (size_t i = 0; i < targetRank; ++i) {
-			size_t smallDim = GetAlignedDim(smaller, i, offset);
-			size_t targetDim = target[i];
+			size_t sourceDim = (i < offset) ? 1 : sourceShape[i - offset];
+			size_t targetDim = targetShape[i];
 
-			if (smallDim != targetDim && smallDim != 1) {
-				throw std::runtime_error("ERROR: ComputeBroadcastTo mismatch");
+			if (sourceDim != targetDim && sourceDim != 1) {
+				throw std::runtime_error( "ComputeBroadcastTo: incompatible shapes");
 			}
 
-			info.strideA[i] = (i < offset || smallDim == 1) ? 0 : smallStrides[i - offset];
+			info.strideA[i] = (i < offset || sourceDim == 1) ? 0 : sourceStrides[i - offset];
 		}
 
 		return info;
@@ -108,30 +103,33 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Squeeze: Can only squeeze dimensions of size 1");
 		}
 
-		std::vector<size_t> newDims = A.Dims();
-		newDims.erase(newDims.begin() + axis);
+		std::vector<size_t> dims = A.Dims();
+		std::vector<size_t> strides = A.Strides();
 
-		if (newDims.empty()) {
-			newDims.push_back(1);
+		dims.erase(dims.begin() + axis);
+		strides.erase(strides.begin() + axis);
+
+		if (dims.empty()) {
+			dims.push_back(1);
+			strides.push_back(1);
 		}
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
+		auto impl = std::make_shared<TensorCore::TensorImpl<T>>(
+			Utils::Shape{ dims },
+			strides,
+			A.GetImpl()->storage,
+			A.GetImpl()->allocator,
+			A.GetImpl()->offset,
+			A.RequiresGrad(),
+			nullptr,
+			nullptr
+		);
 
-		TensorCore::Tensor<T> result{ newDims, allocator };
-		result.Fill(static_cast<T>(0));
-
-		size_t size = A.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			result[i] = A[i];
-		}
+		TensorCore::Tensor<T> result{ impl };
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
-			if (A.RequiresGrad()) {
-				result.SetRequiresGrad(true);
-				result.SetGradFn(std::make_shared<AutoGrad::SqueezeGradFn<T>>(A.GetImpl(), axis));
-			}
+			result.SetGradFn(std::make_shared<AutoGrad::SqueezeGradFn<T>>(A.GetImpl(), axis));
 		}
 
 		return result;
@@ -143,19 +141,33 @@ namespace MLCore::Operations {
 			throw std::out_of_range("ERROR: Unsqueeze: Axis out of bounds");
 		}
 
-		std::vector<size_t> newDims = A.Dims();
-		newDims.insert(newDims.begin() + axis, 1);
+		std::vector<size_t> dims = A.Dims();
+		std::vector<size_t> strides = A.Strides();
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
+		dims.insert(dims.begin() + axis, 1);
+		size_t insertedStride = 1;
 
-		TensorCore::Tensor<T> result{ newDims, allocator };
-		result.Fill(static_cast<T>(0));
-
-		size_t size = A.NumElements();
-
-		for (size_t i = 0; i < size; ++i) {
-			result[i] = A[i];
+		if (A.Rank() == 0 || axis == A.Rank()) {
+			insertedStride = 1;
 		}
+		else {
+			insertedStride = A.Strides()[axis] * A.Dims()[axis];
+		}
+
+		strides.insert(strides.begin() + axis, insertedStride);
+
+		auto impl = std::make_shared<TensorCore::TensorImpl<T>>(
+			Utils::Shape{dims},
+			strides,
+			A.GetImpl()->storage,
+			A.GetImpl()->allocator,
+			A.GetImpl()->offset,
+			A.RequiresGrad(),
+			nullptr,
+			nullptr
+		);
+
+		TensorCore::Tensor<T> result{ impl };
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -175,12 +187,9 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
 		}
 
-		const auto& gradShape = A.GetShape();
-		TensorCore::Tensor<T> grad = A.Detach();
+		TensorCore::Tensor<T> result = A.Detach();
 
-		TensorCore::Tensor<T> result = A.Clone();
-
-		size_t gradRank = gradShape.Rank();
+		size_t gradRank = result.Rank();
 		size_t targetRank = targetShape.Rank();
 
 		while (gradRank > targetRank) {
@@ -188,13 +197,9 @@ namespace MLCore::Operations {
 			--gradRank;
 		}
 
-		// Backwards iteration to prevent invalid index access
-		for (size_t i = targetRank; i-- > 0;) {
-			size_t gradDim = result.Dims()[i];
-			size_t targetDim = targetShape.Dims()[i];
-
-			if (targetDim == 1 && gradDim > 1) {
-				result = std::move(AxisSum(result, i, true));
+		for (size_t axis = targetRank; axis-- > 0;) {
+			if (targetShape[axis] == 1 && result.Dims()[axis] != 1) {
+				result = AxisSum(result, axis, true);
 			}
 		}
 
@@ -212,37 +217,56 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: ExpandToShape: Input tensor cannot be null");
 		}
 
-		auto info = ComputeBroadcastTo(A.GetShape(), targetShape);
+		auto info = ComputeBroadcastTo(A.GetShape(), A.Strides(), targetShape);
 
-		TensorCore::Tensor<T> grad = A.Detach();
+		auto impl = std::make_shared<TensorCore::TensorImpl<T>>(
+			targetShape,
+			info.strideA,
+			A.GetImpl()->storage,
+			A.GetImpl()->allocator,
+			A.GetImpl()->offset,
+			A.RequiresGrad(),
+			nullptr,
+			nullptr
+		);
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> output{ targetShape, allocator };
-
-		const size_t size = output.NumElements();
-		auto& targetStrides = targetShape.Strides();
-
-		for (size_t i = 0; i < size; ++i) {
-			size_t idxInput = 0;
-			size_t temp = i;
-
-			size_t targetRank = targetShape.Rank();
-
-			for (size_t j = 0; j < targetRank; ++j) {
-				size_t dimIndex = temp / targetStrides[j];
-				temp %= targetStrides[j];
-
-				idxInput += dimIndex * info.strideA[j];
-			}
-
-			output[i] = A[idxInput];
-		}
+		TensorCore::Tensor<T> result{ impl };
 
 		if (A.RequiresGrad()) {
-			output.SetRequiresGrad(true);
-			output.SetGradFn(std::make_shared<AutoGrad::ExpandToShapeGradFn<T>>(A.GetImpl()));
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::ExpandToShapeGradFn<T>>(A.GetImpl()));
 		}
 
-		return output;
+		return result;
+	}
+
+	template <typename T>
+	inline TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape) {
+		if (A.NumElements() != newShape.NumElements()) {
+			throw std::runtime_error("ERROR: Reshape: Element count mismatch");
+		}
+
+		if (!A.IsContiguous()) {
+			throw std::runtime_error("ERROR: Reshape: Tensor must be contiguous");
+		}
+
+		const auto newStrides = Utils::ComputeContiguousStrides(newShape);
+
+		auto impl = std::make_shared<TensorCore::TensorImpl<T>>(
+			newShape,
+			newStrides,
+			A.GetImpl()->storage,
+			A.GetImpl()->allocator,
+			A.GetImpl()->offset,
+			A.RequiresGrad(),
+			nullptr,
+			nullptr
+		);
+
+		TensorCore::Tensor<T> result{ impl };
+
+		// ReshapeGradFn
+
+		return result;
 	}
 }

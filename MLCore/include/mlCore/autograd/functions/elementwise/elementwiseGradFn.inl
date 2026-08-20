@@ -232,8 +232,8 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		TensorCore::Tensor inp = input.Detach();
-		TensorCore::Tensor gradientOut = gradOutput.Detach();
+		TensorCore::Tensor<T> inp = input.Detach();
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		TensorCore::Tensor<T> reciprocal = Operations::DivideScalar(inp, static_cast<T>(1), true);
 		TensorCore::Tensor<T> gradInput = Operations::Multiply(gradientOut, reciprocal);
@@ -258,8 +258,8 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		TensorCore::Tensor inp = input.Detach();
-		TensorCore::Tensor gradientOut = gradOutput.Detach();
+		TensorCore::Tensor<T> inp = input.Detach();
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
 		TensorCore::Tensor<T> exponential = Operations::Exp(inp);
 		TensorCore::Tensor<T> gradInput = Operations::Multiply(exponential, gradientOut);

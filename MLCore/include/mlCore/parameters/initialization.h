@@ -23,7 +23,7 @@ namespace MLCore::NN {
 	/// <param name="fan_out">The number of output units used to compute initialization scale (used by Xavier schemes).</param>
 	/// <param name="type">Initialization method (InitType). Supported values: Zero, XavierUniform, XavierNormal, HeUniform, HeNormal.</param>
 	template <typename T>
-	void Init(TensorCore::Tensor<T>& tensor, size_t fan_in, size_t fan_out, InitType type);
+	void Init(TensorCore::Tensor<T>& tensor, size_t fanIn, size_t fanOut, InitType type);
 }
 
 #include "initialization.inl"

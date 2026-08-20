@@ -107,6 +107,14 @@ namespace MLCore::AutoGrad {
 	private:
 		Utils::Shape m_OriginalShape; /// The shape of the input tensor
 	};
+
+	template <typename T>
+	class ReshapeGradFn : public GradFn<T> {
+	public:
+		ReshapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
+	};
 }
 
 #include "broadcastGradFn.inl"

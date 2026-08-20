@@ -27,7 +27,7 @@ namespace MLCore::Operations {
 	/// <param name="shapeA">The first input shape. Its Rank() and Strides() are used to align dimensions and compute strideA entries.</param>
 	/// <param name="shapeB">The second input shape. Its Rank() and Strides() are used to align dimensions and compute strideB entries.</param>
 	/// <returns>A BroadcastInfo containing the broadcasted shape (info.shape) and per-input stride vectors (info.strideA, info.strideB). The result rank is max(rankA, rankB). For any dimension where an input has size 1, that input's stride is set to 0. Throws std::runtime_error if the shapes are not compatible for broadcasting (i.e., a dimension differs and neither is 1).</returns>
-	BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const Utils::Shape& shapeB);
+	BroadcastInfo ComputeBroadcast(const Utils::Shape& shapeA, const std::vector<size_t>& stridesA, const Utils::Shape& shapeB, const std::vector<size_t>& stridesB);
 
 	/// <summary>
 	/// Computes the broadcast information required to broadcast a tensor with shape 'smaller' to the specified 'target' shape. Validates compatibility and computes per-dimension strides for the source tensor.
@@ -35,7 +35,7 @@ namespace MLCore::Operations {
 	/// <param name="smaller">The shape of the source (smaller) tensor to be broadcast. Its rank must be less than or equal to target.Rank().</param>
 	/// <param name="target">The target shape to broadcast to.</param>
 	/// <returns>A BroadcastInfo object whose 'shape' is set to target and whose 'strideA' contains per-dimension strides for the source tensor (0 for dimensions that are broadcast). The function throws std::runtime_error if the smaller shape has higher rank than target or if any dimension is incompatible for broadcasting.</returns>
-	BroadcastInfo ComputeBroadcastTo(const Utils::Shape& smaller, const Utils::Shape& target);
+	BroadcastInfo ComputeBroadcastTo(const Utils::Shape& sourceShape, const std::vector<size_t>& sourceStrides, const Utils::Shape& targetShape);
 
 	/// <summary>
 	/// Determines whether two shapes are broadcast-compatible. The function aligns dimensions from the right (trailing dimensions) and considers a pair of dimensions compatible if they are equal or if either is 1.
@@ -84,6 +84,9 @@ namespace MLCore::Operations {
 	/// <returns>A new TensorCore::Tensor<T> with shape targetShape containing values from gradient replicated according to broadcasting rules (using the same allocator as the detached input).</returns>
 	template <typename T>
 	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape);
+
+	template <typename T>
+	TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape);
 }
 
 #include "broadcast.inl"

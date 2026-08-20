@@ -71,26 +71,6 @@ namespace MLCore::Utils{
 		size_t NumElements() const;
 		
 		/// <summary>
-		/// Returns the shape's strides as a constant reference.
-		/// </summary>
-		/// <returns>A const reference to the std::vector<size_t> that holds the strides for this Shape. The reference refers to the object's internal storage and remains valid as long as the Shape is not modified or destroyed.</returns>
-		const std::vector<size_t>& Strides() const;
-
-		/// <summary>
-		/// Converts a multidimensional index into a flat linear offset using the shape's strides. Validates that the provided indices match the shape's dimensionality and that strides are initialized. Throws std::runtime_error if the index vector size or strides are inconsistent with the shape, and std::out_of_range if any index is outside its dimension's bounds.
-		/// </summary>
-		/// <param name="indices">A vector of size_t indices, one per dimension. Must have the same number of elements as the shape's dimensions and each entry must be less than the corresponding dimension size.</param>
-		/// <returns>The flattened offset (linear index) as a size_t computed by summing indices[i] * strides[i].</returns>
-		size_t FlattenIndex(const std::vector<size_t>& indices) const;
-
-		/// <summary>
-		/// Converts a flattened (linear) index into its multi-dimensional indices using the shape's strides.
-		/// </summary>
-		/// <param name="index">The zero-based flattened index to convert. For meaningful results, index should be less than the total number of elements represented by this Shape.</param>
-		/// <returns>A std::vector<size_t> of length equal to the number of dimensions (m_Dims.size()), where each element is the index along that dimension. If index is within bounds, indices[i] will be in the range [0, m_Dims[i]).</returns>
-		std::vector<size_t> UnflattenIndex(size_t index) const;
-		
-		/// <summary>
 		/// Returns a const reference to the shape's dimension sizes.
 		/// </summary>
 		/// <returns>A const reference to the internal std::vector<size_t> that holds the dimension sizes. The reference remains valid as long as the Shape object exists and its internal vector is not modified.</returns>
@@ -118,14 +98,7 @@ namespace MLCore::Utils{
 		size_t operator[](size_t i) const;
 
 	private:
-		/// <summary>
-		/// Recomputes the shape's internal strides from its dimensions in row-major order.
-		/// </summary>
-		void ComputeStrides();
-
-	private:
 		std::vector<size_t> m_Dims; /// Member variable that holds the size of each dimension.
-		std::vector<size_t> m_Strides; /// Container holding stride values, typically one entry per dimension or axis.
 		size_t m_NumElements = 0; /// A size_t variable that stores the current number of elements; initialized to 0.
 	};
 }

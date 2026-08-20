@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <mlCore/utils/shape.h>
+#include <mlCore/utils/strides.h>
 #include <mlCore/memory/storage.h>
 #include <mlCore/autograd/gradientFn.h>
 
@@ -14,6 +15,7 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	struct TensorImpl {
 		Utils::Shape shape; /// Declares a variable named shape of type Utils::Shape.
+		std::vector<size_t> strides; /// Declares a veriable named strides of time std::vector<size_t>
 		Memory::Storage<T> storage; /// Declares a variable named storage of type Memory::Storage<T>.
 		Memory::ArenaAllocator* allocator; /// Pointer to an ArenaAllocator instance in the Memory namespace.
 		size_t offset; /// Unsigned integer value representing an offset (for example, a byte or element displacement).
@@ -25,6 +27,7 @@ namespace MLCore::TensorCore {
 		/// Constructs a TensorImpl<T> with the given shape, storage, allocator and optional gradient information.
 		/// </summary>
 		/// <param name="shape">The tensor shape used to initialize the object's dimensions (const reference, read-only).</param>
+		/// <param name="strides>The stridesof the tensor dimensions.</param>
 		/// <param name="storage">The memory storage for the tensor. The storage is moved into the object.</param>
 		/// <param name="allocator">Pointer to an ArenaAllocator used for memory allocations; treated as a non-owning pointer.</param>
 		/// <param name="offset">Optional byte or element offset into the storage where the tensor data begins (defaults to 0).</param>
@@ -32,15 +35,19 @@ namespace MLCore::TensorCore {
 		/// <param name="grad">Optional shared pointer to a gradient tensor associated with this tensor; moved into the object (defaults to nullptr).</param>
 		/// <param name="gradFn">Optional shared pointer to the gradient function (backward function) used for autograd; moved into the object (defaults to nullptr).</param>
 		TensorImpl(const Utils::Shape& shape,
+			const std::vector<size_t>& strides,
 			Memory::Storage<T> storage,
 			Memory::ArenaAllocator* allocator,
 			size_t offset = 0,
 			bool requiresGrad = false,
 			std::shared_ptr<TensorImpl<T>> grad = nullptr,
 			std::shared_ptr<AutoGrad::GradFn<T>> gradFn = nullptr)
-			: shape(shape), storage(std::move(storage)), allocator(allocator), offset(offset),
-			  requiresGrad(requiresGrad), grad(std::move(grad)), gradFn(std::move(gradFn))
-		{}
+			: shape(shape), strides(std::move(strides)), storage(std::move(storage)), allocator(allocator), offset(offset),
+			requiresGrad(requiresGrad), grad(std::move(grad)), gradFn(std::move(gradFn)) {
+			if (this->strides.size() != shape.Rank()) {
+				throw std::invalid_argument("ERROR: TensorImpl: Stride rank does not match dimensions rank");
+			}
+		}
 	};
 
 	/// <summary>
@@ -216,6 +223,13 @@ namespace MLCore::TensorCore {
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 		/// <returns>A const reference to a std::vector<size_t> containing the size of each tensor dimension (the shape). The reference refers to internal data owned by the Tensor and must not be modified; its validity is tied to the lifetime of the Tensor.</returns>
 		const std::vector<size_t>& Dims() const;
+
+		/// <summary>
+		/// Returns the tensor's strides.
+		/// </summary>
+		/// <typeparam name="T">The tensor element type.</typeparam>
+		/// <returns>A const reference to a std::vector<size_t> containing the stride for each tensor dimension. The reference refers to the tensor's internal data and is valid while the Tensor (and its internal implementation) remains alive.</returns>
+		const std::vector<size_t>& Strides() const;
 
 		/// <summary>
 		/// Returns a reference to the arena allocator used by this Tensor instance.
@@ -421,6 +435,23 @@ namespace MLCore::TensorCore {
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 		/// <returns>true if the tensor's memory layout is contiguous (including empty shapes and any dimension of size zero); false if a stride mismatch indicates a non-contiguous layout.</returns>
 		bool IsContiguous() const;
+
+	private:
+		/// <summary>
+		/// Computes the linear offset into the tensor's underlying storage for a given multi-dimensional index. Validates that the provided index vector has the correct rank and that each index is within bounds.
+		/// </summary>
+		/// <typeparam name="T">The element type of the Tensor (the class template parameter).</typeparam>
+		/// <param name="indices">A vector of indices, one per tensor dimension. Must have length equal to Rank(); each value must be less than the corresponding dimension returned by Dims().</param>
+		/// <returns>The computed offset (size_t) into the tensor's storage: the base offset plus the sum of indices[i] * strides[i].</returns>
+		size_t ComputeOffset(const std::vector<size_t>& indices);
+
+		/// <summary>
+		/// Converts a flat (linear) index into a vector of per-dimension indices for this tensor. Throws std::out_of_range if the index is out of bounds (index >= NumElements()).
+		/// </summary>
+		/// <typeparam name="T">Element type stored in the Tensor (the template parameter of the Tensor class; not used directly by this method).</typeparam>
+		/// <param name="index">Linear (flattened) index into the tensor's storage. Must be less than NumElements(); otherwise the function throws std::out_of_range.</param>
+		/// <returns>A std::vector<size_t> of length Rank(), containing the multi-dimensional indices corresponding to the given linear index. Element j is the index along dimension j (0-based); the last dimension (Rank()-1) is the fastest-varying.</returns>
+		std::vector<size_t> UnflattenIndex(size_t index) const;
 
 	private:
 		std::shared_ptr<Impl> m_Impl; /// A shared pointer that holds or references the Impl instance associated with this object.

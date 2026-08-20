@@ -48,7 +48,7 @@ namespace MLCore::Serialization {
 
 		
 	}
-
+	
 	template <typename T>
 	void Checkpoint::Load(NN::Module<T>& model, const std::string& path, Optimizers::Optimizer<T>* opt,
 						  Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state) {
@@ -94,7 +94,7 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Load: Unsupported checkpoint version");
 		}
 	}
-
+	
 	template <typename T>
 	void Checkpoint::SaveV1(const NN::Module<T>& model, BinaryWriter& writer) {
 		/// Store the number of parameters
@@ -110,7 +110,7 @@ namespace MLCore::Serialization {
 			writer.WriteTensor(tensor);
 		}
 	}
-
+	
 	template <typename T>
 	void Checkpoint::LoadV1(NN::Module<T>& model, BinaryReader& reader) {
 		/// Read the number of parameters
@@ -129,7 +129,7 @@ namespace MLCore::Serialization {
 			reader.ReadTensor(tensor);
 		}
 	}
-
+	
 	template <typename T>
 	void Checkpoint::SaveV2(const NN::Module<T>& model, BinaryWriter& writer) {
 		std::vector<NN::ConstNamedParameter<T>> params = model.GetNamedParameters();
@@ -146,7 +146,7 @@ namespace MLCore::Serialization {
 			writer.WriteTensor(tensor);
 		}
 	}
-
+	
 	template <typename T>
 	void Checkpoint::LoadV2(NN::Module<T>& model, BinaryReader& reader) {
 		std::unordered_map<std::string, NN::Parameter<T>*> paramMap;
@@ -184,7 +184,7 @@ namespace MLCore::Serialization {
 			reader.ReadTensor(tensor);
 		}
 	}
-
+	
 	template <typename T>
 	void Checkpoint::SaveV3(const NN::Module<T>& model, BinaryWriter& writer, const Optimizers::Optimizer<T>* opt, const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
 		SaveV2(model, writer);
@@ -220,7 +220,7 @@ namespace MLCore::Serialization {
 
 		writer.Write(Section::End);
 	}
-
+	
 	template <typename T>
 	void Checkpoint::LoadV3(NN::Module<T>& model, BinaryReader& reader, Optimizers::Optimizer<T>* opt, Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state) {
 		LoadV2(model, reader);
