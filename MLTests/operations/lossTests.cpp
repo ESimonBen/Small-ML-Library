@@ -270,7 +270,7 @@ TEST_SUITE("Loss Function Tests") {
     }
 
     TEST_CASE("CrossEntropy") {
-        SUBCASE("CrossEntropy - Reduction::None") {
+        SUBCASE("CrossEntropy - Reduction::None (No Average Over Classes)") {
             Tensor<float> preds({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -285,10 +285,28 @@ TEST_SUITE("Loss Function Tests") {
             auto result = CrossEntropy(preds, targets, 0, Reduction::None);
 
             CHECK(result.NumElements() == 1);
-            CHECK(result[0] == doctest::Approx(0.11889165));
+            CHECK(result[0] == doctest::Approx(0.356675f));
         }
 
-        SUBCASE("CrossEntropy - Reduction::Mean") {
+        SUBCASE("CrossEntropy - Reduction::None (Average Over Classes)") {
+            Tensor<float> preds({ 3 });
+            Tensor<float> targets({ 3 });
+
+            preds[0] = 0.7f;
+            preds[1] = 0.2f;
+            preds[2] = 0.1f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropy(preds, targets, 0, Reduction::None, true);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.11889165f));
+        }
+
+        SUBCASE("CrossEntropy - Reduction::Mean (No Average Over Classes)") {
             Tensor<float> preds({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -303,10 +321,28 @@ TEST_SUITE("Loss Function Tests") {
             auto result = CrossEntropy(preds, targets, 0, Reduction::Mean);
 
             CHECK(result.NumElements() == 1);
-            CHECK(result[0] == doctest::Approx(0.11889165));
+            CHECK(result[0] == doctest::Approx(0.356675f));
         }
 
-        SUBCASE("CrossEntropy - Reduction::Sum") {
+        SUBCASE("CrossEntropy - Reduction::Mean (Average Over Classes)") {
+            Tensor<float> preds({ 3 });
+            Tensor<float> targets({ 3 });
+
+            preds[0] = 0.7f;
+            preds[1] = 0.2f;
+            preds[2] = 0.1f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropy(preds, targets, 0, Reduction::Mean, true);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.11889165f));
+        }
+
+        SUBCASE("CrossEntropy - Reduction::Sum (No Average Over Classes)") {
             Tensor<float> preds({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -319,6 +355,24 @@ TEST_SUITE("Loss Function Tests") {
             targets[2] = 0.0f;
 
             auto result = CrossEntropy(preds, targets, 0, Reduction::Sum);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.356675f));
+        }
+
+        SUBCASE("CrossEntropy - Reduction::Sum (Average Over Classes)") {
+            Tensor<float> preds({ 3 });
+            Tensor<float> targets({ 3 });
+
+            preds[0] = 0.7f;
+            preds[1] = 0.2f;
+            preds[2] = 0.1f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropy(preds, targets, 0, Reduction::Sum, true);
 
             CHECK(result.NumElements() == 1);
             CHECK(result[0] == doctest::Approx(0.11889165));
@@ -346,7 +400,7 @@ TEST_SUITE("Loss Function Tests") {
     }
 
     TEST_CASE("CrossEntropyWithLogits") {
-        SUBCASE("CrossEntropyWithLogits - Reduction::None") {
+        SUBCASE("CrossEntropyWithLogits - Reduction::None (No Average Over Classes)") {
             Tensor<float> logits({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -361,10 +415,28 @@ TEST_SUITE("Loss Function Tests") {
             auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::None);
 
             CHECK(result.NumElements() == 1);
-            CHECK(result[0] == doctest::Approx(0.13586865));
+            CHECK(result[0] == doctest::Approx(1.407606f));
         }
 
-        SUBCASE("CrossEntropyWithLogits - Reduction::Mean") {
+        SUBCASE("CrossEntropyWithLogits - Reduction::None (Average Over Classes)") {
+            Tensor<float> logits({ 3 });
+            Tensor<float> targets({ 3 });
+
+            logits[0] = 2.0f;
+            logits[1] = 1.0f;
+            logits[2] = 0.0f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::None, true);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.469202f));
+        }
+
+        SUBCASE("CrossEntropyWithLogits - Reduction::Mean (No Average Over Classes)") {
             Tensor<float> logits({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -379,10 +451,28 @@ TEST_SUITE("Loss Function Tests") {
             auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::Mean);
 
             CHECK(result.NumElements() == 1);
-            CHECK(result[0] == doctest::Approx(0.13586865));
+            CHECK(result[0] == doctest::Approx(1.407606f));
         }
 
-        SUBCASE("CrossEntropyWithLogits - Reduction::Sum") {
+        SUBCASE("CrossEntropyWithLogits - Reduction::Mean (Average Over Classes)") {
+            Tensor<float> logits({ 3 });
+            Tensor<float> targets({ 3 });
+
+            logits[0] = 2.0f;
+            logits[1] = 1.0f;
+            logits[2] = 0.0f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::Mean, true);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.469202f));
+        }
+
+        SUBCASE("CrossEntropyWithLogits - Reduction::Sum (No Average Over Classes)") {
             Tensor<float> logits({ 3 });
             Tensor<float> targets({ 3 });
 
@@ -397,7 +487,25 @@ TEST_SUITE("Loss Function Tests") {
             auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::Sum);
 
             CHECK(result.NumElements() == 1);
-            CHECK(result[0] == doctest::Approx(0.13586865));
+            CHECK(result[0] == doctest::Approx(1.407606f));
+        }
+
+        SUBCASE("CrossEntropyWithLogits - Reduction::Sum (Average Over Classes)") {
+            Tensor<float> logits({ 3 });
+            Tensor<float> targets({ 3 });
+
+            logits[0] = 2.0f;
+            logits[1] = 1.0f;
+            logits[2] = 0.0f;
+
+            targets[0] = 1.0f;
+            targets[1] = 0.0f;
+            targets[2] = 0.0f;
+
+            auto result = CrossEntropyWithLogits(logits, targets, 0, Reduction::Sum, true);
+
+            CHECK(result.NumElements() == 1);
+            CHECK(result[0] == doctest::Approx(0.469202f));
         }
 
         SUBCASE("CrossEntropyWithLogits throws on shape mismatch") {

@@ -1,6 +1,7 @@
  /// tensor.inl
 #include <stdexcept>
 #include <mlCore/runtime/context.h>
+#include "tensor.h"
 
 namespace MLCore::TensorCore {
 	template <typename T>
@@ -121,9 +122,14 @@ namespace MLCore::TensorCore {
 		return m_Impl->shape.NumElements();
 	}
 	
+	template<typename T>
+	inline bool Tensor<T>::IsEmpty() const {
+		return NumElements() == 0;
+	}
+	
 	template <typename T>
 	inline void Tensor<T>::Fill(const T& value) {
-		if (Dims().empty() || NumElements() == 0) {
+		if (IsEmpty()) {
 			throw std::runtime_error("ERROR: Cannot fill empty tensor with a value");
 		}
 
@@ -280,7 +286,17 @@ namespace MLCore::TensorCore {
 
 		return (*this)(idx);
 	}
+
+	template <typename T>
+	inline T& Tensor<T>::AtOffset(size_t physicalOffset) {
+		return Data()[physicalOffset];
+	}
 	
+	template <typename T>
+	inline const T& Tensor<T>::AtOffset(size_t physicalOffset) const {
+		return Data()[physicalOffset];
+	}
+
 	template <typename T>
 	inline bool Tensor<T>::RequiresGrad() const {
 		return m_Impl->requiresGrad;
@@ -307,9 +323,7 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Grad() {
 		if (!m_Impl->grad) {
-			Tensor<T> zero{ m_Impl->shape, *(m_Impl->allocator) };
-			zero.Fill(static_cast<T>(0));
-			return zero;
+			throw std::runtime_error("ERROR: Gradient doesn't exist");
 		}
 
 		return Tensor<T>{m_Impl->grad};
@@ -340,6 +354,15 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
+	inline void Tensor<T>::InitializeGrad() {
+		if (!m_Impl->grad) {
+			Tensor<T> grad{ m_Impl->shape, *(m_Impl->allocator) };
+			grad.Fill(static_cast<T>(0));
+			m_Impl->grad = grad.GetImpl();
+		}
+	}
+
+	template <typename T>
 	inline void Tensor<T>::AccumulateGrad(const Tensor<T>& gradInput) {
 		if (!m_Impl->requiresGrad) {
 			return;
@@ -349,12 +372,7 @@ namespace MLCore::TensorCore {
 			throw std::runtime_error("ERROR: AccumulateGrad: Gradient shape mismatch");
 		}
 
-		if (!m_Impl->grad) {
-			Tensor<T> grad{ m_Impl->shape, (*m_Impl->allocator) };
-			grad.Fill(static_cast<T>(0));
-
-			m_Impl->grad = grad.GetImpl();
-		}
+		InitializeGrad();
 
 		auto gradTensor = Tensor<T>{ m_Impl->grad };
 		size_t size = gradInput.NumElements();
@@ -394,7 +412,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	inline Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const{
+	inline Tensor<T> Tensor<T>::SliceRows(size_t start, size_t end) const {
 		if (Rank() < 1) {
 			throw std::runtime_error("Cannot slice scalar tensor");
 		}
@@ -411,7 +429,7 @@ namespace MLCore::TensorCore {
 			m_Impl->strides,
 			m_Impl->storage,
 			m_Impl->allocator,
-			m_Impl->offset + start * m_Impl->shape.Strides()[0],
+			m_Impl->offset + start * m_Impl->strides[0],
 			false,
 			nullptr,
 			nullptr
@@ -510,7 +528,7 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	inline size_t Tensor<T>::ComputeOffset(const std::vector<size_t>& indices) {
+	inline size_t Tensor<T>::ComputeOffset(const std::vector<size_t>& indices) const {
 		if (indices.size() != Rank()) {
 			throw std::runtime_error("ERROR: Tensor index dimension mismatch");
 		}
@@ -540,7 +558,7 @@ namespace MLCore::TensorCore {
 		std::vector<size_t> indices(rank);
 		const std::vector<size_t>& dims = Dims();
 
-		for (size_t i = rank; i > 0; --i) {
+		for (size_t i = rank; i-- > 0;) {
 			indices[i] = index % dims[i];
 			index /= dims[i];
 		}

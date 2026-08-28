@@ -1,5 +1,6 @@
  /// checkpoint.inl
 #include <filesystem>
+#include <unordered_set>
 #include <unordered_map>
 #include <mlCore/tensor/dataType.h>
 
@@ -7,6 +8,8 @@ namespace MLCore::Serialization {
 	template <typename T>
 	void Checkpoint::Save(const NN::Module<T>& model, const std::string& path, const Optimizers::Optimizer<T>* opt,
 						  const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
+		static_assert(TensorCore::DataTypeTraits<T>::value != TensorCore::DataType::Unknown, "ERROR: Checkpoint: T must be a supported serializable type (float, double, int32_t, int64_t)");
+
 		/// Create the file and the directories it's stored in
 		std::filesystem::path filePath = path;
 		std::filesystem::path parentPath = filePath.parent_path();
@@ -27,6 +30,7 @@ namespace MLCore::Serialization {
 		writer.Write(FORMAT_VERSION);
 
 		TensorCore::DataType dtype = TensorCore::ExpectedType<T>();
+
 		writer.Write(dtype);
 
 		switch (FORMAT_VERSION) {
@@ -52,6 +56,8 @@ namespace MLCore::Serialization {
 	template <typename T>
 	void Checkpoint::Load(NN::Module<T>& model, const std::string& path, Optimizers::Optimizer<T>* opt,
 						  Schedulers::LRScheduler<T>* scheduler, Training::TrainerState<T>* state) {
+		static_assert(TensorCore::DataTypeTraits<T>::value != TensorCore::DataType::Unknown, "ERROR: Checkpoint: T must be a supported serializable type (float, double, int32_t, int64_t)");
+
 		std::ifstream in{ path, std::ios::binary };
 
 		if (!in) {
@@ -167,12 +173,19 @@ namespace MLCore::Serialization {
 			throw std::runtime_error("ERROR: Load: Checkpoint parameter count mismatch");
 		}
 
+		std::unordered_set<std::string> seenParamNames;
+		seenParamNames.reserve(numParams);
+
 		for (size_t i = 0; i < numParams; ++i) {
 			size_t nameLength;
 			reader.Read(nameLength);
 
 			std::string name( nameLength, '\0' );
 			reader.ReadArray(name.data(), nameLength);
+
+			if (!seenParamNames.insert(name).second) {
+				throw std::runtime_error("ERROR: Load: Checkpoint contains duplicate parameter name '" + name + "'");
+			}
 
 			auto iter = paramMap.find(name);
 
@@ -187,6 +200,8 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	void Checkpoint::SaveV3(const NN::Module<T>& model, BinaryWriter& writer, const Optimizers::Optimizer<T>* opt, const Schedulers::LRScheduler<T>* scheduler, const Training::TrainerState<T>* state) {
+		static_assert(FORMAT_VERSION == 3, "FORMAT_VERSION no longer matches SaveV3 — either revert the bump, or finish wiring up SaveV4: add it, point case N at it, move this assert there, and delete it here.");
+		
 		SaveV2(model, writer);
 
 		writer.Write(model.IsTraining());

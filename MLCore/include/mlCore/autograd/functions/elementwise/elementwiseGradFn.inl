@@ -17,13 +17,15 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> a{ this->inputs[0] };
 		TensorCore::Tensor<T> b{ this->inputs[1] };
 
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
+
 		if (a.RequiresGrad()) {
-			auto gradA = Operations::ReduceSumToShape(gradOutput, a.GetShape());
+			auto gradA = Operations::ReduceSumToShape(gradientOut, a.GetShape());
 			a.Backward(gradA);
 		}
 
 		if (b.RequiresGrad()) {
-			auto gradB = Operations::ReduceSumToShape(gradOutput, b.GetShape());
+			auto gradB = Operations::ReduceSumToShape(gradientOut, b.GetShape());
 			b.Backward(gradB);
 		}
 	}

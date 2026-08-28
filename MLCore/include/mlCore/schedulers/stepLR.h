@@ -17,18 +17,25 @@ namespace MLCore::Schedulers {
 		/// <param name="stepSize">Number of steps between each learning-rate decay.</param>
 		/// <param name="gamma">Multiplicative decay factor applied to the learning rate at each step.</param>
 		StepLR(Optimizers::Optimizer<T>& opt, int stepSize, T gamma)
-			: LRScheduler<T>(opt), m_StepSize(stepSize), m_Gamma(gamma), m_Step(0)
-		{}
+			: LRScheduler<T>(opt), m_StepSize(stepSize), m_Gamma(gamma), m_Step(0) {
+			if (m_StepSize <= 0) {
+				throw std::runtime_error("ERROR: Invalid StepLR step size");
+			}
+		}
 
 		/// <summary>
 		/// Updates learning rates using a piecewise-constant schedule. Increments an internal step counter and, when it reaches m_StepSize, multiplies each parameter group's learning rate by m_Gamma, stores the previous values in m_LastLRs, clamps non-finite learning rates to 1e-8 and non-positive values to 1e-12, and resets the step counter.
 		/// </summary>
 		virtual void UpdateLR() override {
+			std::vector<Optimizers::ParameterGroup<T>>& paramGroups = this->m_Opt.ParamGroups();
+			size_t size = paramGroups.size();
+
+			if (this->m_LastLRs.size() != size) {
+				this->m_LastLRs.resize(size, static_cast<T>(0));
+			}
+
 			/// LR is a piecewise constant
 			if (++m_Step >= m_StepSize) {
-				std::vector<Optimizers::ParameterGroup<T>>& paramGroups = this->m_Opt.ParamGroups();
-				size_t size = paramGroups.size();
-
 				for (size_t i = 0; i < size; ++i) {
 					auto& lr = paramGroups[i].learningRate;
 

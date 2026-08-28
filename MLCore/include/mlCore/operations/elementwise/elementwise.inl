@@ -12,7 +12,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -20,7 +20,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
 
-		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
 		/// Because both tensors are on the same alloactor, the result will be allocated with them
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
@@ -38,14 +38,14 @@ namespace MLCore::Operations {
 				size_t idxA = 0, idxB = 0, tmp = i;
 
 				for (size_t j = 0; j < info.shape.Rank(); ++j) {
-					size_t dimIndex = tmp / info.shape.Strides()[j];
-					tmp %= info.shape.Strides()[j];
+					size_t dimIndex = tmp / C.Strides()[j];
+					tmp %= C.Strides()[j];
 
 					idxA += dimIndex * info.strideA[j];
 					idxB += dimIndex * info.strideB[j];
 				}
 
-				C[i] = A[idxA] + B[idxB];
+				C[i] = A.AtOffset(idxA) + B.AtOffset(idxB);
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -71,7 +71,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
 
-		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
@@ -88,14 +88,14 @@ namespace MLCore::Operations {
 				size_t idxA = 0, idxB = 0, tmp = i;
 
 				for (size_t j = 0; j < info.shape.Rank(); ++j) {
-					size_t dimIndex = tmp / info.shape.Strides()[j];
-					tmp %= info.shape.Strides()[j];
+					size_t dimIndex = tmp / C.Strides()[j];
+					tmp %= C.Strides()[j];
 
 					idxA += dimIndex * info.strideA[j];
 					idxB += dimIndex * info.strideB[j];
 				}
 
-				C[i] = A[idxA] - B[idxB];
+				C[i] = A.AtOffset(idxA) - B.AtOffset(idxB);
 			}
 		}
 
@@ -113,7 +113,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -121,7 +121,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
 
-		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
@@ -138,14 +138,14 @@ namespace MLCore::Operations {
 				size_t idxA = 0, idxB = 0, tmp = i;
 
 				for (size_t j = 0; j < info.shape.Rank(); ++j) {
-					size_t dimIndex = tmp / info.shape.Strides()[j];
-					tmp %= info.shape.Strides()[j];
+					size_t dimIndex = tmp / C.Strides()[j];
+					tmp %= C.Strides()[j];
 
 					idxA += dimIndex * info.strideA[j];
 					idxB += dimIndex * info.strideB[j];
 				}
 
-				C[i] = A[idxA] * B[idxB];
+				C[i] = A.AtOffset(idxA) * B.AtOffset(idxB);
 			}
 		}
 
@@ -163,7 +163,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -171,7 +171,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Tensor shapes cannot broadcast");
 		}
 
-		auto info = ComputeBroadcast(A.GetShape(), B.GetShape());
+		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> C{ info.shape, allocator };
@@ -188,14 +188,14 @@ namespace MLCore::Operations {
 				size_t idxA = 0, idxB = 0, tmp = i;
 
 				for (size_t j = 0; j < info.shape.Rank(); ++j) {
-					size_t dimIndex = tmp / info.shape.Strides()[j];
-					tmp %= info.shape.Strides()[j];
+					size_t dimIndex = tmp / C.Strides()[j];
+					tmp %= C.Strides()[j];
 
 					idxA += dimIndex * info.strideA[j];
 					idxB += dimIndex * info.strideB[j];
 				}
 
-				C[i] = A[idxA] / B[idxB];
+				C[i] = A.AtOffset(idxA) / B.AtOffset(idxB);
 			}
 		}
 
@@ -209,7 +209,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -231,7 +231,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -254,7 +254,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -277,7 +277,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Log(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -299,7 +299,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -325,7 +325,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -349,34 +349,16 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A) {
-		TensorCore::Tensor<T> result = MultiplyScalar(A, static_cast<T>(-1));
-
-		if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-		}
-
-		return result;
+		return MultiplyScalar(A, static_cast<T>(-1));
 	}
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A) {
-		TensorCore::Tensor<T> result = Power(A, static_cast<T>(2));
-
-		if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-		}
-
-		return result;
+		return Power(A, static_cast<T>(2));
 	}
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A) {
-		TensorCore::Tensor<T> result = DivideScalar(A, static_cast<T>(1), true);
-
-		if (A.RequiresGrad()) {
-			result.SetRequiresGrad(true);
-		}
-
-		return result;
+		return DivideScalar(A, static_cast<T>(1), true);
 	}
 }

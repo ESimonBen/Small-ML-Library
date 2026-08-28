@@ -23,6 +23,14 @@ namespace MLCore::Training {
 	using MetricFn = std::function<T(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target)>;
 
 	/// <summary>
+	/// Represents the metric selection mode used when comparing values or computing metrics.
+	/// </summary>
+	enum class MetricMode {
+		Min,
+		Max
+	};
+
+	/// <summary>
 	/// Holds statistics recorded for a single training epoch.
 	/// </summary>
 	/// <typeparam name="T">Numeric type used for losses, learning rates, and metric values (typically float or double).</typeparam>
@@ -63,6 +71,8 @@ namespace MLCore::Training {
 		size_t globalStep = 0; /// Global counter steps to train each batch
 		T bestValidationMetric = static_cast<T>(0); /// Best metric during validation
 		bool hasBestMetric = false; /// Flag determining if the trainer has a best metric
+		std::string bestMetricName;
+		MetricMode bestMetricMode = MetricMode::Min;
 	};
 
 	/// <summary>
@@ -134,7 +144,12 @@ namespace MLCore::Training {
 		/// <typeparam name="T">The type parameter for the Trainer class.</typeparam>
 		/// <returns>true if m_Scheduler is not null (a scheduler is present); otherwise false.</returns>
 		bool HasScheduler() const;
-
+		
+		/// <summary>
+		/// Returns a reference to the optimizer associated with this Trainer. The member function is const-qualified.
+		/// </summary>
+		/// <typeparam name="T">The type parameter for Trainer and Optimizers::Optimizer (the element/parameter type managed by the trainer).</typeparam>
+		/// <returns>A reference to the Optimizers::Optimizer<T> instance used by this Trainer.</returns>
 		Optimizers::Optimizer<T>& GetOptimizer() const;
 
 		/// <summary>
@@ -151,6 +166,16 @@ namespace MLCore::Training {
 		/// <param name="name">The key/name under which the metric will be stored.</param>
 		/// <param name="metric">A callable metric function for type T; the function object is moved into the trainer's metric storage. If a metric with the same name exists, it will be replaced.</param>
 		void AddMetric(const std::string& name, MetricFn<T> metric);
+
+		/// <summary>
+		/// Configures which validation metric determines the "best" checkpoint, and whether
+		/// lower or higher values are better. If never called, best-tracking defaults to
+		/// validation loss with MetricMode::Min.
+		/// </summary>
+		/// <param name="metricName">Name of a metric previously registered via AddMetric.
+		/// Must exist in the metrics computed during Evaluate, or Fit will throw.</param>
+		/// <param name="mode">Whether a lower or higher value of this metric is considered better.</param>
+		void SetBestMetricTracking(const std::string& metricName, MetricMode mode);
 
 		/// <summary>
 		/// Returns a snapshot of the trainer's current state. The method constructs and returns a TrainerState<T> populated from the trainer's internal members (currentEpoch, globalStep, bestValidationMetric, and hasBestMetric) and does not modify the Trainer (const).
@@ -199,6 +224,13 @@ namespace MLCore::Training {
 		std::unordered_map<std::string, T> ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target);
 
 	private:
+		/// <summary>
+		/// Ensures a parameter checkpoint exists for the Trainer by creating one from the runtime allocator if no checkpoint is present.
+		/// </summary>
+		/// <typeparam name="T">Type parameter of the Trainer class.</typeparam>
+		void EnsureCheckpoint();
+
+	private:
 		NN::Module<T>& m_Model; /// A reference to a neural network model.
 		Optimizers::Optimizer<T>& m_Optimizer; /// A reference to a neural network optimizer.
 		LossFn<T> m_LossFn; /// Loss function for backpropogation.
@@ -212,6 +244,11 @@ namespace MLCore::Training {
 		size_t m_GlobalStep = 0; /// Global counter steps to train each batch
 		T m_BestValidationMetric = static_cast<T>(0); /// Best metric during validation
 		bool m_HasBestMetric = false; /// Flag determining if the trainer has a best metric
+		std::string m_BestMetricName; /// Stores the name of the best metric.
+		MetricMode m_BestMetricMode = MetricMode::Min; /// Specifies which metric direction is considered better (whether lower or higher values win). It is initialized to MetricMode::Min.
+
+		bool m_HasCheckpoint = false; /// Boolean flag that indicates whether a checkpoint has been set.
+		size_t m_ParamCheckpoint = 0; /// A size_t variable that stores a parameter checkpoint index, initialized to 0.
 	};
 }
 

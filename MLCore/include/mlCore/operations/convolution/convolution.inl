@@ -2,6 +2,12 @@
 #include <mlCore/autograd/functions/convolution/convolutionGradFn.h>
 
 namespace MLCore::Operations {
+	inline size_t ComputeConvOutputSize(size_t inputSize, size_t kernelSize, size_t stride, size_t padding, size_t dilation) {
+		const size_t effectiveKernelSize = dilation * (kernelSize - 1) + 1;
+		const size_t paddedInputSize = inputSize + 2 * padding;
+		return (paddedInputSize - effectiveKernelSize) / stride + 1;
+	}
+
 	template <typename T>
 	inline TensorCore::Tensor<T> Conv1D(const TensorCore::Tensor<T>& input, const TensorCore::Tensor<T>& kernel, const TensorCore::Tensor<T>* bias,
 										size_t stride, size_t padding, size_t dilation) {
@@ -150,14 +156,14 @@ namespace MLCore::Operations {
 		const size_t effectiveKernelWidth = dilationW * (kernelWidth - 1) + 1;
 
 		const size_t paddedInputHeight = inputHeight + 2 * paddingH;
-		const size_t paddedIputWidth = inputWidth + 2 * paddingW;
+		const size_t paddedInputWidth = inputWidth + 2 * paddingW;
 
-		if (paddedInputHeight < effectiveKernelHeight || paddedIputWidth < effectiveKernelWidth) {
+		if (paddedInputHeight < effectiveKernelHeight || paddedInputWidth < effectiveKernelWidth) {
 			throw std::runtime_error("ERROR: Conv2D: Kernel is larger than padded input");
 		}
 
 		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
-		const size_t outputWidth = (paddedIputWidth - effectiveKernelWidth) / strideW + 1;
+		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
 
 		Memory::ArenaAllocator& allocator = input.GetAllocator();
 
@@ -221,11 +227,11 @@ namespace MLCore::Operations {
 		}
 
 		if (input.Rank() != 5) {
-			throw std::runtime_error("ERROR: Conv3D: Input must have 4 dimensions");
+			throw std::runtime_error("ERROR: Conv3D: Input must have 5 dimensions");
 		}
 
 		if (kernel.Rank() != 5) {
-			throw std::runtime_error("ERROR: Conv3D: Kernel must have 4 dimensions");
+			throw std::runtime_error("ERROR: Conv3D: Kernel must have 5 dimensions");
 		}
 
 		const size_t batchSize = input.Dims()[0];
@@ -245,15 +251,15 @@ namespace MLCore::Operations {
 		}
 
 		if (strideD == 0 || strideH == 0 || strideW == 0) {
-			throw std::runtime_error("ERROR: Conv2D: Stride cannot be 0");
+			throw std::runtime_error("ERROR: Conv3D: Stride cannot be 0");
 		}
 
 		if (dilationD == 0 || dilationH == 0 || dilationW == 0) {
-			throw std::runtime_error("ERROR: Conv2D: Dilation cannot be 0");
+			throw std::runtime_error("ERROR: Conv3D: Dilation cannot be 0");
 		}
 
 		if (kernelDepth == 0 || kernelHeight == 0 || kernelWidth == 0) {
-			throw std::runtime_error("ERROR: Conv2D: Kernel dimensions cannot be 0");
+			throw std::runtime_error("ERROR: Conv3D: Kernel dimensions cannot be 0");
 		}
 
 		const size_t effectiveKernelDepth = dilationD * (kernelDepth - 1) + 1;
@@ -262,15 +268,15 @@ namespace MLCore::Operations {
 
 		const size_t paddedInputDepth = inputDepth + 2 * paddingD;
 		const size_t paddedInputHeight = inputHeight + 2 * paddingH;
-		const size_t paddedIputWidth = inputWidth + 2 * paddingW;
+		const size_t paddedInputWidth = inputWidth + 2 * paddingW;
 
-		if (paddedInputDepth < effectiveKernelDepth || paddedInputHeight < effectiveKernelHeight || paddedIputWidth < effectiveKernelWidth) {
+		if (paddedInputDepth < effectiveKernelDepth || paddedInputHeight < effectiveKernelHeight || paddedInputWidth < effectiveKernelWidth) {
 			throw std::runtime_error("ERROR: Conv3D: Kernel is larger than padded input");
 		}
 
 		const size_t outputDepth = (paddedInputDepth - effectiveKernelDepth) / strideD + 1;
 		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
-		const size_t outputWidth = (paddedIputWidth - effectiveKernelWidth) / strideW + 1;
+		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
 
 		Memory::ArenaAllocator& allocator = input.GetAllocator();
 

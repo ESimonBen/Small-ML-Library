@@ -122,7 +122,7 @@ void TestXOR() {
     trainerA.OnEpochEnd =
         [](const EpochStats<float>& stats) {
 
-        if (stats.epoch % 500 == 0) {
+        if (stats.epoch % 50 == 0) {
             std::cout
                 << "Epoch " << stats.epoch
                 << " | Train Loss: " << stats.trainLoss
@@ -143,7 +143,7 @@ void TestXOR() {
         }
         };
 
-    trainerA.Fit(x, y, x, y, 10000, 4);
+    trainerA.Fit(x, y, x, y, 1000, 4);
 
     std::cout << std::endl;
     std::cout << "Params at End (Model A)" << std::endl;
@@ -227,7 +227,7 @@ void TestXOR() {
     trainerB.OnEpochEnd =
         [](const EpochStats<float>& stats) {
 
-        if (stats.epoch % 500 == 0) {
+        if (stats.epoch % 50 == 0) {
             std::cout
                 << "Epoch " << stats.epoch
                 << " | Train Loss: " << stats.trainLoss
@@ -249,7 +249,7 @@ void TestXOR() {
         }
         };
 
-    trainerB.Fit(x, y, x, y, 5000, 4);
+    trainerB.Fit(x, y, x, y, 500, 4);
 
     TrainerState<float> stateB = trainerB.GetState();
 
@@ -298,7 +298,7 @@ void TestXOR() {
     trainerC.OnEpochEnd =
         [](const EpochStats<float>& stats) {
 
-        if (stats.epoch % 500 == 0) {
+        if (stats.epoch % 50 == 0) {
             std::cout
                 << "Epoch " << stats.epoch
                 << " | Train Loss: " << stats.trainLoss
@@ -318,14 +318,14 @@ void TestXOR() {
 
             std::cout << std::endl;
         }
-        };
+    };
 
     TrainerState<float> stateC;
 
     Checkpoint::Load(modelC, "../../models/saved_model.ckpt", &optC, &schedulerC, &stateC);
     trainerC.LoadState(stateC);
 
-    trainerC.Fit(x, y, x, y, 5000, 4);
+    trainerC.Fit(x, y, x, y, 500, 4);
 
     std::cout << std::endl;
     std::cout << "Params at End (Model B)" << std::endl;

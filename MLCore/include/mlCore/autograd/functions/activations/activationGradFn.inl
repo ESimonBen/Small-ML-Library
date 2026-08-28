@@ -105,6 +105,10 @@ namespace MLCore::AutoGrad {
 	void AxisSoftmaxGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };
 
+		if (gradOutput.GetShape() != input.GetShape()) {
+			throw std::runtime_error("Activation backward shape mismatch");
+		}
+
 		if (!input.RequiresGrad()) {
 			return;
 		}
@@ -113,7 +117,7 @@ namespace MLCore::AutoGrad {
 		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
 
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
-		gradInput.Fill(0.0f);
+		gradInput.Fill(static_cast<T>(0));
 
 		const std::vector<size_t>& dims = input.Dims();
 		size_t rank = input.Rank();
@@ -138,12 +142,12 @@ namespace MLCore::AutoGrad {
 				T dot = static_cast<T>(0);
 
 				for (size_t j = 0; j < axisSize; ++j) {
-					T idx = base + j * inner;
+					size_t idx = base + j * inner;
 					dot += gradientOut[idx] * y[idx];
 				}
 
 				for (size_t j = 0; j < axisSize; ++j) {
-					T idx = base + j * inner;
+					size_t idx = base + j * inner;
 					gradInput[idx] += y[idx] * (gradientOut[idx] - dot);
 				}
 			}

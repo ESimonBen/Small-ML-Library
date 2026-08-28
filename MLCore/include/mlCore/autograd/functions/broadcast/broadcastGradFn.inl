@@ -44,7 +44,7 @@ namespace MLCore::AutoGrad {
 	
 	template <typename T>
 	inline ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
-		: GradFn<T>(a), m_OriginalShape(a->shape)
+		: GradFn<T>(a)
 	{}
 	
 	template <typename T>
@@ -56,14 +56,14 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, m_OriginalShape);
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, input.GetShape());
 
 		input.Backward(gradInput);
 	}
 
 	template <typename T>
 	inline ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
-		: GradFn<T>(a), m_OriginalShape(a->shape)
+		: GradFn<T>(a)
 	{}
 
 	template <typename T>
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> gradInput = Operations::ReduceSumToShape(gradientOut, m_OriginalShape);
+		TensorCore::Tensor<T> gradInput = Operations::ReduceSumToShape(gradientOut, input.GetShape());
 
 		input.Backward(gradInput);
 	}

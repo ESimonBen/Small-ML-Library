@@ -1,5 +1,7 @@
  /// allocator.h
 #pragma once
+#include <vector>
+#include <mlCore/config.h>
 
 namespace MLCore::Memory {
 	/// <summary>
@@ -8,7 +10,7 @@ namespace MLCore::Memory {
 	class ArenaAllocator {
 	public:
 		/// <summary>
-		/// Constructs an ArenaAllocator by allocating a contiguous memory arena of the specified size. Initializes internal capacity and offset, and (when ML_CORE_DEBUG is defined) fills the arena with 0xCD. Throws std::bad_alloc if allocation fails.
+		/// Constructs an ArenaAllocator by allocating a contiguous memory arena of the specified size. Initializes internal capacity and offset, and (when MLCORE_DEBUG is defined) fills the arena with 0xCD. Throws std::bad_alloc if allocation fails.
 		/// </summary>
 		/// <param name="arenaSize">The size in bytes of the arena to allocate.</param>
 		ArenaAllocator(size_t arenaSize = 1024 * 1024 * 1024);
@@ -18,7 +20,16 @@ namespace MLCore::Memory {
 		/// </summary>
 		~ArenaAllocator();
 
+		/// <summary>
+		/// Deleted copy constructor
+		/// </summary>
 		ArenaAllocator(const ArenaAllocator&) = delete;
+
+		/// <summary>
+		/// Deleted move constructor
+		/// </summary>
+		/// <param name=""></param>
+		/// <returns></returns>
 		ArenaAllocator& operator=(const ArenaAllocator&) = delete;
 
 		/// <summary>
@@ -59,10 +70,30 @@ namespace MLCore::Memory {
 		/// <returns>true if the allocator is initialized (m_Arena is not null); otherwise false.</returns>
 		bool IsInitialized() const;
 
+		/// <summary>
+		/// Returns the current allocation offset (checkpoint) of the arena allocator.
+		/// </summary>
+		/// <returns>A size_t value representing the current offset within the arena. This value serves as a checkpoint of the allocator's state and can be used later to restore or roll back to this position.</returns>
+		size_t Checkpoint() const;
+
+		/// <summary>
+		/// Restores the allocator's allocation offset to a previously recorded checkpoint, releasing any allocations made after that checkpoint. In debug builds (MLCORE_DEBUG) the freed memory is overwritten with 0xDD. If the provided checkpoint is greater than the current offset, std::out_of_range is thrown.
+		/// </summary>
+		/// <param name="checkpoint">The offset (in bytes) to restore the allocator to. Must be less than or equal to the current allocation offset; otherwise std::out_of_range is thrown.</param>
+		void RestoreCheckpoint(size_t checkpoint);
+
+		#ifdef MLCORE_DEBUG
+		void RegisterPersistent(const void* ptr, size_t bytes);
+		#endif
+
 	private:
 		char* m_Arena; /// Pointer to a memory arena buffer.
 		size_t m_ArenaCapacity; /// Holds the total capacity of the memory arena, in bytes.
 		size_t m_Offset; /// A size_t variable that stores an offset value.
+
+		#ifdef MLCORE_DEBUG
+		std::vector<std::pair<const void*, size_t>> m_DebugPersistentRanges;
+		#endif
 	};
 }
 

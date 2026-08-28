@@ -4,13 +4,13 @@
 
 namespace MLCore::Optimizers {
 	template <typename T>
-	inline Adam<T>::Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline Adam<T>::Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 			for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 				for (auto& ref : paramGroup.params) {
 					NN::Parameter<T>& p = ref.get();
-					NN::ParamID paramID = p.id;
+					NN::ParamID paramID = p.GetID();
 					TensorCore::Tensor<T>& param = p.Data();
 
 					TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
@@ -32,7 +32,7 @@ namespace MLCore::Optimizers {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
@@ -63,7 +63,7 @@ namespace MLCore::Optimizers {
 
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				auto mIt = m_FirstMoment.find(paramID);
@@ -128,7 +128,7 @@ namespace MLCore::Optimizers {
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
 		for (const auto& [name, param] : namedParams) {
-			idToName[param.get().id] = name;
+			idToName[param.get().GetID()] = name;
 		}
 
 		writer.Write(m_Beta1);
@@ -151,18 +151,18 @@ namespace MLCore::Optimizers {
 			for (const std::reference_wrapper<NN::Parameter<T>>& ref : group.params) {
 				const NN::Parameter<T>& param = ref.get();
 
-				const std::string& name = idToName.at(param.id);
+				const std::string& name = idToName.at(param.GetID());
 				const size_t nameLength = name.size();
 				writer.Write(nameLength);
 				writer.WriteArray(name.data(), nameLength);
 
-				auto firstMomIter = m_FirstMoment.find(param.id);
+				auto firstMomIter = m_FirstMoment.find(param.GetID());
 
 				if (firstMomIter == m_FirstMoment.end()) {
 					throw std::runtime_error("ERROR: First moment not found");
 				}
 
-				auto secMomIter = m_SecondMoment.find(param.id);
+				auto secMomIter = m_SecondMoment.find(param.GetID());
 
 				if (secMomIter == m_SecondMoment.end()) {
 					throw std::runtime_error("ERROR: Second moment not found");
@@ -226,7 +226,7 @@ namespace MLCore::Optimizers {
 					throw std::runtime_error("ERROR: Optimizer parameter '" + name + "' not found");
 				}
 
-				NN::ParamID paramID = paramIt->second->id;
+				NN::ParamID paramID = paramIt->second->GetID();
 
 				auto firstMomIter = m_FirstMoment.find(paramID);
 
@@ -250,13 +250,13 @@ namespace MLCore::Optimizers {
 	}
 	
 	template <typename T>
-	inline AdamW<T>::AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
+	inline AdamW<T>::AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay, T beta1, T beta2, T epsilon)
 		: Optimizer<T>(params, learningRate, weightDecay), m_Beta1(beta1), m_Beta2(beta2), m_BetaPow1(static_cast<T>(1)), m_BetaPow2(static_cast<T>(1)),
 		m_Epsilon(epsilon), m_Timestep(0) {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
@@ -278,7 +278,7 @@ namespace MLCore::Optimizers {
 		for (ParameterGroup<T>& paramGroup : this->m_ParamGroups) {
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				TensorCore::Tensor<T> m{ param.GetShape(), param.GetAllocator() };
@@ -309,7 +309,7 @@ namespace MLCore::Optimizers {
 
 			for (auto& ref : paramGroup.params) {
 				NN::Parameter<T>& p = ref.get();
-				NN::ParamID paramID = p.id;
+				NN::ParamID paramID = p.GetID();
 				TensorCore::Tensor<T>& param = p.Data();
 
 				auto mIt = m_FirstMoment.find(paramID);
@@ -374,7 +374,7 @@ namespace MLCore::Optimizers {
 		std::unordered_map<NN::ParamID, std::string> idToName;
 
 		for (const auto& [name, param] : namedParams) {
-			idToName[param.get().id] = name;
+			idToName[param.get().GetID()] = name;
 		}
 
 		writer.Write(m_Beta1);
@@ -397,20 +397,20 @@ namespace MLCore::Optimizers {
 			for (const std::reference_wrapper<NN::Parameter<T>>& ref : group.params) {
 				const NN::Parameter<T>& param = ref.get();
 
-				const std::string& name = idToName.at(param.id);
+				const std::string& name = idToName.at(param.GetID());
 				const size_t nameLength = name.size();
 				writer.Write(nameLength);
 				writer.WriteArray(name.data(), nameLength);
 
-				auto firstMomIter = m_FirstMoment.find(param.id);
+				auto firstMomIter = m_FirstMoment.find(param.GetID());
 
 				if (firstMomIter == m_FirstMoment.end()) {
 					throw std::runtime_error("ERROR: First moment not found");
 				}
 
-				auto secMomIter = m_SecondMoment.find(param.id);
+				auto secMomIter = m_SecondMoment.find(param.GetID());
 
-				if (firstMomIter == m_FirstMoment.end()) {
+				if (secMomIter == m_SecondMoment.end()) {
 					throw std::runtime_error("ERROR: Second moment not found");
 				}
 
@@ -472,7 +472,7 @@ namespace MLCore::Optimizers {
 					throw std::runtime_error("ERROR: Optimizer parameter '" + name + "' not found");
 				}
 
-				NN::ParamID paramID = paramIt->second->id;
+				NN::ParamID paramID = paramIt->second->GetID();
 
 				auto firstMomIter = m_FirstMoment.find(paramID);
 

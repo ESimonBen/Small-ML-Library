@@ -25,16 +25,6 @@ TEST_SUITE("Tensor Tests") {
 		CHECK(t.Dims()[1] == 5);
 	}
 
-	TEST_CASE("Tensor construction from vector") {
-		Tensor<int> t(std::vector<size_t>{4, 5});
-
-		CHECK(t.Rank() == 2);
-		CHECK(t.NumElements() == 20);
-
-		CHECK(t.Dims()[0] == 4);
-		CHECK(t.Dims()[1] == 5);
-	}
-
 	TEST_CASE("Linear indexing stores values correctly") {
 		Tensor<float> t({ 2,2 });
 
@@ -50,8 +40,6 @@ TEST_SUITE("Tensor Tests") {
 	}
 
 	TEST_CASE("Linear indexing throws when out of bounds") {
-		
-
 		Tensor<float> t({ 2,2 });
 
 		CHECK_THROWS_AS(t[4], std::out_of_range);

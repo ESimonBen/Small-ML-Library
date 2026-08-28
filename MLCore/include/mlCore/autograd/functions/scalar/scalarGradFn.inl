@@ -3,7 +3,6 @@
 #include <mlCore/operations/elementwise/elementwise.h>
 
 namespace MLCore::AutoGrad {
-	
 	template <typename T>
 	inline AddScalarGradFn<T>::AddScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a)
@@ -17,12 +16,14 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
-		input.Backward(gradOutput);
+		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
+
+		input.Backward(gradientOut);
 	}
 	
 	template <typename T>
 	SubScalarGradFn<T>::SubScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, bool scalarOnLeft)
-		: GradFn<T>(a), scalarOnLeft(scalarOnLeft)
+		: GradFn<T>(a), m_ScalarOnLeft(scalarOnLeft)
 	{}
 	
 	template <typename T>
@@ -35,14 +36,14 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ? Operations::Negate(gradientOut) : gradientOut;
+		TensorCore::Tensor<T> gradInput = (m_ScalarOnLeft) ? Operations::Negate(gradientOut) : gradientOut;
 
 		input.Backward(gradInput);
 	}
 	
 	template <typename T>
 	MulScalarGradFn<T>::MulScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar)
-		: GradFn<T>(a), scalar(scalar)
+		: GradFn<T>(a), m_Scalar(scalar)
 	{}
 	
 	template <typename T>
@@ -55,14 +56,14 @@ namespace MLCore::AutoGrad {
 
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
 
-		TensorCore::Tensor<T> gradInput = Operations::MultiplyScalar(gradientOut, scalar);
+		TensorCore::Tensor<T> gradInput = Operations::MultiplyScalar(gradientOut, m_Scalar);
 
 		input.Backward(gradInput);
 	}
 	
 	template <typename T>
 	DivScalarGradFn<T>::DivScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar, bool scalarOnLeft)
-		: GradFn<T>(a), scalar(scalar), scalarOnLeft(scalarOnLeft)
+		: GradFn<T>(a), m_Scalar(scalar), m_ScalarOnLeft(scalarOnLeft)
 	{}
 	
 	template <typename T>
@@ -79,9 +80,9 @@ namespace MLCore::AutoGrad {
 		/// Must create a detached version of the input to make sure another computation graph is not created while backpropogating
 		auto detachedInput = input.Detach();
 
-		TensorCore::Tensor<T> gradInput = (scalarOnLeft) ?
-			Operations::Multiply(gradientOut, Operations::DivideScalar(Operations::Square(detachedInput), -scalar, true))
-			: Operations::DivideScalar(gradientOut, scalar, false);
+		TensorCore::Tensor<T> gradInput = (m_ScalarOnLeft) ?
+			Operations::Multiply(gradientOut, Operations::DivideScalar(Operations::Square(detachedInput), -m_Scalar, true))
+			: Operations::DivideScalar(gradientOut, m_Scalar, false);
 
 		input.Backward(gradInput);
 	}

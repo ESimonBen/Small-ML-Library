@@ -7,6 +7,8 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryWriter::Write(const T& data) {
+		static_assert(std::is_trivially_copyable_v<T>, "ERROR: BinaryWriter::Write requires a trivially copyable type");
+
 		m_Out.write(reinterpret_cast<const char*>(&data), sizeof(data));
 
 		if (!m_Out) {
@@ -16,6 +18,8 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryWriter::WriteArray(const T* data, size_t count) {
+		static_assert(std::is_trivially_copyable_v<T>, "ERROR: BinaryWriter::WriteArray requires a trivially copyable type");
+
 		m_Out.write(reinterpret_cast<const char*>(data), sizeof(T) * count);
 
 		if (!m_Out) {
@@ -25,6 +29,10 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryWriter::WriteTensor(const TensorCore::Tensor<T>& tensor) {
+		if (!tensor.IsContiguous()) {
+			throw std::runtime_error("ERROR: WriteTensor: Cannot serialize a non-contiguous tensor");
+		}
+
 		size_t numElements = tensor.NumElements();
 		size_t rank = tensor.Rank();
 		auto& dims = tensor.Dims();
@@ -41,6 +49,8 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryReader::Read(T& data) {
+		static_assert(std::is_trivially_copyable_v<T>, "ERROR: BinaryRead::Read requires a trivially copyable type");
+
 		if (!m_In.read(reinterpret_cast<char*>(&data), sizeof(data))) {
 			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
 		}
@@ -48,6 +58,8 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryReader::ReadArray(T* data, size_t count) {
+		static_assert(std::is_trivially_copyable_v<T>, "ERROR: BinaryRead::ReadArray requires a trivially copyable type");
+
 		if (!m_In.read(reinterpret_cast<char*>(data), sizeof(T) * count)) {
 			throw std::runtime_error("ERROR: Load: Checkpoint read failed");
 		}
@@ -55,6 +67,10 @@ namespace MLCore::Serialization {
 	
 	template <typename T>
 	inline void BinaryReader::ReadTensor(TensorCore::Tensor<T>& tensor) {
+		if (!tensor.IsContiguous()) {
+			throw std::runtime_error("ERROR: ReadTensor: Cannot load into a non-contiguous tensor");
+		}
+
 		/// Read the size of each parameter
 		size_t numElements;
 		Read(numElements);

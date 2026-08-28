@@ -55,7 +55,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type stored in the tensors (for example float or double).</typeparam>
 		/// <param name="input">The input tensor to process (passed by const reference).</param>
 		/// <returns>A new tensor containing the result after sequentially applying all submodules; the original input is not modified.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 	};
 }
 

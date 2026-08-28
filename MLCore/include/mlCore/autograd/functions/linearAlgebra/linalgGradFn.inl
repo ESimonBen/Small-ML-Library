@@ -23,8 +23,6 @@ namespace MLCore::AutoGrad {
 
 		T gradScalar = gradOutput[0];
 
-		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-
 		if (a.RequiresGrad()) {
 			auto detachedB = b.Detach();
 			auto gradA = Operations::MultiplyScalar(detachedB, gradScalar);

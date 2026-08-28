@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
-#include <mlCore/config.h>
 
 namespace MLCore::Memory {
 	inline ArenaAllocator::ArenaAllocator(size_t arenaSize)
@@ -16,7 +15,7 @@ namespace MLCore::Memory {
 			throw std::bad_alloc();
 		}
 
-		#ifdef ML_CORE_DEBUG
+		#ifdef MLCORE_DEBUG
 			std::memset(m_Arena, 0xCD, arenaSize);
 		#endif
 	}
@@ -38,14 +37,16 @@ namespace MLCore::Memory {
 	
 	template <typename T>
 	inline T* ArenaAllocator::Allocate(size_t size) {
-		assert(m_Arena != nullptr); ///  Make sure the arena is initialized
+		///  Make sure the arena is initialized
+		if (!m_Arena) {
+			throw std::bad_alloc();
+		}
 
 		if (size == 0) {
 			return nullptr;
 		}
 
 		size_t alignment = alignof(T);
-		assert(alignment > 0);
 
 		uintptr_t currentAddress = reinterpret_cast<uintptr_t>(m_Arena) + m_Offset;
 		uintptr_t alignedAddress = AlignForward(currentAddress, alignment);
@@ -53,7 +54,7 @@ namespace MLCore::Memory {
 		size_t adjustment = alignedAddress - currentAddress;
 		size_t requiredBytes = sizeof(T) * size;
 
-		// Bounds check
+		/// Bounds check
 		if (m_Offset + adjustment + requiredBytes > m_ArenaCapacity) {
 			throw std::bad_alloc();
 		}
@@ -62,7 +63,7 @@ namespace MLCore::Memory {
 
 		T* result = reinterpret_cast<T*>(m_Arena + m_Offset);
 
-		#ifdef ML_CORE_DEBUG
+		#ifdef MLCORE_DEBUG
 			std::memset(result, 0xCD, requiredBytes); /// Set each byte of "result" to the value 0xCD for "requiredBytes" number of bytes
 		#endif
 
@@ -72,7 +73,7 @@ namespace MLCore::Memory {
 	}
 
 	inline void ArenaAllocator::Reset() {
-		#ifdef ML_CORE_DEBUG
+		#ifdef MLCORE_DEBUG
 			std::memset(m_Arena, 0xDD, m_ArenaCapacity);
 		#endif
 
@@ -94,4 +95,33 @@ namespace MLCore::Memory {
 	inline bool ArenaAllocator::IsInitialized() const {
 		return m_Arena != nullptr;
 	}
+	
+	inline size_t ArenaAllocator::Checkpoint() const {
+		return m_Offset;
+	}
+	
+	inline void ArenaAllocator::RestoreCheckpoint(size_t checkpoint) {
+		if (checkpoint > m_Offset) {
+			throw std::out_of_range("ERROR: RestoreCheckpoint: Cannot restore checkpoint in unitialized memory");
+		}
+
+		#ifdef MLCORE_DEBUG
+			const uintptr_t base = reinterpret_cast<uintptr_t>(m_Arena);
+
+			for (const auto& [ptr, bytes]: m_DebugPersistentRanges) {
+				const uintptr_t rangeOffset = reinterpret_cast<uintptr_t>(ptr) - base;
+				assert(rangeOffset + bytes <= checkpoint && "RestoreCheckpoint would reclaim a registered persistent allocation — the checkpoint was taken before this object was constructed");
+			}
+			
+			std::memset(m_Arena + checkpoint, 0xDD, m_Offset - checkpoint);
+		#endif
+
+		m_Offset = checkpoint;
+	}
+
+	#ifdef MLCORE_DEBUG
+	inline void ArenaAllocator::RegisterPersistent(const void* ptr, size_t bytes) {
+		m_DebugPersistentRanges.emplace_back(ptr, bytes);
+	}
+	#endif
 }

@@ -49,7 +49,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		bool scalarOnLeft; /// Flag indicating whether a scalar operand is positioned on the left side of an operation.
+		bool m_ScalarOnLeft; /// Flag indicating whether a scalar operand is positioned on the left side of an operation.
 	};
 
 	/// <summary>
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		T scalar;
+		T m_Scalar;
 	};
 
 	/// <summary>
@@ -102,8 +102,8 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		T scalar; /// Scalar of type T that the input tensor was divided by
-		bool scalarOnLeft; /// Flag indicating whether a scalar operand is positioned on the left side of an operation.
+		T m_Scalar; /// Scalar of type T that the input tensor was divided by
+		bool m_ScalarOnLeft; /// Flag indicating whether a scalar operand is positioned on the left side of an operation.
 	};
 }
 

@@ -48,10 +48,10 @@ namespace MLCore::Optimizers {
 		virtual void ZeroGrad();
 
 		/// <summary>
-		/// Returns a non-const reference to the optimizer's collection of parameter groups.
+		/// Returns a const reference to the optimizer's collection of parameter groups.
 		/// </summary>
 		/// <typeparam name="T">Type used for parameters stored in each ParameterGroup (e.g., a tensor or numeric type).</typeparam>
-		/// <returns>A non-const reference to the internal std::vector<ParameterGroup<T>> that holds the optimizer's parameter groups. Modifying the returned vector or its elements updates the optimizer's internal state; the reference is valid while the optimizer instance exists and its container is not reallocated.</returns>
+		/// <returns>A const reference to the internal std::vector<ParameterGroup<T>> that holds the optimizer's parameter groups. Modifying the returned vector or its elements updates the optimizer's internal state; the reference is valid while the optimizer instance exists and its container is not reallocated.</returns>
 		std::vector<ParameterGroup<T>>& ParamGroups();
 
 		/// <summary>

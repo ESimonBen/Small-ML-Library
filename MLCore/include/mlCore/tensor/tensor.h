@@ -35,7 +35,7 @@ namespace MLCore::TensorCore {
 		/// <param name="grad">Optional shared pointer to a gradient tensor associated with this tensor; moved into the object (defaults to nullptr).</param>
 		/// <param name="gradFn">Optional shared pointer to the gradient function (backward function) used for autograd; moved into the object (defaults to nullptr).</param>
 		TensorImpl(const Utils::Shape& shape,
-			const std::vector<size_t>& strides,
+			std::vector<size_t> strides,
 			Memory::Storage<T> storage,
 			Memory::ArenaAllocator* allocator,
 			size_t offset = 0,
@@ -190,6 +190,13 @@ namespace MLCore::TensorCore {
 		size_t NumElements() const;
 
 		/// <summary>
+		/// Returns whether the tensor contains any elements.
+		/// </summary>
+		/// <typeparam name="T">The type of elements stored in the tensor.</typeparam>
+		/// <returns>true if NumElements() != 0 (the tensor contains one or more elements); false if NumElements() == 0 (the tensor is empty).</returns>
+		bool IsEmpty() const;
+
+		/// <summary>
 		/// Assigns the given value to every element of the tensor.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
@@ -330,6 +337,10 @@ namespace MLCore::TensorCore {
 		template <typename... Indices, typename = std::enable_if_t<(std::is_integral_v<Indices> && ...)>>
 		const T& operator()(Indices... indices) const;
 
+		T& AtOffset(size_t physicalOffset);
+
+		const T& AtOffset(size_t physicalOffset) const;
+
 		/// <summary>
 		/// Checks whether this tensor is marked to require gradient computation.
 		/// </summary>
@@ -393,6 +404,12 @@ namespace MLCore::TensorCore {
 		void SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn);
 
 		/// <summary>
+		/// Ensures the tensor has an associated gradient buffer. If no gradient exists, allocates a new Tensor with the same shape and allocator, fills it with zeros, and assigns it to m_Impl->grad.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor and its gradient.</typeparam>
+		void InitializeGrad();
+
+		/// <summary>
 		/// Accumulates gradInput into this tensor's stored gradient. If this tensor does not require gradients the function returns immediately. If the internal gradient storage is not yet allocated, it is created and initialized to zero before performing an element-wise addition of gradInput.
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensor (e.g., float, double, int).</typeparam>
@@ -443,7 +460,7 @@ namespace MLCore::TensorCore {
 		/// <typeparam name="T">The element type of the Tensor (the class template parameter).</typeparam>
 		/// <param name="indices">A vector of indices, one per tensor dimension. Must have length equal to Rank(); each value must be less than the corresponding dimension returned by Dims().</param>
 		/// <returns>The computed offset (size_t) into the tensor's storage: the base offset plus the sum of indices[i] * strides[i].</returns>
-		size_t ComputeOffset(const std::vector<size_t>& indices);
+		size_t ComputeOffset(const std::vector<size_t>& indices) const;
 
 		/// <summary>
 		/// Converts a flat (linear) index into a vector of per-dimension indices for this tensor. Throws std::out_of_range if the index is out of bounds (index >= NumElements()).

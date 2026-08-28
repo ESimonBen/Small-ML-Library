@@ -60,7 +60,7 @@ namespace MLCore::Operations {
 		info.strideA.resize(targetRank);
 
 		for (size_t i = 0; i < targetRank; ++i) {
-			size_t sourceDim = (i < offset) ? 1 : sourceShape[i - offset];
+			size_t sourceDim = GetAlignedDim(sourceShape, i, offset);
 			size_t targetDim = targetShape[i];
 
 			if (sourceDim != targetDim && sourceDim != 1) {
@@ -82,8 +82,8 @@ namespace MLCore::Operations {
 		const size_t offsetB = rank - rankB;
 
 		for (size_t i = 0; i < rank; ++i) {
-			size_t dimA = (i < offsetA) ? 1 : shapeA[i - offsetA];
-			size_t dimB = (i < offsetB) ? 1 : shapeB[i - offsetB];
+			size_t dimA = GetAlignedDim(shapeA, i, offsetA);
+			size_t dimB = GetAlignedDim(shapeB, i, offsetB);
 
 			if (dimA != dimB && dimA != 1 && dimB != 1) {
 				return false;
@@ -179,12 +179,16 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> ReduceSumToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Input tensor cannot be null");
 		}
 
 		if (!CanBroadcast(targetShape, A.GetShape())) {
 			throw std::runtime_error("ERROR: ReduceSumToShape: Invalid broadcast reduction");
+		}
+
+		if (A.Rank() < targetShape.Rank()) {
+			throw std::runtime_error("ERROR: ReduceSumToShape: Target rank exceeds input rank");
 		}
 
 		TensorCore::Tensor<T> result = A.Detach();
@@ -213,7 +217,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: ExpandToShape: Input tensor cannot be null");
 		}
 
@@ -265,7 +269,10 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> result{ impl };
 
-		// ReshapeGradFn
+		if (A.RequiresGrad()) {
+			result.SetRequiresGrad(true);
+			result.SetGradFn(std::make_shared<AutoGrad::ReshapeGradFn<T>>(A.GetImpl()));
+		}
 
 		return result;
 	}

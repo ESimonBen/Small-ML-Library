@@ -1,4 +1,4 @@
- /// activation.inl
+﻿ /// activation.inl
 #include <cmath>
 #include <algorithm>
 #include <mlCore/operations/reduction/reduction.h>
@@ -9,7 +9,7 @@
 namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> ReLU(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
@@ -33,7 +33,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> LeakyReLU(const TensorCore::Tensor<T>& A, T alpha) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
@@ -57,11 +57,14 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> Sigmoid(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
-		TensorCore::Tensor<T> neg = Negate(A);
+		const T safeBound = static_cast<T>(0.9) * static_cast<T>(std::log(std::numeric_limits<T>::max()));
+
+		TensorCore::Tensor<T> clamped = Clamp(A, -safeBound, safeBound);
+		TensorCore::Tensor<T> neg = Negate(clamped);
 		TensorCore::Tensor<T> exp = Exp(neg);
 
 		TensorCore::Tensor<T> sum = AddScalar(exp, static_cast<T>(1));
@@ -72,13 +75,17 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> Tanh(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
-		TensorCore::Tensor<T> neg = Negate(A);
+		const T safeBound = static_cast<T>(0.9) * static_cast<T>(std::log(std::numeric_limits<T>::max()));
 
-		TensorCore::Tensor<T> expPos = Exp(A); /// exp(x)
+		TensorCore::Tensor<T> clamped = Clamp(A, -safeBound, safeBound);
+
+		TensorCore::Tensor<T> neg = Negate(clamped);
+
+		TensorCore::Tensor<T> expPos = Exp(clamped); /// exp(x)
 		TensorCore::Tensor<T> expNeg = Exp(neg); /// exp(-x)
 
 		TensorCore::Tensor<T> diff = Subtract(expPos, expNeg);
@@ -91,7 +98,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	TensorCore::Tensor<T> Softmax(const TensorCore::Tensor<T>& A) {
-		if (A.Dims().empty()) {
+		if (A.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be empty");
 		}
 
@@ -155,7 +162,7 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < inner; ++i) {
 				size_t base = o * axisSize * inner + i;
 
-				T max = -std::numeric_limits<T>::infinity();
+				T max = A[base];
 
 				for (size_t j = 0; j < axisSize; ++j) {
 					T testVal = A[base + j * inner];

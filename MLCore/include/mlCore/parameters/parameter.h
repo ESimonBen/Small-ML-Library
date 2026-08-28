@@ -17,8 +17,16 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <param name="tensor">Reference to a TensorCore::Tensor<T> used to initialize the Parameter's data member.</param>
 		explicit Parameter(const TensorCore::Tensor<T>& tensor)
-			: data(tensor), id(NextID())
-		{}
+			: data(tensor), id(NextID()) {
+			data.SetRequiresGrad(true);
+			data.InitializeGrad();
+
+			#ifdef MLCORE_DEBUG
+				data.GetAllocator().RegisterPersistent(data.Data(), data.NumElements() * sizeof(T));
+				TensorCore::Tensor<T> grad = data.Grad();
+				grad.GetAllocator().RegisterPersistent(grad.Data(), grad.NumElements() * sizeof(T));
+			#endif
+		}
 
 		Parameter(const Parameter&) = delete;
 		Parameter& operator=(const Parameter&) = delete;
@@ -31,7 +39,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <returns>A ParamID value drawn from an internal counter, starting at 0 and increasing by 1 on each call. The function returns the current counter value and then increments it. Not safe for concurrent use without external synchronization.</returns>
 		static ParamID NextID() {
-			static ParamID counter = 0;
+			static std::atomic<ParamID> counter = 0;
 			return counter++;
 		}
 

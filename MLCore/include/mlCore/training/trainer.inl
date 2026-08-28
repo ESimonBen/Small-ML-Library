@@ -1,5 +1,6 @@
  /// trainer.inl
 #include <mlCore/data/tensorDataset.h>
+#include "trainer.h"
 
 namespace MLCore::Training {
 	template <typename T>
@@ -10,6 +11,7 @@ namespace MLCore::Training {
 	template <typename T>
 	inline void Trainer<T>::Fit(Data::DataLoader<T>& dataLoader, int epochs) {
 		m_Model.Train();
+		EnsureCheckpoint();
 
 		int endEpoch = m_CurrentEpoch + epochs;
 
@@ -53,9 +55,11 @@ namespace MLCore::Training {
 				if (OnBatchEnd) {
 					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
+
+				Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
 			}
 
-			if (batchCount <= 0) {
+			if (batchCount == 0) {
 				throw std::runtime_error("ERROR: No batches");
 			}
 
@@ -98,6 +102,7 @@ namespace MLCore::Training {
 	template <typename T>
 	inline void Trainer<T>::Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs) {
 		m_Model.Train();
+		EnsureCheckpoint();
 
 		int endEpoch = m_CurrentEpoch + epochs;
 
@@ -141,9 +146,11 @@ namespace MLCore::Training {
 				if (OnBatchEnd) {
 					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
+
+				Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
 			}
 
-			if (batchCount <= 0) {
+			if (batchCount == 0) {
 				throw std::runtime_error("ERROR: No batches");
 			}
 
@@ -155,19 +162,30 @@ namespace MLCore::Training {
 
 			auto valResult = Evaluate(valLoader);
 
+			T candidate;
+
+			if (m_BestMetricName.empty()) {
+				candidate = valResult.loss;
+			}
+			else {
+				auto it = valResult.metrics.find(m_BestMetricName);
+
+				if (it == valResult.metrics.end()) {
+					throw std::runtime_error("ERROR: Trainer: best-metric tracking configured for '" + m_BestMetricName + "' but it was not found among validation metrics " "(was it registered via AddMetric?)");
+				}
+
+				candidate = it->second;
+			}
+
+			bool isBetter = !m_HasBestMetric || (m_BestMetricMode == MetricMode::Min ? candidate < m_BestValidationMetric : candidate > m_BestValidationMetric);
+
+			if (isBetter) {
+				m_BestValidationMetric = candidate;
+				m_HasBestMetric = true;
+			}
+
 			if (OnEpochEnd) {
 				EpochStats<T> stats;
-
-				if (!valResult.metrics.empty()) {
-					auto it = valResult.metrics.begin();
-
-					T metric = it->second;
-
-					if (!m_HasBestMetric || m_BestValidationMetric == static_cast<T>(0) || valResult.loss < m_BestValidationMetric) {
-						m_BestValidationMetric = valResult.loss;
-						m_HasBestMetric = true;
-					}
-				}
 
 				stats.epoch = m_CurrentEpoch;
 				stats.trainLoss = epochLoss;
@@ -229,6 +247,12 @@ namespace MLCore::Training {
 	}
 	
 	template<typename T>
+	inline void Trainer<T>::SetBestMetricTracking(const std::string& metricName, MetricMode mode) {
+		m_BestMetricName = metricName;
+		m_BestMetricMode = mode;
+	}
+
+	template<typename T>
 	inline TrainerState<T> Trainer<T>::GetState() const {
 		TrainerState<T> state;
 
@@ -236,6 +260,8 @@ namespace MLCore::Training {
 		state.globalStep = m_GlobalStep;
 		state.bestValidationMetric = m_BestValidationMetric;
 		state.hasBestMetric = m_HasBestMetric;
+		state.bestMetricName = m_BestMetricName;
+		state.bestMetricMode = m_BestMetricMode;
 
 		return state;
 	}
@@ -278,6 +304,8 @@ namespace MLCore::Training {
 			}
 
 			batches++;
+
+			Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
 		}
 
 		if (batches <= 0) {
@@ -317,5 +345,13 @@ namespace MLCore::Training {
 		}
 
 		return results;
+	}
+	
+	template<typename T>
+	inline void MLCore::Training::Trainer<T>::EnsureCheckpoint() {
+		if (!m_HasCheckpoint) {
+			m_ParamCheckpoint = Runtime::MLContext::GetAllocator().Checkpoint();
+			m_HasCheckpoint = true;
+		}
 	}
 }

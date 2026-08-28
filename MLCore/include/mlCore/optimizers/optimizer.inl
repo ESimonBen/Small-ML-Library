@@ -4,7 +4,7 @@
 namespace MLCore::Optimizers {
 	template <typename T>
 	inline Optimizer<T>::Optimizer(std::vector<std::reference_wrapper<NN::Parameter<T>>> params, T learningRate, T weightDecay) {
-		m_ParamGroups.emplace_back(params, learningRate, weightDecay);
+		m_ParamGroups.emplace_back(std::move(params), learningRate, weightDecay);
 	}
 	
 	template <typename T>
@@ -50,7 +50,7 @@ namespace MLCore::Optimizers {
 				NN::Parameter<T>& p = ref.get();
 				TensorCore::Tensor<T>& param = p.Data();
 
-				if (!param.HasGrad()) {
+				if (!param.RequiresGrad() || !param.HasGrad()) {
 					continue;
 				}
 

@@ -48,7 +48,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <param name="input">The input tensor (const reference) to be processed.</param>
 		/// <returns>A Tensor<T> containing the result of the forward computation.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const = 0;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) = 0;
 
 		/// <summary>
 		/// Adds a submodule to this Module, registering it under the given name and storing it in the internal submodule list.

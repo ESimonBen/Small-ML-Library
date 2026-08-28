@@ -8,7 +8,7 @@
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> AddScalar(const TensorCore::Tensor<T>& Input, const T Scalar) {
-		if (Input.Dims().empty()) {
+		if (Input.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -31,7 +31,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> SubtractScalar(const TensorCore::Tensor<T>& Input, const T Scalar, bool scalarOnLeft)  {
-		if (Input.Dims().empty()) {
+		if (Input.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -54,7 +54,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> MultiplyScalar(const TensorCore::Tensor<T>& Input, const T Scalar)  {
-		if (Input.Dims().empty()) {
+		if (Input.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -77,7 +77,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> DivideScalar(const TensorCore::Tensor<T>& Input, const T Scalar, bool scalarOnLeft) {
-		if (Input.Dims().empty()) {
+		if (Input.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensor cannot be null");
 		}
 
@@ -86,9 +86,12 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Divide by 0");
 		}
 
-		for (auto& val : Input) {
-			if (val == 0 && scalarOnLeft) {
-				throw std::runtime_error("ERROR: Divide by 0");
+		if (scalarOnLeft) {
+			size_t size = Input.NumElements();
+			for (size_t i = 0; i < size; ++i) {
+				if (Input[i] == static_cast<T>(0)) {
+					throw std::runtime_error("ERROR: Divide by 0");
+				}
 			}
 		}
 

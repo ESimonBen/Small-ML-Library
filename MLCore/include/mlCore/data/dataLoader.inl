@@ -2,6 +2,7 @@
 #include <random>
 #include <numeric>
 #include <algorithm>
+#include <mlCore/runtime/context.h>
 
 namespace MLCore::Data {
 	template <typename T>
@@ -23,8 +24,7 @@ namespace MLCore::Data {
 		std::iota(m_Indices.begin(), m_Indices.end(), 0);
 
 		if (m_Shuffle) {
-			std::random_device rand;
-			std::shuffle(m_Indices.begin(), m_Indices.end(), std::mt19937(rand()));
+			std::shuffle(m_Indices.begin(), m_Indices.end(), Runtime::MLContext::GetRNG());
 		}
 	}
 	

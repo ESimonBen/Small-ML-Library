@@ -111,8 +111,10 @@ namespace MLCore::AutoGrad {
 	
 	template <typename T>
 	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
-		: GradFn<T>(a), inputShape(a->shape), m_Axis(axis), m_KeepDims(keepDims) {
-		assert(axis < inputShape.Rank());
+		: GradFn<T>(a), m_InputShape(a->shape), m_Axis(axis), m_KeepDims(keepDims) {
+		if (m_Axis >= m_InputShape.Rank()) {
+			throw std::invalid_argument("ERROR: AxisSumGradFn: Axis must be within shape rank");
+		}
 	}
 	
 	template <typename T>
@@ -129,7 +131,7 @@ namespace MLCore::AutoGrad {
 			gradientOut = Operations::Unsqueeze(gradientOut, m_Axis);
 		}
 
-		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, inputShape);
+		TensorCore::Tensor<T> gradInput = Operations::ExpandToShape(gradientOut, m_InputShape);
 
 		input.Backward(gradInput);
 	}

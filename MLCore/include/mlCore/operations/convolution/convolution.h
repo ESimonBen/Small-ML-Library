@@ -4,6 +4,17 @@
 
 namespace MLCore::Operations {
 	/// <summary>
+	/// Calculates the output size of a 1-D convolution for the given input size and convolution parameters.
+	/// </summary>
+	/// <param name="inputSize">Size of the input along the dimension being convolved (e.g., width or height).</param>
+	/// <param name="kernelSize">Size (length) of the convolution kernel.</param>
+	/// <param name="stride">Step size between successive kernel positions.</param>
+	/// <param name="padding">Amount of padding added to each side of the input.</param>
+	/// <param name="dilation">Dilation factor between kernel elements (1 means no dilation).</param>
+	/// <returns>The computed output size as a size_t. Equivalent to (paddedInputSize - effectiveKernelSize) / stride + 1, where effectiveKernelSize = dilation * (kernelSize - 1) + 1 and paddedInputSize = inputSize + 2 * padding. Integer division (truncation) is used.</returns>
+	size_t ComputeConvOutputSize(size_t inputSize, size_t kernelSize, size_t stride, size_t padding, size_t dilation);
+
+	/// <summary>
 	/// Performs a 1-dimensional convolution of an input tensor with a kernel tensor, optionally adding a bias. Validates tensor ranks, channel compatibility, allocator equality, and convolution parameters; may enable autograd for the result if any input requires gradients.
 	/// </summary>
 	/// <typeparam name="T">Numeric element type stored in the tensors (e.g., float, double).</typeparam>

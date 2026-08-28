@@ -19,7 +19,9 @@ namespace MLCore::Memory {
 		/// <param name="size">Number of elements referenced by data.</param>
 		Storage(T* data, size_t size)
 			: m_Data(data), m_Size(size) {
-			assert(data != nullptr || size == 0);
+			if (m_Data == nullptr && m_Size != 0) {
+				throw std::invalid_argument("ERROR: Storage: Data must exist or size must be 0");
+			}
 		}
 
 		/// <summary>

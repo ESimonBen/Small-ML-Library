@@ -23,7 +23,7 @@ namespace MLCore::Optimizers {
 		/// <param name="beta1">The exponential decay rate for the first moment estimates.</param>
 		/// <param name="beta2">The exponential decay rate for the second moment estimates.</param>
 		/// <param name="epsilon">A small constant added for numerical stability when normalizing updates.</param>
-		Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>> &params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
+		Adam(std::vector <std::reference_wrapper<NN::Parameter<T>>> params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
 			T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace MLCore::Optimizers {
 		/// <param name="beta1">Exponential decay rate for the first moment estimates (beta1).</param>
 		/// <param name="beta2">Exponential decay rate for the second moment estimates (beta2).</param>
 		/// <param name="epsilon">Small constant added for numerical stability when computing updates.</param>
-		AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>>& params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
+		AdamW(std::vector <std::reference_wrapper<NN::Parameter<T>>> params, T learningRate = static_cast<T>(.001), T weightDecay = static_cast<T>(0), T beta1 = static_cast<T>(.9),
 			T beta2 = static_cast<T>(.999), T epsilon = static_cast<T>(1e-8));
 
 		/// <summary>

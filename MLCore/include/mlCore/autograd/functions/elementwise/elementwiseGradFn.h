@@ -47,7 +47,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double) handled by this gradient function.</typeparam>
 		/// <param name="gradOutput">The gradient tensor propagated from subsequent layers (const reference). This gradient is detached and then reduced or negated as required before being applied to inputs.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
 	/// <summary>

@@ -80,7 +80,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (A.Dims().empty() || B.Dims().empty()) {
+		if (A.IsEmpty() || B.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 

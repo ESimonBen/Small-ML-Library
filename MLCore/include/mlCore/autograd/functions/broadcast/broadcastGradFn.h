@@ -68,7 +68,6 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The value/gradient element type handled by this gradient function.</typeparam>
 		/// <param name="a">Shared pointer to the underlying GradFn<T>::Impl that provides the gradient implementation; forwarded to the base GradFn<T> constructor.</param>
-		/// <param name="originalShape">Reference to a Utils::Shape describing the original/target shape; its value is copied into the member m_OriginalShape.</param>
 		ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -77,9 +76,6 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">Element type of the tensors (for example, float or double).</typeparam>
 		/// <param name="gradOutput">Gradient tensor with respect to this function's output. It is detached and then expanded to the input's original shape to form the input gradient.</param>
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
-
-	private:
-		Utils::Shape m_OriginalShape; /// The shape of the input tensor
 	};
 
 	/// <summary>
@@ -94,7 +90,6 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type for which gradients are computed.</typeparam>
 		/// <param name="a">A shared pointer to the child gradient function implementation (GradFn<T>::Impl). This is forwarded to the base GradFn<T> constructor.</param>
-		/// <param name="originalShape">A reference to the original tensor shape. It is used to initialize the member m_OriginalShape (copied into the object) and determines the target shape for expanding gradients.</param>
 		ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -103,9 +98,6 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The element type of the tensors (for example float or double).</typeparam>
 		/// <param name="gradOutput">The gradient tensor with respect to the operation's output. It is detached and used as the source for reduction back to the input shape.</param>
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
-
-	private:
-		Utils::Shape m_OriginalShape; /// The shape of the input tensor
 	};
 
 	template <typename T>

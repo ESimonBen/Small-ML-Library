@@ -33,79 +33,6 @@ TEST_SUITE("Shape Tests") {
         CHECK(shape.NumElements() == 0);
 
         CHECK(shape.Dims().empty());
-        CHECK(shape.Strides().empty());
-    }
-
-    TEST_CASE("Shape computes row-major strides") {
-        Shape shape({ 2,3,4 });
-
-        auto strides = shape.Strides();
-
-        REQUIRE(strides.size() == 3);
-
-        CHECK(strides[0] == 12);
-        CHECK(strides[1] == 4);
-        CHECK(strides[2] == 1);
-    }
-
-    TEST_CASE("FlattenIndex converts multidimensional indices") {
-        Shape shape({ 2,3,4 });
-
-        CHECK(shape.FlattenIndex({ 0,0,0 }) == 0);
-        CHECK(shape.FlattenIndex({ 0,0,1 }) == 1);
-        CHECK(shape.FlattenIndex({ 0,1,0 }) == 4);
-        CHECK(shape.FlattenIndex({ 1,2,3 }) == 23);
-    }
-
-    TEST_CASE("UnflattenIndex converts flat indices") {
-        Shape shape({ 2,3,4 });
-
-        CHECK(shape.UnflattenIndex(0)
-            == std::vector<size_t>{0, 0, 0});
-
-        CHECK(shape.UnflattenIndex(4)
-            == std::vector<size_t>{0, 1, 0});
-
-        CHECK(shape.UnflattenIndex(23)
-            == std::vector<size_t>{1, 2, 3});
-    }
-
-    TEST_CASE("Flatten and unflatten are inverses") {
-        Shape shape({ 2,3,4 });
-
-        for (size_t i = 0; i < shape.NumElements(); ++i) {
-            auto indices = shape.UnflattenIndex(i);
-
-            CHECK(shape.FlattenIndex(indices) == i);
-        }
-    }
-
-    TEST_CASE("FlattenIndex throws on dimension mismatch") {
-        Shape shape({ 2,3 });
-
-        CHECK_THROWS_AS(
-            shape.FlattenIndex({ 1 }),
-            std::runtime_error
-        );
-
-        CHECK_THROWS_AS(
-            shape.FlattenIndex({ 1,2,3 }),
-            std::runtime_error
-        );
-    }
-
-    TEST_CASE("FlattenIndex throws on invalid indices") {
-        Shape shape({ 2,3 });
-
-        CHECK_THROWS_AS(
-            shape.FlattenIndex({ 2,0 }),
-            std::out_of_range
-        );
-
-        CHECK_THROWS_AS(
-            shape.FlattenIndex({ 0,3 }),
-            std::out_of_range
-        );
     }
 
     TEST_CASE("Shape equality") {
@@ -126,7 +53,6 @@ TEST_SUITE("Shape Tests") {
         Shape copy(original);
 
         CHECK(copy == original);
-        CHECK(copy.Strides() == original.Strides());
         CHECK(copy.NumElements() == original.NumElements());
     }
 
@@ -137,6 +63,5 @@ TEST_SUITE("Shape Tests") {
         assigned = original;
 
         CHECK(assigned == original);
-        CHECK(assigned.Strides() == original.Strides());
     }
 }

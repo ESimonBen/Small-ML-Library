@@ -11,7 +11,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (predictions.Dims().empty() || targets.Dims().empty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -53,7 +53,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (predictions.Dims().empty() || targets.Dims().empty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -95,7 +95,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (predictions.Dims().empty() || targets.Dims().empty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -151,7 +151,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (logits.Dims().empty() || targets.Dims().empty()) {
+		if (logits.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 		
@@ -198,12 +198,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses) {
 		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (predictions.Dims().empty() || targets.Dims().empty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -223,7 +223,7 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> negate = Negate(targets);
 		TensorCore::Tensor<T> loss = Multiply(negate, logClamp);
 
-		TensorCore::Tensor<T> perSample = AxisMean(loss, axis, true);
+		TensorCore::Tensor<T> perSample = avgOverClasses ? AxisMean(loss, axis, true) : AxisSum(loss, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -246,12 +246,12 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses) {
 		if (&logits.GetAllocator() != &targets.GetAllocator()) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
-		if (logits.Dims().empty() || targets.Dims().empty()) {
+		if (logits.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: Input tensors cannot be null");
 		}
 
@@ -268,7 +268,7 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> mul = Multiply(targets, logSoftmax);
 		TensorCore::Tensor<T> neg = Negate(mul);
 
-		TensorCore::Tensor<T> perSample = AxisMean(neg, axis, true);
+		TensorCore::Tensor<T> perSample = avgOverClasses ? AxisMean(neg, axis, true) : AxisSum(neg, axis, true);
 
 		switch (config) {
 		case Reduction::None:
@@ -294,31 +294,55 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		if (predictions.IsEmpty()) {
+			throw std::runtime_error("ERROR: MeanSquaredError: Invalid shape rank");
+		}
+
 		return MeanSquaredError(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		if (predictions.IsEmpty()) {
+			throw std::runtime_error("ERROR: MeanAbsoluteError: Invalid shape rank");
+		}
+
 		return MeanAbsoluteError(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
+		if (predictions.IsEmpty()) {
+			throw std::runtime_error("ERROR: BinaryCrossEntropy: Invalid shape rank");
+		}
+
 		return BinaryCrossEntropy(predictions, targets, predictions.Rank() - 1, config);
 	}
 
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config) {
+		if (logits.IsEmpty()) {
+			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Invalid shape rank");
+		}
+
 		return BinaryCrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
-		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config);
+	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses) {
+		if (predictions.IsEmpty()) {
+			throw std::runtime_error("ERROR: CrossEntropy: Invalid shape rank");
+		}
+
+		return CrossEntropy(predictions, targets, predictions.Rank() - 1, config, avgOverClasses);
 	}
 
 	template <typename T>
-	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config) {
-		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config);
+	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses) {
+		if (logits.IsEmpty()) {
+			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Invalid shape rank");
+		}
+
+		return CrossEntropyWithLogits(logits, targets, logits.Rank() - 1, config, avgOverClasses);
 	}
 }

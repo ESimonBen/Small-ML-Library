@@ -3,18 +3,20 @@
 
 namespace MLCore::NN {
 	template <typename T>
-	inline TensorCore::Tensor<T> ReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> ReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) {
 		return Operations::ReLU(input);
 	}
 	
 	template <typename T>
 	inline LeakyReLULayer<T>::LeakyReLULayer(T alpha)
 		: m_Alpha(alpha) {
-		assert(m_Alpha >= 0);
+		if (m_Alpha < static_cast<T>(0)) {
+			throw std::invalid_argument("ERROR: LeakyReLULayer: Alpha must be non-negative");
+		}
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> LeakyReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> LeakyReLULayer<T>::Forward(const TensorCore::Tensor<T>& input) {
 		return Operations::LeakyReLU(input, m_Alpha);
 	}
 	
@@ -24,12 +26,12 @@ namespace MLCore::NN {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> TanhLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> TanhLayer<T>::Forward(const TensorCore::Tensor<T>& input) {
 		return Operations::Tanh(input);
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> SigmoidLayer<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> SigmoidLayer<T>::Forward(const TensorCore::Tensor<T>& input) {
 		return Operations::Sigmoid(input);
 	}
 }

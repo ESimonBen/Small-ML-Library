@@ -1,5 +1,6 @@
 /// convolutionGradFn.inl
 #include <optional>
+#include <mlCore/operations/convolution/convolution.h>
 
 namespace MLCore::AutoGrad {
 	template <typename T>
@@ -36,7 +37,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		if (gradOutput.Rank() != 3) {
-			throw std::runtime_error("ERROR: Conv2DGradFn: Output gradient must have 4 dimensions");
+			throw std::runtime_error("ERROR: Conv1DGradFn: Output gradient must have 3 dimensions");
 		}
 
 		const size_t batchSize = input.Dims()[0];
@@ -46,6 +47,12 @@ namespace MLCore::AutoGrad {
 		const size_t outputChannels = kernel.Dims()[0];
 		const size_t kernelChannels = kernel.Dims()[1];
 		const size_t kernelLength = kernel.Dims()[2];
+
+		const size_t expectedOutputLength = Operations::ComputeConvOutputSize(inputLength, kernelLength, m_Stride, m_Padding, m_Dilation);
+
+		if (gradOutput.Dims()[2] != expectedOutputLength) {
+			throw std::runtime_error("ERROR: Conv1DGradFn: Output gradient length mismatch");
+		}
 
 		const size_t outputLength = gradOutput.Dims()[2];
 
@@ -69,17 +76,17 @@ namespace MLCore::AutoGrad {
 
 		if (requiresInputGrad) {
 			gradInput.emplace(TensorCore::Tensor<T>{{batchSize, inputChannels, inputLength}, allocator});
-			gradInput.value().Fill(0.0f);
+			gradInput.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresKernelGrad) {
 			gradKernel.emplace(TensorCore::Tensor<T>{{outputChannels, inputChannels, kernelLength}, allocator});
-			gradKernel.value().Fill(0.0f);
+			gradKernel.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresBiasGrad) {
 			gradBias.emplace(TensorCore::Tensor<T>{{outputChannels}, allocator});
-			gradBias.value().Fill(0.0f);
+			gradBias.value().Fill(static_cast<T>(0));
 		}
 
 		for (size_t n = 0; n < batchSize; ++n) {
@@ -184,6 +191,13 @@ namespace MLCore::AutoGrad {
 		const size_t kernelHeight = kernel.Dims()[2];
 		const size_t kernelWidth = kernel.Dims()[3];
 
+		const size_t expectedOutputHeight = Operations::ComputeConvOutputSize(inputHeight, kernelHeight, m_StrideH, m_PaddingH, m_DilationH);
+		const size_t expectedOutputWidth = Operations::ComputeConvOutputSize(inputWidth, kernelWidth, m_StrideW, m_PaddingW, m_DilationW);
+
+		if (gradOutput.Dims()[2] != expectedOutputHeight || gradOutput.Dims()[3] != expectedOutputWidth) {
+			throw std::runtime_error("ERROR: Conv2DGradFn: Output gradient spatial dimensions mismatch");
+		}
+
 		const size_t outputHeight = gradOutput.Dims()[2];
 		const size_t outputWidth = gradOutput.Dims()[3];
 
@@ -207,17 +221,17 @@ namespace MLCore::AutoGrad {
 
 		if (requiresInputGrad) {
 			gradInput.emplace(TensorCore::Tensor<T>{{batchSize, inputChannels, inputHeight, inputWidth}, allocator});
-			gradInput.value().Fill(0.0f);
+			gradInput.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresKernelGrad) {
 			gradKernel.emplace(TensorCore::Tensor<T>{{outputChannels, inputChannels, kernelHeight, kernelWidth}, allocator});
-			gradKernel.value().Fill(0.0f);
+			gradKernel.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresBiasGrad) {
 			gradBias.emplace(TensorCore::Tensor<T>{{outputChannels}, allocator});
-			gradBias.value().Fill(0.0f);
+			gradBias.value().Fill(static_cast<T>(0));
 		}
 
 		for (size_t n = 0; n < batchSize; ++n) {
@@ -315,7 +329,7 @@ namespace MLCore::AutoGrad {
 		}
 
 		if (gradOutput.Rank() != 5) {
-			throw std::runtime_error("ERROR: Conv3DGradFn: Output gradient must have 4 dimensions");
+			throw std::runtime_error("ERROR: Conv3DGradFn: Output gradient must have 5 dimensions");
 		}
 
 		const size_t batchSize = input.Dims()[0];
@@ -329,6 +343,14 @@ namespace MLCore::AutoGrad {
 		const size_t kernelDepth = kernel.Dims()[2];
 		const size_t kernelHeight = kernel.Dims()[3];
 		const size_t kernelWidth = kernel.Dims()[4];
+
+		const size_t expectedOutputDepth = Operations::ComputeConvOutputSize(inputDepth, kernelDepth, m_StrideD, m_PaddingD, m_DilationD);
+		const size_t expectedOutputHeight = Operations::ComputeConvOutputSize(inputHeight, kernelHeight, m_StrideH, m_PaddingH, m_DilationH);
+		const size_t expectedOutputWidth = Operations::ComputeConvOutputSize(inputWidth, kernelWidth, m_StrideW, m_PaddingW, m_DilationW);
+
+		if (gradOutput.Dims()[2] != expectedOutputDepth || gradOutput.Dims()[3] != expectedOutputHeight || gradOutput.Dims()[4] != expectedOutputWidth) {
+			throw std::runtime_error("ERROR: Conv3DGradFn: Output gradient spatial dimensions mismatch");
+		}
 
 		const size_t outputDepth = gradOutput.Dims()[2];
 		const size_t outputHeight = gradOutput.Dims()[3];
@@ -354,17 +376,17 @@ namespace MLCore::AutoGrad {
 
 		if (requiresInputGrad) {
 			gradInput.emplace(TensorCore::Tensor<T>{{batchSize, inputChannels, inputDepth, inputHeight, inputWidth}, allocator});
-			gradInput.value().Fill(0.0f);
+			gradInput.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresKernelGrad) {
 			gradKernel.emplace(TensorCore::Tensor<T>{{outputChannels, inputChannels, kernelDepth, kernelHeight, kernelWidth}, allocator});
-			gradKernel.value().Fill(0.0f);
+			gradKernel.value().Fill(static_cast<T>(0));
 		}
 
 		if (requiresBiasGrad) {
 			gradBias.emplace(TensorCore::Tensor<T>{{outputChannels}, allocator});
-			gradBias.value().Fill(0.0f);
+			gradBias.value().Fill(static_cast<T>(0));
 		}
 
 		for (size_t n = 0; n < batchSize; ++n) {

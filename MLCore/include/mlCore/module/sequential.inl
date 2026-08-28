@@ -30,7 +30,7 @@ namespace MLCore::NN {
 	}
 	
 	template <typename T>
-	inline TensorCore::Tensor<T> Sequential<T>::Forward(const TensorCore::Tensor<T>& input) const {
+	inline TensorCore::Tensor<T> Sequential<T>::Forward(const TensorCore::Tensor<T>& input) {
 		TensorCore::Tensor<T> inp = input;
 
 		for (const RegisteredModule<T>& layer : this->m_Submodules) {

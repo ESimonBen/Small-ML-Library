@@ -23,7 +23,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">Element type of the tensors (the numeric type of input and gradient values).</typeparam>
 		/// <param name="gradOutput">Gradient tensor for the operation's output. Must be a scalar (NumElements() == 1). The function detaches this tensor and expands it to the original input shape before propagating.</param>
-		virtual void Backward(const TensorCore::Tensor<T>& gradOutput);
+		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
 		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
@@ -107,7 +107,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		Utils::Shape inputShape; /// Represents the input shape of the input tensor.
+		Utils::Shape m_InputShape; /// Represents the input shape of the input tensor.
 		size_t m_Axis; /// Represents the axis that was summed.
 		bool m_KeepDims; /// Boolean flag that indicates whether to preserve dimensions.
 	};

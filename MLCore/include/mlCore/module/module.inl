@@ -47,11 +47,21 @@ namespace MLCore::NN {
 	template <typename T>
 	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out){
 		/// Don't need an implementation here
+		std::vector<NamedParameter<T>> namedParams;
+		CollectNamedParameters("", namedParams);
+		for (auto& np : namedParams) {
+			out.push_back(np.second);
+		}
 	}
 	
 	template <typename T>
 	void Module<T>::CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const {
 		/// Don't need an implementation here
+		std::vector<ConstNamedParameter<T>> namedParams;
+		CollectNamedParameters("", namedParams);
+		for (auto& np : namedParams) {
+			out.push_back(np.second);
+		}
 	}
 	
 	template <typename T>

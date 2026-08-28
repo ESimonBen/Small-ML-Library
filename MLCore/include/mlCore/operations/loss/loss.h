@@ -61,28 +61,30 @@ namespace MLCore::Operations {
 	TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config);
 
 	/// <summary>
-	/// Computes the cross-entropy loss between prediction and target tensors along a specified axis and applies an optional reduction. This assumes that the result of Softmax is being passed in. (Softmax returns the probabilities of each element of the prediction).
+	/// Computes the cross-entropy loss between predicted probabilities and target values along a specified axis, with optional averaging over classes and configurable reduction.
 	/// </summary>
-	/// <typeparam name="T">Element type of the tensors (e.g., float or double).</typeparam>
-	/// <param name="predictions">Tensor of predicted probabilities with the same shape as targets.</param>
-	/// <param name="targets">Tensor of target probabilities or one-hot labels with the same shape as predictions.</param>
-	/// <param name="axis">Axis along which to compute the per-sample mean (must be less than the rank of predictions).</param>
-	/// <param name="config">Reduction mode to apply to the per-sample losses (Reduction::None returns the per-sample tensor; Reduction::Mean or Reduction::Sum reduces to a scalar).</param>
-	/// <returns>A TensorCore::Tensor<T> containing the cross-entropy loss. If config is Reduction::None the tensor contains per-sample losses (reduced over the specified axis). If config is Reduction::Mean or Reduction::Sum the function returns a scalar tensor with the mean or sum of the per-sample losses, respectively. The function may throw runtime_error for shape mismatch or invalid reduction and out_of_range if axis is out of bounds.</returns>
+	/// <typeparam name="T">Numeric type for tensor elements (typically a floating-point type such as float or double).</typeparam>
+	/// <param name="predictions">A tensor of predicted probabilities (values expected in [0,1]). Must have the same shape and allocator as targets and cannot be empty.</param>
+	/// <param name="targets">A tensor of target values (e.g., one-hot or probability targets). Must have the same shape and allocator as predictions and cannot be empty.</param>
+	/// <param name="axis">The axis representing the class dimension over which the per-sample cross-entropy is computed. Must be less than the tensor rank.</param>
+	/// <param name="config">A Reduction enum value specifying how to reduce the per-sample losses: None (return per-sample losses), Mean (return the mean of all losses), or Sum (return the sum of all losses).</param>
+	/// <param name="avgOverClasses">If true, average the loss across the class axis for each sample; if false, sum the loss across the class axis for each sample. Default is false.</param>
+	/// <returns>A TensorCore::Tensor<T> containing the cross-entropy loss. If config is Reduction::None, returns the per-sample loss tensor; if Reduction::Mean, returns a tensor containing the mean loss; if Reduction::Sum, returns a tensor containing the sum of losses.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config);
+	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses = false);
 
 	/// <summary>
-	/// Computes the cross-entropy loss between logits and target distributions using a numerically stable log-softmax along the specified axis. The function returns per-sample losses or an aggregated scalar depending on the Reduction mode. It throws std::runtime_error for shape mismatches or invalid reduction options and std::out_of_range if the axis is out of bounds. Intermediate allocations use the provided allocator.
+	/// Computes the cross-entropy loss between logits and target distributions. The function applies a log-softmax to logits, multiplies by targets, negates the result, and then reduces across the specified axis either by sum or mean per sample. A final reduction (None, Mean, or Sum) is applied according to config.
 	/// </summary>
-	/// <typeparam name="T">Element type of the tensors (e.g., float, double).</typeparam>
-	/// <param name="logits">Tensor of raw prediction scores (logits). Must have the same shape as targets.</param>
-	/// <param name="targets">Tensor of target distributions or one-hot labels matching the shape of logits.</param>
-	/// <param name="axis">Axis that represents the class dimension for softmax/log-softmax. Must be less than logits.Rank().</param>
-	/// <param name="config">Reduction mode to apply to the per-sample losses (Reduction::None returns per-sample losses; Reduction::Mean returns the mean; Reduction::Sum returns the sum).</param>
-	/// <returns>A Tensor<T> containing the computed cross-entropy loss. For Reduction::None this is a tensor of per-sample losses (with the class axis reduced); for Reduction::Mean or Reduction::Sum this is a scalar tensor containing the mean or sum of the per-sample losses, respectively.</returns>
+	/// <typeparam name="T">Element type of the input and output tensors (e.g., float or double).</typeparam>
+	/// <param name="logits">Tensor of predicted unnormalized log-probabilities. Must have the same shape and allocator as targets and must not be empty.</param>
+	/// <param name="targets">Tensor of target distributions (e.g., one-hot or probabilities). Must have the same shape and allocator as logits and must not be empty.</param>
+	/// <param name="axis">Index of the class axis along which to compute log-softmax and reduce. Must be less than logits.Rank().</param>
+	/// <param name="config">Reduction enum value specifying the final reduction: Reduction::None returns per-sample losses, Reduction::Mean returns the mean over samples, and Reduction::Sum returns the sum over samples.</param>
+	/// <param name="avgOverClasses">If true, average the negative log-likelihood over the classes axis for each sample; if false, sum over the classes axis. Defaults to false.</param>
+	/// <returns>A Tensor<T> with the computed loss. If config == Reduction::None, returns a tensor of per-sample losses (reduced over the class axis). If config == Reduction::Mean or Reduction::Sum, returns a scalar tensor containing the mean or sum of per-sample losses, respectively.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config);
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses = false);
 
 	/// <summary>
 	/// Computes the mean squared error (MSE) between predictions and targets along the specified axis and returns either per-sample MSE or a reduced result according to the provided reduction mode. (Assuming axis = last axis here)
@@ -140,9 +142,10 @@ namespace MLCore::Operations {
 	/// <param name="targets">Tensor of target probabilities or one-hot labels with the same shape as predictions.</param>
 	/// <param name="axis">Axis along which to compute the per-sample mean (must be less than the rank of predictions).</param>
 	/// <param name="config">Reduction mode to apply to the per-sample losses (Reduction::None returns the per-sample tensor; Reduction::Mean or Reduction::Sum reduces to a scalar).</param>
+	/// <param name="avgOverClasses">If true, average the negative log-likelihood over the classes axis for each sample; if false, sum over the classes axis. Defaults to false.</param>
 	/// <returns>A TensorCore::Tensor<T> containing the cross-entropy loss. If config is Reduction::None the tensor contains per-sample losses (reduced over the specified axis). If config is Reduction::Mean or Reduction::Sum the function returns a scalar tensor with the mean or sum of the per-sample losses, respectively. The function may throw runtime_error for shape mismatch or invalid reduction and out_of_range if axis is out of bounds.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config);
+	TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses = false);
 
 	/// <summary>
 	/// Computes the cross-entropy loss between logits and target distributions using a numerically stable log-softmax along the specified axis. The function returns per-sample losses or an aggregated scalar depending on the Reduction mode. It throws std::runtime_error for shape mismatches or invalid reduction options and std::out_of_range if the axis is out of bounds. Intermediate allocations use the provided allocator. (Assuming axis = last axis here)
@@ -152,9 +155,10 @@ namespace MLCore::Operations {
 	/// <param name="targets">Tensor of target distributions or one-hot labels matching the shape of logits.</param>
 	/// <param name="axis">Axis that represents the class dimension for softmax/log-softmax. Must be less than logits.Rank().</param>
 	/// <param name="config">Reduction mode to apply to the per-sample losses (Reduction::None returns per-sample losses; Reduction::Mean returns the mean; Reduction::Sum returns the sum).</param>
+	/// <param name="avgOverClasses">If true, average the negative log-likelihood over the classes axis for each sample; if false, sum over the classes axis. Defaults to false.</param>
 	/// <returns>A Tensor<T> containing the computed cross-entropy loss. For Reduction::None this is a tensor of per-sample losses (with the class axis reduced); for Reduction::Mean or Reduction::Sum this is a scalar tensor containing the mean or sum of the per-sample losses, respectively.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config);
+	TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses = false);
 
 	/// Planning to add other loss functions (Mean Bias Error, Huber/Smooth Mean Absolute Error, etc.)
 }

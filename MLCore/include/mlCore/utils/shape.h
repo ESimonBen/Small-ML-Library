@@ -18,13 +18,13 @@ namespace MLCore::Utils{
 		/// <summary>
 		/// Copy constructor. Initializes a new Shape by copying the dimensions, strides, and number of elements from another Shape. The operation is noexcept and does not throw.
 		/// </summary>
-		/// <param name="other">The Shape to copy from. Its m_Dims, m_Strides, and m_NumElements are copied into the new object.</param>
+		/// <param name="other">The Shape to copy from. Its m_Dims and m_NumElements are copied into the new object.</param>
 		Shape(const Shape& other) noexcept;
 
 		/// <summary>
-		/// Move constructor that initializes a new Shape by taking ownership of the resources from another Shape. It moves m_Dims and m_Strides and copies m_NumElements; the operation is noexcept.
+		/// Move constructor that initializes a new Shape by taking ownership of the resources from another Shape. It moves m_Dims and copies m_NumElements; the operation is noexcept.
 		/// </summary>
-		/// <param name="other">The Shape to move from. Its m_Dims and m_Strides are moved into the new instance and m_NumElements is copied. The source object is left in a valid but unspecified state.</param>
+		/// <param name="other">The Shape to move from. Its m_Dims are moved into the new instance and m_NumElements is copied. The source object is left in a valid but unspecified state.</param>
 		Shape(Shape&& other) noexcept;
 
 		/// <summary>
@@ -37,7 +37,7 @@ namespace MLCore::Utils{
 		/// <summary>
 		/// Move-assigns the contents of another Shape into this one. Transfers internal resources and updates element count; marked noexcept.
 		/// </summary>
-		/// <param name="other">An rvalue reference to the Shape to move from. The function moves m_Dims and m_Strides from this object and copies m_NumElements. The moved-from object is left in a valid but unspecified state. If *this compares equal to other, no action is taken.</param>
+		/// <param name="other">An rvalue reference to the Shape to move from. The function moves m_Dims from this object and copies m_NumElements. The moved-from object is left in a valid but unspecified state. If *this compares equal to other, no action is taken.</param>
 		/// <returns>A reference to this Shape after assignment.</returns>
 		Shape& operator=(Shape&& other) noexcept;
 

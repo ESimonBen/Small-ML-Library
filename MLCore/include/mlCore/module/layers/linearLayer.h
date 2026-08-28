@@ -27,23 +27,9 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The numeric element type of the tensor (e.g., float, double) used for computation.</typeparam>
 		/// <param name="input">The input tensor to the layer. The allocator from this tensor is used to allocate intermediate and output tensors. Passed by const reference.</param>
 		/// <returns>A new TensorCore::Tensor<T> containing the result of the linear transformation (weight * input + bias). The tensor is allocated using the input tensor's allocator.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
-		/// <summary>
-		/// Appends references to this layer's parameter objects (weight and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">The numeric type used by the layer's parameters (for example, float or double).</typeparam>
-		/// <param name="out">Reference to a vector that will be appended with std::reference_wrapper objects referring to the layer's parameters (m_Weight and m_Bias).</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
-
-		/// <summary>
-		/// Appends references to the layer's weight and bias parameters into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">The numeric type used by the layer's parameters (e.g., float, double).</typeparam>
-		/// <param name="out">A vector that will receive references to the layer's parameters; the function appends references to m_Weight and m_Bias as std::reference_wrapper<const NN::Parameter<T>>.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const override;
-
 		/// <summary>
 		/// Appends this layer's named parameters (weight and bias) to the given output vector, using the provided name as an optional prefix.
 		/// </summary>

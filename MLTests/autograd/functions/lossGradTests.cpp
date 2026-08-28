@@ -477,7 +477,7 @@ TEST_SUITE("Loss Function Gradient Tests") {
 	}
 
 	TEST_CASE("CrossEntropy Gradient") {
-		SUBCASE("CrossEntropy Gradient Operation (No Reduction)") {
+		SUBCASE("CrossEntropy Gradient Operation (No Reduction, No Average Over Classes") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
@@ -487,6 +487,42 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = CrossEntropy(A, B, Reduction::None);
+			CHECK(C.GetShape() == Shape(2, 1));
+			CHECK(C.RequiresGrad());
+
+			auto loss = SumAll(C);
+			loss.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			size_t size = gradA.NumElements(); /// The sizes of the gradients of A and B are the same
+
+			for (size_t i = 0; i < size; ++i) {
+				if (i < 3) {
+					CHECK(gradA[i] == doctest::Approx(-1.3333333f));
+					CHECK(gradB[i] == doctest::Approx(1.20397f));
+				}
+				else {
+					CHECK(gradA[i] == doctest::Approx(-0.8f));
+					CHECK(gradB[i] == doctest::Approx(0.693147f));
+				}
+			}
+		}
+
+		SUBCASE("CrossEntropy Gradient Operation (No Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 0.3f;
+			A[3] = A[4] = A[5] = 0.5f;
+			B.Fill(0.4f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropy(A, B, Reduction::None, true);
 			CHECK(C.GetShape() == Shape(2, 1));
 			CHECK(C.RequiresGrad());
 
@@ -513,7 +549,7 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			}
 		}
 
-		SUBCASE("CrossEntropy Gradient Operation (SumAll Reduction)") {
+		SUBCASE("CrossEntropy Gradient Operation (SumAll Reduction, No Average Over Classes)") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
@@ -523,6 +559,41 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = CrossEntropy(A, B, Reduction::Sum);
+			CHECK(C.GetShape() == Shape(1));
+			CHECK(C.RequiresGrad());
+
+			C.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			size_t size = gradA.NumElements(); /// The sizes of the gradients of A and B are the same
+
+			for (size_t i = 0; i < size; ++i) {
+				if (i < 3) {
+					CHECK(gradA[i] == doctest::Approx(-1.3333333f));
+					CHECK(gradB[i] == doctest::Approx(1.20397f));
+				}
+				else {
+					CHECK(gradA[i] == doctest::Approx(-0.8f));
+					CHECK(gradB[i] == doctest::Approx(0.693147f));
+				}
+			}
+		}
+
+		SUBCASE("CrossEntropy Gradient Operation (SumAll Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 0.3f;
+			A[3] = A[4] = A[5] = 0.5f;
+			B.Fill(0.4f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropy(A, B, Reduction::Sum, true);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -548,7 +619,7 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			}
 		}
 
-		SUBCASE("CrossEntropy Gradient Operation (MeanAll Reduction)") {
+		SUBCASE("CrossEntropy Gradient Operation (MeanAll Reduction, No Average Over Classes)") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 0.3f;
@@ -558,6 +629,41 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = CrossEntropy(A, B, Reduction::Mean);
+			CHECK(C.GetShape() == Shape(1));
+			CHECK(C.RequiresGrad());
+
+			C.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			size_t size = gradA.NumElements(); /// The sizes of the gradients of A and B are the same
+
+			for (size_t i = 0; i < size; ++i) {
+				if (i < 3) {
+					CHECK(gradA[i] == doctest::Approx(-0.666667f));
+					CHECK(gradB[i] == doctest::Approx(0.601986f));
+				}
+				else {
+					CHECK(gradA[i] == doctest::Approx(-0.400000f));
+					CHECK(gradB[i] == doctest::Approx(0.346574f));
+				}
+			}
+		}
+
+		SUBCASE("CrossEntropy Gradient Operation (MeanAll Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 0.3f;
+			A[3] = A[4] = A[5] = 0.5f;
+			B.Fill(0.4f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropy(A, B, Reduction::Mean, true);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 
@@ -594,7 +700,7 @@ TEST_SUITE("Loss Function Gradient Tests") {
 	}
 
 	TEST_CASE("CrossEntropyWithLogits Gradient") {
-		SUBCASE("CrossEntropyWithLogits Gradient Operation (No Reduction)") {
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (No Reduction, No Average Over Classes)") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
@@ -621,11 +727,42 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			}
 
 			for (auto& val : gradB) {
+				CHECK(val == doctest::Approx(1.098612f));
+			}
+		}
+
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (No Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 3.0f;
+			A[3] = A[4] = A[5] = 5.0f;
+			B.Fill(4.0f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropyWithLogits(A, B, Reduction::None, true);
+			CHECK(C.GetShape() == Shape(2, 1));
+			CHECK(C.RequiresGrad());
+
+			auto loss = SumAll(C);
+			loss.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			for (auto& val : gradA) {
+				CHECK(val == 0.0f);
+			}
+
+			for (auto& val : gradB) {
 				CHECK(val == doctest::Approx(0.366204f));
 			}
 		}
 
-		SUBCASE("CrossEntropyWithLogits Gradient Operation (SumAll Reduction)") {
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (SumAll Reduction, No Average Over Classes)") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
@@ -651,11 +788,41 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			}
 
 			for (auto& val : gradB) {
+				CHECK(val == doctest::Approx(1.098612f));
+			}
+		}
+
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (SumAll Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 3.0f;
+			A[3] = A[4] = A[5] = 5.0f;
+			B.Fill(4.0f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropyWithLogits(A, B, Reduction::Sum, true);
+			CHECK(C.GetShape() == Shape(1));
+			CHECK(C.RequiresGrad());
+
+			C.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			for (auto& val : gradA) {
+				CHECK(val == 0.0f);
+			}
+
+			for (auto& val : gradB) {
 				CHECK(val == doctest::Approx(0.366204f));
 			}
 		}
 
-		SUBCASE("CrossEntropyWithLogits Gradient Operation (MeanAll Reduction)") {
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (MeanAll Reduction, No Average Over Classes)") {
 			Tensor<float> A({ 2, 3 });
 			Tensor<float> B({ 2, 3 });
 			A[0] = A[1] = A[2] = 3.0f;
@@ -665,6 +832,36 @@ TEST_SUITE("Loss Function Gradient Tests") {
 			B.SetRequiresGrad(true);
 
 			auto C = CrossEntropyWithLogits(A, B, Reduction::Mean);
+			CHECK(C.GetShape() == Shape(1));
+			CHECK(C.RequiresGrad());
+
+			C.Backward();
+
+			auto gradA = A.Grad();
+			auto gradB = B.Grad();
+
+			CHECK(gradA.GetShape() == Shape(2, 3));
+			CHECK(gradB.GetShape() == Shape(2, 3));
+
+			for (auto& val : gradA) {
+				CHECK(val == 0.0f);
+			}
+
+			for (auto& val : gradB) {
+				CHECK(val == doctest::Approx(0.549306f));
+			}
+		}
+
+		SUBCASE("CrossEntropyWithLogits Gradient Operation (MeanAll Reduction, Average Over Classes)") {
+			Tensor<float> A({ 2, 3 });
+			Tensor<float> B({ 2, 3 });
+			A[0] = A[1] = A[2] = 3.0f;
+			A[3] = A[4] = A[5] = 5.0f;
+			B.Fill(4.0f);
+			A.SetRequiresGrad(true);
+			B.SetRequiresGrad(true);
+
+			auto C = CrossEntropyWithLogits(A, B, Reduction::Mean, true);
 			CHECK(C.GetShape() == Shape(1));
 			CHECK(C.RequiresGrad());
 

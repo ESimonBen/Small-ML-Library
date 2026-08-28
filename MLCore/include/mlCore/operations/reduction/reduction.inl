@@ -17,16 +17,16 @@ namespace MLCore::Operations {
 
 		if (size == 0) {
 			result[0] = static_cast<T>(0);
-			return result;
 		}
+		else {
+			T sum = static_cast<T>(0);
 
-		T sum = static_cast<T>(0);
+			for (size_t i = 0; i < size; ++i) {
+				sum += A[i];
+			}
 
-		for (size_t i = 0; i < size; ++i) {
-			sum += A[i];
+			result[0] = sum;
 		}
-
-		result[0] = sum;
 
 		if (A.RequiresGrad()) {
 			result.SetRequiresGrad(true);
@@ -136,7 +136,6 @@ namespace MLCore::Operations {
 
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ outDims, allocator };
-		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		// Outer and inner size calculation
 		size_t outer = 1;
@@ -203,7 +202,6 @@ namespace MLCore::Operations {
 
 		size_t axisSize = A.Dims()[axis];
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result = DivideScalar(AxisSum(A, axis, keepDims), static_cast<T>(axisSize), false);
 
 		return result;
@@ -234,7 +232,6 @@ namespace MLCore::Operations {
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 
 		TensorCore::Tensor<T> result{ outDims, allocator };
-		result.Fill(static_cast<T>(0)); /// Temporary fix
 
 		/// Outer and inner size calculation
 		size_t outer = 1;
@@ -253,9 +250,9 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < inner; ++i) {
 				size_t base = o * axisSize * inner + i;
 
-				T max = -std::numeric_limits<T>::infinity();
+				T max = A[base];
 
-				for (size_t j = 0; j < axisSize; ++j) {
+				for (size_t j = 1; j < axisSize; ++j) {
 					T testVal = A[base + j * inner];
 					max = (max > testVal) ? max : testVal;
 				}
@@ -297,9 +294,7 @@ namespace MLCore::Operations {
 		Memory::ArenaAllocator& allocator = A.GetAllocator();
 		TensorCore::Tensor<T> result{ outDims, allocator };
 
-		result.Fill(static_cast<T>(0)); /// Temporary fix
-
-		// Outer and inner size calculation
+		/// Outer and inner size calculation
 		size_t outer = 1;
 		for (size_t i = 0; i < axis; ++i) {
 			outer *= dims[i];
@@ -316,7 +311,7 @@ namespace MLCore::Operations {
 			for (size_t i = 0; i < inner; ++i) {
 				size_t base = o * axisSize * inner + i;
 
-				T min = std::numeric_limits<T>::infinity();
+				T min = A[base];
 
 				for (size_t j = 0; j < axisSize; ++j) {
 					T testVal = A[base + j * inner];

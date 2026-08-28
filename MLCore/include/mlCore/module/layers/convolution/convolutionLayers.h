@@ -16,7 +16,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">Numeric type used for tensor elements and layer parameters (e.g., float or double).</typeparam>
 		/// <param name="inChannels">Number of input channels.</param>
 		/// <param name="outChannels">Number of output channels (filters).</param>
-		/// <param name="kernelHeight">Kernel (filter) length.</param>
+		/// <param name="kernelLength">Kernel (filter) length.</param>
 		/// <param name="stride">Lengthwise stride for the convolution.</param>
 		/// <param name="padding">Lengthwise padding applied to the input.</param>
 		/// <param name="dilation">Lengthwise dilation (spacing) of kernel elements.</param>
@@ -30,23 +30,9 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
 		/// <returns>A new TensorCore::Tensor<T> containing the result of the 1D convolution. The method is const and does not modify the layer's stored parameters.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
-		/// <summary>
-		/// Appends references to the layer's parameter objects (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">The numeric/data type used by the layer's parameters (e.g., float or double).</typeparam>
-		/// <param name="out">A reference to a vector of reference_wrappers for NN::Parameter<T>. The function appends references to this layer's parameters (m_Kernel and m_Bias). The vector is modified in-place; ownership is not transferred.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
-
-		/// <summary>
-		/// Appends references to this layer's parameters (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">Type of the values stored in the layer parameters (the element type used by NN::Parameter<T>).</typeparam>
-		/// <param name="out">Output vector that will receive references to the layer's parameters. The function appends std::reference_wrapper<const NN::Parameter<T>> for m_Kernel and m_Bias.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const override;
-
 		/// <summary>
 		/// Appends the layer's named parameters (kernel and bias) to the given output vector, using the provided name as an optional prefix.
 		/// </summary>
@@ -104,23 +90,9 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
 		/// <returns>A new TensorCore::Tensor<T> containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
-		/// <summary>
-		/// Appends references to the layer's parameter objects (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">The numeric/data type used by the layer's parameters (e.g., float or double).</typeparam>
-		/// <param name="out">A reference to a vector of reference_wrappers for NN::Parameter<T>. The function appends references to this layer's parameters (m_Kernel and m_Bias). The vector is modified in-place; ownership is not transferred.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
-
-		/// <summary>
-		/// Appends references to this layer's parameters (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">Type of the values stored in the layer parameters (the element type used by NN::Parameter<T>).</typeparam>
-		/// <param name="out">Output vector that will receive references to the layer's parameters. The function appends std::reference_wrapper<const NN::Parameter<T>> for m_Kernel and m_Bias.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const override;
-
 		/// <summary>
 		/// Appends the layer's named parameters (kernel and bias) to the given output vector, using the provided name as an optional prefix.
 		/// </summary>
@@ -158,7 +130,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">Numeric type used for tensor elements and layer parameters (e.g., float or double).</typeparam>
 		/// <param name="inChannels">Number of input channels.</param>
 		/// <param name="outChannels">Number of output channels (filters).</param>
-		/// <param name="kernelDepth>Kernel (filter) depth.</param>
+		/// <param name="kernelDepth">Kernel (filter) depth.</param>
 		/// <param name="kernelHeight">Kernel (filter) height.</param>
 		/// <param name="kernelWidth">Kernel (filter) width.</param>
 		/// <param name="strideD">Depth stride (depth) for the convolution.</param>
@@ -184,23 +156,9 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
 		/// <returns>A new TensorCore::Tensor<T> containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
-		/// <summary>
-		/// Appends references to the layer's parameter objects (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">The numeric/data type used by the layer's parameters (e.g., float or double).</typeparam>
-		/// <param name="out">A reference to a vector of reference_wrappers for NN::Parameter<T>. The function appends references to this layer's parameters (m_Kernel and m_Bias). The vector is modified in-place; ownership is not transferred.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<NN::Parameter<T>>>& out) override;
-
-		/// <summary>
-		/// Appends references to this layer's parameters (kernel and bias) into the provided output vector.
-		/// </summary>
-		/// <typeparam name="T">Type of the values stored in the layer parameters (the element type used by NN::Parameter<T>).</typeparam>
-		/// <param name="out">Output vector that will receive references to the layer's parameters. The function appends std::reference_wrapper<const NN::Parameter<T>> for m_Kernel and m_Bias.</param>
-		virtual void CollectParameters(std::vector<std::reference_wrapper<const NN::Parameter<T>>>& out) const override;
-
 		/// <summary>
 		/// Appends the layer's named parameters (kernel and bias) to the given output vector, using the provided name as an optional prefix.
 		/// </summary>

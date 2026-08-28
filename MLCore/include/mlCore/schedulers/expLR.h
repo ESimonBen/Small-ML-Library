@@ -18,6 +18,14 @@ namespace MLCore::Schedulers {
 		/// <param name="gamma">Decay factor (multiplier) used to scale the learning rate each step.</param>
 		ExponentialLR(Optimizers::Optimizer<T>& opt, T gamma)
 			: LRScheduler<T>(opt), m_Gamma(gamma), m_Multiplier(static_cast<T>(1)) {
+			if (!std::isfinite(m_Gamma) || m_Gamma <= static_cast<T>(0)) {
+				throw std::runtime_error("ERROR: Invalid ExponentialLR gamma");
+			}
+
+			if (!std::isfinite(m_Multiplier) || m_Multiplier < static_cast<T>(0)) {
+				throw std::runtime_error("ERROR: Invalid ExponentialLR multiplier");
+			}
+
 			std::vector<Optimizers::ParameterGroup<T>>& paramGroups = this->m_Opt.ParamGroups();
 			m_BaseLRs.reserve(paramGroups.size());
 
@@ -39,12 +47,25 @@ namespace MLCore::Schedulers {
 			std::vector<Optimizers::ParameterGroup<T>>& paramGroups = this->m_Opt.ParamGroups();
 			size_t size = paramGroups.size();
 
-			assert(m_BaseLRs.size() == size);
+			if (m_BaseLRs.size() != size) {
+				/// A newly-added group has no recorded base LR yet — seed it from
+				/// its current learning rate so it starts decaying from "now", not from 0.
+				size_t oldSize = m_BaseLRs.size();
+				m_BaseLRs.resize(size);
+
+				for (size_t i = oldSize; i < size; ++i) {
+					m_BaseLRs[i] = paramGroups[i].learningRate;
+				}
+			}
+
+			if (this->m_LastLRs.size() != size) {
+				this->m_LastLRs.resize(size, static_cast<T>(0));
+			}
 
 			for (size_t i = 0; i < size; ++i) {
 				T lr = m_BaseLRs[i] * m_Multiplier;
-
 				if (std::isfinite(lr) && lr > static_cast<T>(0)) {
+					this->m_LastLRs[i] = paramGroups[i].learningRate;
 					paramGroups[i].learningRate = lr;
 				}
 			}

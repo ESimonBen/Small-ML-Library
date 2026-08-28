@@ -21,7 +21,7 @@ namespace MLCore::NN {
 		///	<typeparam name="T">Element type of the tensor (for example float or double).</typeparam>
 		/// <param name="input">Const reference to the input tensor whose elements will be transformed by ReLU. The function does not modify the input and uses input.GetAllocator() to allocate the result.</param>
 		/// <returns>A TensorCore::Tensor<T> containing the element-wise ReLU of the input tensor.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 	};
 
 	/// <summary>
@@ -44,7 +44,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensor (e.g., float, double) used for the tensor's values.</typeparam>
 		/// <param name="input">Const reference to the input tensor whose elements will be transformed; the tensor's allocator is used for the output allocation.</param>
 		/// <returns>A new TensorCore::Tensor<T> containing the element-wise Leaky ReLU output (x >= 0 ? x : m_Alpha * x), allocated with the input's allocator.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 		/// <summary>
 		/// Returns the layer's alpha (negative slope) parameter.
@@ -75,7 +75,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensor (for example, float or double).</typeparam>
 		/// <param name="input">The input tensor whose elements will be transformed by tanh. Passed as a const reference; the input's allocator is used for any required allocations.</param>
 		/// <returns>A TensorCore::Tensor<T> containing the element-wise tanh of the input tensor, allocated using the input's allocator.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 	};
 
 	/// <summary>
@@ -96,7 +96,7 @@ namespace MLCore::NN {
 		/// <typeparam name="T">The element type of the tensor (e.g., float, double) used for computations.</typeparam>
 		/// <param name="input">The input tensor to which the sigmoid activation is applied. The allocator associated with this tensor is used for allocating the output.</param>
 		/// <returns>A tensor of type TensorCore::Tensor<T> containing the element-wise sigmoid of the input, allocated using the input tensor's allocator.</returns>
-		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) const override;
+		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 	};
 }
 #include "activationLayers.inl"
