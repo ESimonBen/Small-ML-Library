@@ -1,6 +1,7 @@
 /// context.h
 #pragma once
 #include <random>
+#include <atomic>
 #include <mlCore/memory/allocator.h>
 
 namespace MLCore::Runtime {

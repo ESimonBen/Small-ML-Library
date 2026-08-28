@@ -1,5 +1,6 @@
  /// parameter.h
 #pragma once
+#include <atomic>
 #include <mlCore/tensor/tensor.h>
 
 namespace MLCore::NN {
