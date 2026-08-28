@@ -12,10 +12,10 @@ namespace MLCore::AutoGrad {
 	class SqueezeGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a SqueezeGradFn<T> that initializes gradient computation for a squeeze operation along a given axis.
+		/// Constructs a SqueezeGradFn that initializes gradient computation for a squeeze operation along a given axis.
 		/// </summary>
 		/// <typeparam name="T">The data type (e.g., tensor element type) used by the gradient function.</typeparam>
-		/// <param name="a">A shared pointer to the underlying GradFn<T>::Impl, representing the previous or associated gradient function implementation.</param>
+		/// <param name="a">A shared pointer to the underlying GradFn::Impl, representing the previous or associated gradient function implementation.</param>
 		/// <param name="axis">The axis along which the original squeeze operation was applied; used to compute the corresponding gradient behavior.</param>
 		SqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
 
@@ -41,7 +41,7 @@ namespace MLCore::AutoGrad {
 		/// Constructor that creates an UnsqueezeGradFn instance by attaching a preceding gradient function and recording the axis used for the unsqueeze operation.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient functions (the template parameter for GradFn and UnsqueezeGradFn).</typeparam>
-		/// <param name="a">Shared pointer to the implementation of the preceding gradient function (GradFn<T>::Impl) that this node will wrap.</param>
+		/// <param name="a">Shared pointer to the implementation of the preceding gradient function (GradFn::Impl) that this node will wrap.</param>
 		/// <param name="axis">The axis index where the unsqueeze was applied; stored in m_Axis.</param>
 		UnsqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis);
 
@@ -64,10 +64,10 @@ namespace MLCore::AutoGrad {
 	class ReduceToShapeGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a ReduceToShapeGradFn<T>, forwarding the provided gradient implementation to the base GradFn and storing the original shape.
+		/// Constructs a ReduceToShapeGradFn, forwarding the provided gradient implementation to the base GradFn and storing the original shape.
 		/// </summary>
 		/// <typeparam name="T">The value/gradient element type handled by this gradient function.</typeparam>
-		/// <param name="a">Shared pointer to the underlying GradFn<T>::Impl that provides the gradient implementation; forwarded to the base GradFn<T> constructor.</param>
+		/// <param name="a">Shared pointer to the underlying GradFn::Impl that provides the gradient implementation; forwarded to the base GradFn constructor.</param>
 		ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -89,7 +89,7 @@ namespace MLCore::AutoGrad {
 		/// Constructs an ExpandToShapeGradFn that wraps a child gradient function and records the original shape to which gradients should be expanded.
 		/// </summary>
 		/// <typeparam name="T">The element type for which gradients are computed.</typeparam>
-		/// <param name="a">A shared pointer to the child gradient function implementation (GradFn<T>::Impl). This is forwarded to the base GradFn<T> constructor.</param>
+		/// <param name="a">A shared pointer to the child gradient function implementation (GradFn::Impl). This is forwarded to the base GradFn constructor.</param>
 		ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -100,11 +100,25 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
+	/// <summary>
+	/// Gradient function object that handles the backward pass for a reshape operation, propagating gradients through a reshape of tensors.
+	/// </summary>
+	/// <typeparam name="T">The element type of the tensors (e.g., float, double, int) handled by this gradient function.</typeparam>
 	template <typename T>
 	class ReshapeGradFn : public GradFn<T> {
 	public:
+		/// <summary>
+		/// Constructs a ReshapeGradFn by initializing its base GradFn with the given implementation pointer.
+		/// </summary>
+		/// <typeparam name="T">The type parameter associated with the gradient function (the value or tensor element type used by GradFn).</typeparam>
+		/// <param name="a">A std::shared_ptr to the implementation type (GradFn::Impl). This shared pointer is forwarded to the base GradFn to initialize the underlying implementation and share ownership.</param>
 		ReshapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
+		/// <summary>
+		/// Performs the backward pass for a reshape operation: detaches the incoming output gradient, reshapes it to the original input shape, and propagates it to the input if the input requires gradients.
+		/// </summary>
+		/// <typeparam name="T">The element/data type of the tensors (e.g., float, double, int).</typeparam>
+		/// <param name="gradOutput">Constant reference to the gradient tensor of the operation's output; this gradient is detached and reshaped to match the input shape for propagation.</param>
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 }

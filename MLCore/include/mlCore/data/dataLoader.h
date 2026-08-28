@@ -5,17 +5,17 @@
 
 namespace MLCore::Data {
 	/// <summary>
-	/// A template data loader that iterates over a Dataset<T> in fixed-size batches, optionally shuffling the sample order.
+	/// A template data loader that iterates over a Dataset in fixed-size batches, optionally shuffling the sample order.
 	/// </summary>
 	/// <typeparam name="T">The element type stored in the dataset and tensors (e.g., the numeric type of features/labels).</typeparam>
 	template <typename T>
 	class DataLoader {
 	public:
 		/// <summary>
-		/// Constructs a DataLoader<T> initialized with the given dataset, batch size, and shuffle mode. Throws std::runtime_error if batchSize is zero.
+		/// Constructs a DataLoader initialized with the given dataset, batch size, and shuffle mode. Throws std::runtime_error if batchSize is zero.
 		/// </summary>
 		/// <typeparam name="T">Type of the elements/samples stored in the dataset.</typeparam>
-		/// <param name="dataset">Const reference to the Dataset<T> to load data from.</param>
+		/// <param name="dataset">Const reference to the Dataset to load data from.</param>
 		/// <param name="batchSize">Number of items per batch; must be greater than 0.</param>
 		/// <param name="shuffle">Whether to shuffle the dataset between epochs (true) or preserve order (false).</param>
 		DataLoader(const Dataset<T>& dataset, size_t batchSize, bool shuffle = true);
@@ -41,7 +41,7 @@ namespace MLCore::Data {
 		std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> Next();
 
 	private:
-		const Dataset<T>& m_Dataset; /// Const reference to the Dataset<T> to load data from.
+		const Dataset<T>& m_Dataset; /// Const reference to the Dataset to load data from.
 		size_t m_BatchSize; /// Number of items per batch.
 		bool m_Shuffle; /// Whether to shuffle the dataset between epochs (true) or preserve order (false).
 		size_t m_CurrentIndex = 0; /// Member variable that stores the current index or position, initialized to 0.

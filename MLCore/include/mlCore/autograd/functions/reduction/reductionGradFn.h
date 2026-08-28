@@ -5,17 +5,17 @@
 
 namespace MLCore::AutoGrad {
 	/// <summary>
-	/// A gradient function object that implements the backward pass for a sum operation. Inherits from GradFn<T> and performs gradient propagation/accumulation for tensors of type T.
+	/// A gradient function object that implements the backward pass for a sum operation. Inherits from GradFn and performs gradient propagation/accumulation for tensors of type T.
 	/// </summary>
 	/// <typeparam name="T">The element type stored in tensors and used for gradient values (e.g., float, double, or other numeric types).</typeparam>
 	template <typename T>
 	class SumGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Initializes a SumGradFn<T> from an implementation pointer, forwarding the pointer to the GradFn<T> base and capturing the input shape.
+		/// Initializes a SumGradFn from an implementation pointer, forwarding the pointer to the GradFn base and capturing the input shape.
 		/// </summary>
 		/// <typeparam name="T">The value type handled by the gradient function (e.g., the element type of tensors or gradients).</typeparam>
-		/// <param name="a">A std::shared_ptr to a GradFn<T>::Impl that provides the underlying implementation. It is passed to the GradFn<T> base-class constructor and its shape (a->shape) is used to initialize inputShape.</param>
+		/// <param name="a">A std::shared_ptr to a GradFn::Impl that provides the underlying implementation. It is passed to the GradFn base-class constructor and its shape (a->shape) is used to initialize inputShape.</param>
 		SumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -40,7 +40,7 @@ namespace MLCore::AutoGrad {
 		/// Initializes a MaxGradFn instance with the provided input gradient implementation and a maximum value used to clamp gradients.
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the elements and gradients.</typeparam>
-		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn<T>::Impl). The constructor uses this to initialize the base GradFn and to obtain the input shape.</param>
+		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn::Impl). The constructor uses this to initialize the base GradFn and to obtain the input shape.</param>
 		/// <param name="maxValue">Maximum value of type T used for clamping gradients.</param>
 		MaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T maxValue);
 
@@ -64,10 +64,10 @@ namespace MLCore::AutoGrad {
 	class MinGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a MinGradFn<T> that applies a lower bound to gradient values.
+		/// Constructs a MinGradFn that applies a lower bound to gradient values.
 		/// </summary>
 		/// <typeparam name="T">The numeric type for gradients (e.g., float, double).</typeparam>
-		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn<T>::Impl). This is passed to the base GradFn and its shape is used to initialize inputShape.</param>
+		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn::Impl). This is passed to the base GradFn and its shape is used to initialize inputShape.</param>
 		/// <param name="minValue">The minimum value used to clamp gradients.</param>
 		MinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T minValue);
 
@@ -94,7 +94,7 @@ namespace MLCore::AutoGrad {
 		/// Constructs an AxisSumGradFn that computes the gradient for a sum reduction along a specified axis.
 		/// </summary>
 		/// <typeparam name="T">The element type used by the gradient function and associated tensors.</typeparam>
-		/// <param name="a">A shared pointer to the upstream GradFn<T>::Impl. Used to initialize the base GradFn and to obtain the input shape (a->shape).</param>
+		/// <param name="a">A shared pointer to the upstream GradFn::Impl. Used to initialize the base GradFn and to obtain the input shape (a->shape).</param>
 		/// <param name="axis">The axis index along which the sum reduction was performed. Must be less than the input shape rank.</param>
 		/// <param name="keepDims">If true, reduced dimensions are kept with size 1; if false, reduced dimensions are removed.</param>
 		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
@@ -120,10 +120,10 @@ namespace MLCore::AutoGrad {
 	class AxisMaxGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs an AxisMaxGradFn<T> that computes the gradient for an axis-wise maximum operation.
+		/// Constructs an AxisMaxGradFn that computes the gradient for an axis-wise maximum operation.
 		/// </summary>
 		/// <typeparam name="T">The element type used by the gradient function (e.g., float, double).</typeparam>
-		/// <param name="a">Shared pointer to the implementation of the preceding gradient function (std::shared_ptr<GradFn<T>::Impl>).</param>
+		/// <param name="a">Shared pointer to the implementation of the preceding gradient function (std::shared_ptr of GradFn::Impl).</param>
 		/// <param name="axis">Index of the axis along which the max operation was performed.</param>
 		/// <param name="keepDims">If true, reduced dimensions were kept with size 1; if false, they were removed.</param>
 		AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
@@ -148,10 +148,10 @@ namespace MLCore::AutoGrad {
 	class AxisMinGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Initializes an AxisMinGradFn<T> that computes gradients for a minimum reduction along a specified axis.
+		/// Initializes an AxisMinGradFn that computes gradients for a minimum reduction along a specified axis.
 		/// </summary>
 		/// <typeparam name="T">The element/data type used by the gradient function and associated tensors.</typeparam>
-		/// <param name="a">A shared pointer to the underlying GradFn<T>::Impl that this gradient function wraps or uses as its input.</param>
+		/// <param name="a">A shared pointer to the underlying GradFn::Impl that this gradient function wraps or uses as its input.</param>
 		/// <param name="axis">The index of the axis along which the minimum reduction was performed.</param>
 		/// <param name="keepDims">If true, keep reduced dimensions with size 1; if false, remove reduced dimensions.</param>
 		AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);

@@ -243,7 +243,7 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape) {
 		if (A.NumElements() != newShape.NumElements()) {

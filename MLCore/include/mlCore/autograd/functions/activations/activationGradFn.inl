@@ -61,8 +61,8 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
-		: GradFn<T>(a), outputImpl(b)
+	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output)
+		: GradFn<T>(a), m_OutputImpl(output)
 	{}
 	
 	template <typename T>
@@ -79,8 +79,14 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
+		auto lockedOutputImpl = m_OutputImpl.lock();
+
+		if (!lockedOutputImpl) {
+			throw std::runtime_error("ERROR: SoftmaxGradFn: Output tensor no longer exists");
+		}
+
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{ outputImpl }.Detach();
+		TensorCore::Tensor<T> output = TensorCore::Tensor<T>{ lockedOutputImpl }.Detach();
 
 		size_t size = input.NumElements();
 
@@ -97,8 +103,8 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis)
-		: GradFn<T>(a), outputImpl(b), axis(axis)
+	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output, size_t axis)
+		: GradFn<T>(a), m_OutputImpl(output), m_Axis(axis)
 	{}
 	
 	template <typename T>
@@ -113,8 +119,14 @@ namespace MLCore::AutoGrad {
 			return;
 		}
 
+		auto lockedOutputImpl = m_OutputImpl.lock();
+
+		if (!lockedOutputImpl) {
+			throw std::runtime_error("ERROR: AxisSoftmaxGradFn: Output tensor no longer exists");
+		}
+
 		TensorCore::Tensor<T> gradientOut = gradOutput.Detach();
-		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ outputImpl }.Detach();
+		TensorCore::Tensor<T> y = TensorCore::Tensor<T>{ lockedOutputImpl }.Detach();
 
 		TensorCore::Tensor<T> gradInput{ input.GetShape(), input.GetAllocator() };
 		gradInput.Fill(static_cast<T>(0));
@@ -124,16 +136,16 @@ namespace MLCore::AutoGrad {
 
 		/// Outer and inner size calculation
 		size_t outer = 1;
-		for (size_t i = 0; i < axis; ++i) {
+		for (size_t i = 0; i < m_Axis; ++i) {
 			outer *= dims[i];
 		}
 
 		size_t inner = 1;
-		for (size_t i = axis + 1; i < rank; ++i) {
+		for (size_t i = m_Axis + 1; i < rank; ++i) {
 			inner *= dims[i];
 		}
 
-		size_t axisSize = dims[axis];
+		size_t axisSize = dims[m_Axis];
 
 		for (size_t o = 0; o < outer; ++o) {
 			for (size_t i = 0; i < inner; ++i) {

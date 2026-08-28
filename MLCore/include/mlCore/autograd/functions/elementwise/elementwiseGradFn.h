@@ -12,11 +12,11 @@ namespace MLCore::AutoGrad {
 	class AddGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs an AddGradFn<T> that combines two GradFn<T>::Impl instances.
+		/// Constructs an AddGradFn that combines two GradFn::Impl instances.
 		/// </summary>
 		/// <typeparam name="T">The value type used by GradFn and its implementation (the element type for gradients).</typeparam>
-		/// <param name="a">Shared pointer to the first GradFn<T>::Impl to include in the combined function.</param>
-		/// <param name="b">Shared pointer to the second GradFn<T>::Impl to include in the combined function.</param>
+		/// <param name="a">Shared pointer to the first GradFn::Impl to include in the combined function.</param>
+		/// <param name="b">Shared pointer to the second GradFn::Impl to include in the combined function.</param>
 		AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
@@ -35,11 +35,11 @@ namespace MLCore::AutoGrad {
 	class SubGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a SubGradFn<T> from two gradient implementation instances, delegating initialization to the base GradFn<T>.
+		/// Constructs a SubGradFn from two gradient implementation instances, delegating initialization to the base GradFn.
 		/// </summary>
 		/// <typeparam name="T">The element/value type used by the gradient functions.</typeparam>
-		/// <param name="a">Shared pointer to the first GradFn<T>::Impl instance to include.</param>
-		/// <param name="b">Shared pointer to the second GradFn<T>::Impl instance to include.</param>
+		/// <param name="a">Shared pointer to the first GradFn::Impl instance to include.</param>
+		/// <param name="b">Shared pointer to the second GradFn::Impl instance to include.</param>
 		SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
@@ -58,11 +58,11 @@ namespace MLCore::AutoGrad {
 	class MulGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a MulGradFn<T> initialized with two gradient function implementations.
+		/// Constructs a MulGradFn initialized with two gradient function implementations.
 		/// </summary>
 		/// <typeparam name="T">The value type handled by the gradient functions.</typeparam>
-		/// <param name="a">Shared pointer to the first GradFn<T>::Impl, representing the left operand's gradient implementation.</param>
-		/// <param name="b">Shared pointer to the second GradFn<T>::Impl, representing the right operand's gradient implementation.</param>
+		/// <param name="a">Shared pointer to the first GradFn::Impl, representing the left operand's gradient implementation.</param>
+		/// <param name="b">Shared pointer to the second GradFn::Impl, representing the right operand's gradient implementation.</param>
 		MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
@@ -74,25 +74,27 @@ namespace MLCore::AutoGrad {
 	};
 
 	/// <summary>
-	/// Gradient node that computes the backward pass for a division operation. Inherits from GradFn<T> and implements Backward to produce gradients for its operands.
+	/// Gradient node that computes the backward pass for a division operation. Inherits from GradFn and implements Backward to produce gradients for its operands.
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensors (for example float or double).</typeparam>
 	template <typename T>
 	class DivGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a DivGradFn<T> by initializing its base GradFn<T> with two implementation instances.
+		/// Constructs a DivGradFn by initializing its base GradFn with two implementation instances.
 		/// </summary>
-		/// <typeparam name="T">The value type used by GradFn and its implementation type (GradFn<T>::Impl).</typeparam>
-		/// <param name="a">A shared pointer to a GradFn<T>::Impl instance to be passed to the base GradFn<T>.</param>
-		/// <param name="b">A shared pointer to a second GradFn<T>::Impl instance to be passed to the base GradFn<T>.</param>
+		/// <typeparam name="T">The value type used by GradFn and its implementation type (GradFn::Impl).</typeparam>
+		/// <param name="a">A shared pointer to a GradFn::Impl instance to be passed to the base GradFn.</param>
+		/// <param name="b">A shared pointer to a second GradFn::Impl instance to be passed to the base GradFn.</param>
 		DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
-		/// Performs the backward pass for a division operation: validates inputs, detaches tensors as needed, computes gradients for each input, and calls Backward on inputs that require gradients. For input a, computes gradA = Operations::ReduceSumToShape(gradOutput / b, a.shape). For input b, computes gradB = Operations::ReduceSumToShape(-gradOutput * (a / b^2), b.shape).
+		/// Performs the backward pass for a division operation: validates inputs, detaches tensors as needed, computes gradients for each input, and calls Backward on inputs that require gradients. 
+		/// For input a, computes gradA = Operations::ReduceSumToShape(gradOutput / b, a.shape). 
+		/// For input b, computes gradB = Operations::ReduceSumToShape(-gradOutput * (a / b^2), b.shape).
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float, double).</typeparam>
-		/// <param name="gradOutput">The gradient of the loss with respect to the output of the division (const Tensor<T>&). Used to compute gradients for the inputs.</param>
+		/// <param name="gradOutput">The gradient of the loss with respect to the output of the division (const Tensor&amp;). Used to compute gradients for the inputs.</param>
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 	};
 
@@ -107,7 +109,7 @@ namespace MLCore::AutoGrad {
 		/// Initializes a PowerGradFn that wraps an existing gradient-function implementation and applies a power operation with the specified exponent.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function (e.g., float, double or a user-defined numeric type).</typeparam>
-		/// <param name="a">A shared_ptr to the underlying implementation of the operand gradient function (GradFn<T>::Impl). Ownership is shared with other holders of the pointer.</param>
+		/// <param name="a">A shared_ptr to the underlying implementation of the operand gradient function (GradFn::Impl). Ownership is shared with other holders of the pointer.</param>
 		/// <param name="exponent">The exponent value to apply to the operand; stored in the object's exponent member.</param>
 		PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent);
 
@@ -130,10 +132,10 @@ namespace MLCore::AutoGrad {
 	class AbsGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs an AbsGradFn<T> by initializing its base GradFn<T> with the provided implementation pointer.
+		/// Constructs an AbsGradFn by initializing its base GradFn with the provided implementation pointer.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function.</typeparam>
-		/// <param name="input">A shared_ptr to a GradFn<T>::Impl that represents the underlying function implementation; it is forwarded to the base class constructor.</param>
+		/// <param name="input">A shared_ptr to a GradFn::Impl that represents the underlying function implementation; it is forwarded to the base class constructor.</param>
 		AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
 
 		/// <summary>
@@ -180,10 +182,10 @@ namespace MLCore::AutoGrad {
 	class LogGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a LogGradFn<T> by initializing its base GradFn<T> with the provided implementation pointer.
+		/// Constructs a LogGradFn by initializing its base GradFn with the provided implementation pointer.
 		/// </summary>
 		/// <typeparam name="T">The numeric or data type used by the gradient function.</typeparam>
-		/// <param name="input">A shared_ptr to GradFn<T>::Impl that supplies the underlying implementation or input for this LogGradFn.</param>
+		/// <param name="input">A shared_ptr to GradFn::Impl that supplies the underlying implementation or input for this LogGradFn.</param>
 		LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
 
 		/// <summary>
@@ -202,10 +204,10 @@ namespace MLCore::AutoGrad {
 	class ExpGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs an ExpGradFn<T> by initializing the base GradFn<T> with the provided implementation pointer.
+		/// Constructs an ExpGradFn by initializing the base GradFn with the provided implementation pointer.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function and its implementation.</typeparam>
-		/// <param name="input">A shared pointer to a GradFn<T>::Impl instance that provides the underlying implementation; forwarded to initialize the base GradFn<T>.</param>
+		/// <param name="input">A shared pointer to a GradFn::Impl instance that provides the underlying implementation; forwarded to initialize the base GradFn.</param>
 		ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
 
 		/// <summary>

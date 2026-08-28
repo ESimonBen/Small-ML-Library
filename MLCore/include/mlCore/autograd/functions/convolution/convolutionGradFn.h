@@ -15,9 +15,9 @@ namespace MLCore::AutoGrad {
 		/// Constructs a Conv1DGradFn instance and initializes convolution gradient parameters.
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the tensor elements (e.g., float, double) used by the gradient functions.</typeparam>
-		/// <param name="input">Shared pointer to the GradFn<T>::Impl for the input tensor (gradient source for input).</param>
-		/// <param name="kernel">Shared pointer to the GradFn<T>::Impl for the convolution kernel (gradient source for kernel).</param>
-		/// <param name="bias">Shared pointer to the GradFn<T>::Impl for the bias term (gradient source for bias).</param>
+		/// <param name="input">Shared pointer to the GradFn::Impl for the input tensor (gradient source for input).</param>
+		/// <param name="kernel">Shared pointer to the GradFn::Impl for the convolution kernel (gradient source for kernel).</param>
+		/// <param name="bias">Shared pointer to the GradFn::Impl for the bias term (gradient source for bias).</param>
 		/// <param name="stride">Stride size for the 1D convolution.</param>
 		/// <param name="padding">Padding size applied to the input.</param>
 		/// <param name="dilation">Dilation factor for the convolution kernel.</param>
@@ -48,9 +48,9 @@ namespace MLCore::AutoGrad {
 		/// Initializes a Conv2DGradFn instance with the given gradient-function implementations and convolution parameters (stride, padding, dilation).
 		/// </summary>
 		/// <typeparam name="T">The element type used by the gradient functions (e.g., float, double) for the Conv2DGradFn template.</typeparam>
-		/// <param name="input">Shared pointer to the GradFn<T>::Impl that computes gradients w.r.t. the input tensor.</param>
-		/// <param name="kernel">Shared pointer to the GradFn<T>::Impl that computes gradients w.r.t. the convolution kernels.</param>
-		/// <param name="bias">Shared pointer to the GradFn<T>::Impl that computes gradients w.r.t. the bias (may be null if no bias).</param>
+		/// <param name="input">Shared pointer to the GradFn::Impl that computes gradients w.r.t. the input tensor.</param>
+		/// <param name="kernel">Shared pointer to the GradFn::Impl that computes gradients w.r.t. the convolution kernels.</param>
+		/// <param name="bias">Shared pointer to the GradFn::Impl that computes gradients w.r.t. the bias (may be null if no bias).</param>
 		/// <param name="strideH">Vertical stride (number of rows to step between kernel applications).</param>
 		/// <param name="strideW">Horizontal stride (number of columns to step between kernel applications).</param>
 		/// <param name="paddingH">Vertical padding applied to the input (in rows).</param>
@@ -85,12 +85,12 @@ namespace MLCore::AutoGrad {
 	class Conv3DGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a Conv3DGradFn<T> that represents the gradient computation for a 3D convolution, initializing the associated input, kernel, and bias gradient function implementations and storing per-dimension stride, padding, and dilation parameters.
+		/// Constructs a Conv3DGradFn that represents the gradient computation for a 3D convolution, initializing the associated input, kernel, and bias gradient function implementations and storing per-dimension stride, padding, and dilation parameters.
 		/// </summary>
 		/// <typeparam name="T">The numeric data type used by the gradient functions (for example, float or double).</typeparam>
-		/// <param name="input">std::shared_ptr<GradFn<T>::Impl> pointing to the gradient-function implementation for the input tensor.</param>
-		/// <param name="kernel">std::shared_ptr<GradFn<T>::Impl> pointing to the gradient-function implementation for the convolution kernel (weights).</param>
-		/// <param name="bias">std::shared_ptr<GradFn<T>::Impl> pointing to the gradient-function implementation for the bias term.</param>
+		/// <param name="input">std::shared_ptr pointing to the gradient-function implementation for the input tensor.</param>
+		/// <param name="kernel">std::shared_ptr pointing to the gradient-function implementation for the convolution kernel (weights).</param>
+		/// <param name="bias">std::shared_ptr pointing to the gradient-function implementation for the bias term.</param>
 		/// <param name="strideD">Stride size along the depth dimension (size_t).</param>
 		/// <param name="strideH">Stride size along the height dimension (size_t).</param>
 		/// <param name="strideW">Stride size along the width dimension (size_t).</param>

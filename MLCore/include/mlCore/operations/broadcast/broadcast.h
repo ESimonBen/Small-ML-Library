@@ -51,7 +51,7 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 	/// <param name="A">The input tensor to squeeze. Its dimension at index 'axis' must be 1.</param>
 	/// <param name="axis">The index of the dimension to remove. Must refer to a valid dimension of A whose size is 1.</param>
-	/// <returns>A new TensorCore::Tensor<T> with the specified axis removed. If removing the axis results in no dimensions, the function returns a tensor with a single dimension of size 1. The returned tensor contains the same elements as the input and, if the input required gradients, the result will be marked to require gradients and will have its backward function set accordingly.</returns>
+	/// <returns>A new TensorCore::Tensor with the specified axis removed. If removing the axis results in no dimensions, the function returns a tensor with a single dimension of size 1. The returned tensor contains the same elements as the input and, if the input required gradients, the result will be marked to require gradients and will have its backward function set accordingly.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Squeeze(const TensorCore::Tensor<T>& A, size_t axis);
 
@@ -61,7 +61,7 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">Element type of the tensor.</typeparam>
 	/// <param name="A">The input tensor to unsqueeze. Its contents are copied into the returned tensor.</param>
 	/// <param name="axis">The position at which to insert the new dimension (valid values: 0 .. A.Rank()). Throws std::runtime_error if axis > A.Rank() or if the dimension check in the function fails.</param>
-	/// <returns>A TensorCore::Tensor<T> with a new dimension of size 1 inserted at the specified axis, containing the same elements as A. If A.RequiresGrad() is true, the result will require gradients and will have its gradient function set appropriately.</returns>
+	/// <returns>A TensorCore::Tensor with a new dimension of size 1 inserted at the specified axis, containing the same elements as A. If A.RequiresGrad() is true, the result will require gradients and will have its gradient function set appropriately.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Unsqueeze(const TensorCore::Tensor<T>& A, size_t axis);
 
@@ -81,10 +81,17 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">The element type stored in the input and output tensors.</typeparam>
 	/// <param name="gradient">The input tensor whose values will be broadcasted. The function creates a detached copy and does not modify the original.</param>
 	/// <param name="targetShape">The desired shape for the output tensor. Must be compatible with the input tensor's shape according to the broadcasting rules used by Operations::ComputeBroadcastTo.</param>
-	/// <returns>A new TensorCore::Tensor<T> with shape targetShape containing values from gradient replicated according to broadcasting rules (using the same allocator as the detached input).</returns>
+	/// <returns>A new TensorCore::Tensor with shape targetShape containing values from gradient replicated according to broadcasting rules (using the same allocator as the detached input).</returns>
 	template <typename T>
 	TensorCore::Tensor<T> ExpandToShape(const TensorCore::Tensor<T>& A, const Utils::Shape& targetShape);
 
+	/// <summary>
+	/// Creates a new tensor that views the same underlying storage as A but with the specified newShape. Validates that the total number of elements matches and that A is contiguous; throws std::runtime_error on failure. If A requires gradients, the returned tensor will also require gradients and will have a ReshapeGradFn attached.
+	/// </summary>
+	/// <typeparam name="T">Element type of the tensor.</typeparam>
+	/// <param name="A">The input tensor to reshape. Must be contiguous and have the same number of elements as newShape. Passed by const reference.</param>
+	/// <param name="newShape">The desired shape for the result. The product of its dimensions must equal A.NumElements().</param>
+	/// <returns>A TensorCore::Tensor that shares A's storage (no data copy) with strides computed for contiguous layout of newShape. Throws std::runtime_error if element count mismatch or if A is not contiguous.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape);
 }

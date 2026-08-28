@@ -26,10 +26,8 @@ namespace MLCore::Memory {
 		ArenaAllocator(const ArenaAllocator&) = delete;
 
 		/// <summary>
-		/// Deleted move constructor
+		/// Deleted copy assignment operator
 		/// </summary>
-		/// <param name=""></param>
-		/// <returns></returns>
 		ArenaAllocator& operator=(const ArenaAllocator&) = delete;
 
 		/// <summary>
@@ -83,6 +81,11 @@ namespace MLCore::Memory {
 		void RestoreCheckpoint(size_t checkpoint);
 
 		#ifdef MLCORE_DEBUG
+		/// <summary>
+		/// Registers a persistent memory range (pointer and size) in the allocator's debug tracking list.
+		/// </summary>
+		/// <param name="ptr">Pointer to the start of the memory range to mark as persistent for debugging purposes.</param>
+		/// <param name="bytes">Size in bytes of the memory range to register.</param>
 		void RegisterPersistent(const void* ptr, size_t bytes);
 		#endif
 
@@ -92,7 +95,7 @@ namespace MLCore::Memory {
 		size_t m_Offset; /// A size_t variable that stores an offset value.
 
 		#ifdef MLCORE_DEBUG
-		std::vector<std::pair<const void*, size_t>> m_DebugPersistentRanges;
+		std::vector<std::pair<const void*, size_t>> m_DebugPersistentRanges; /// Container of persistent debug memory ranges, each represented as a pointer and a size.
 		#endif
 	};
 }

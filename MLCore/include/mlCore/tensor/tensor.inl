@@ -1,7 +1,6 @@
  /// tensor.inl
 #include <stdexcept>
 #include <mlCore/runtime/context.h>
-#include "tensor.h"
 
 namespace MLCore::TensorCore {
 	template <typename T>

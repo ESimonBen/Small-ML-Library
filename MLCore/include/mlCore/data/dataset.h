@@ -27,7 +27,7 @@ namespace MLCore::Data {
 		/// Retrieves the pair of tensors associated with the specified index.
 		/// </summary>
 		/// <param name="index">Zero-based index of the item to retrieve.</param>
-		/// <returns>A std::pair containing two TensorCore::Tensor<T> instances corresponding to the item at the given index; the pair's first and second elements are the two tensors associated with that index.</returns>
+		/// <returns>A std::pair containing two TensorCore::Tensor instances corresponding to the item at the given index; the pair's first and second elements are the two tensors associated with that index.</returns>
 		virtual std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> GetItem(size_t index) const = 0;
 	};
 }

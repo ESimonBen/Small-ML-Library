@@ -27,17 +27,17 @@ namespace MLCore::AutoGrad {
 	};
 
 	/// <summary>
-	/// Gradient function object for a tensor-scalar subtraction operation. Implements GradFn<T> and performs the backward pass for cases where one operand is a scalar.
+	/// Gradient function object for a tensor-scalar subtraction operation. Implements GradFn and performs the backward pass for cases where one operand is a scalar.
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensors (e.g., float, double).</typeparam>
 	template <typename T>
 	class SubScalarGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Initializes a SubScalarGradFn<T> by wrapping the provided gradient implementation and recording whether the scalar operand is on the left.
+		/// Initializes a SubScalarGradFn by wrapping the provided gradient implementation and recording whether the scalar operand is on the left.
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function implementation.</typeparam>
-		/// <param name="a">Shared pointer to the underlying gradient function implementation (GradFn<T>::Impl) that this object wraps.</param>
+		/// <param name="a">Shared pointer to the underlying gradient function implementation (GradFn::Impl) that this object wraps.</param>
 		/// <param name="scalarOnLeft">If true, indicates the scalar operand is on the left side of the subtraction; if false, the scalar is on the right.</param>
 		SubScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, bool scalarOnLeft);
 
@@ -60,10 +60,10 @@ namespace MLCore::AutoGrad {
 	class MulScalarGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a MulScalarGradFn<T> that wraps a gradient implementation and stores a scalar multiplier.
+		/// Constructs a MulScalarGradFn that wraps a gradient implementation and stores a scalar multiplier.
 		/// </summary>
 		/// <typeparam name="T">The numeric type used for gradient values and the scalar multiplier.</typeparam>
-		/// <param name="a">Shared pointer to the underlying GradFn<T>::Impl that provides the gradient implementation.</param>
+		/// <param name="a">Shared pointer to the underlying GradFn::Impl that provides the gradient implementation.</param>
 		/// <param name="scalar">Scalar value of type T to be used for multiplying the gradient; stored in the instance.</param>
 		MulScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar);
 
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		T m_Scalar;
+		T m_Scalar; /// Scalar of type T that the input tensor was multiplied by
 	};
 
 	/// <summary>
@@ -86,10 +86,10 @@ namespace MLCore::AutoGrad {
 	class DivScalarGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a DivScalarGradFn<T> that represents division between a gradient function and a scalar.
+		/// Constructs a DivScalarGradFn that represents division between a gradient function and a scalar.
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the values handled by the gradient function (e.g., float or double).</typeparam>
-		/// <param name="a">Shared pointer to the underlying GradFn<T>::Impl to wrap and compute gradients from.</param>
+		/// <param name="a">Shared pointer to the underlying GradFn::Impl to wrap and compute gradients from.</param>
 		/// <param name="scalar">The scalar value used in the division operation.</param>
 		/// <param name="scalarOnLeft">If true, the operation is scalar / a; if false, the operation is a / scalar.</param>
 		DivScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar, bool scalarOnLeft);

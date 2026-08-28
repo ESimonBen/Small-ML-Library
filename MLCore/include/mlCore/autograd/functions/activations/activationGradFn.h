@@ -5,17 +5,17 @@
 
 namespace MLCore::AutoGrad {
 	/// <summary>
-	/// Template class that implements the gradient function for the ReLU activation (inherits from GradFn<T>) and performs the backward pass to compute input gradients.
+	/// Template class that implements the gradient function for the ReLU activation (inherits from GradFn) and performs the backward pass to compute input gradients.
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensors operated on (e.g., float, double).</typeparam>
 	template <typename T>
 	class ReLUGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a ReLUGradFn<T> by initializing the base GradFn<T> with the provided implementation pointer.
+		/// Constructs a ReLUGradFn by initializing the base GradFn with the provided implementation pointer.
 		/// </summary>
 		/// <typeparam name="T">The element type (e.g., numeric or tensor element type) used by the gradient function.</typeparam>
-		/// <param name="a">A shared_ptr to a GradFn<T>::Impl that supplies the underlying implementation; forwarded to the base GradFn<T> constructor.</param>
+		/// <param name="a">A shared_ptr to a GradFn::Impl that supplies the underlying implementation; forwarded to the base GradFn constructor.</param>
 		ReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>
@@ -34,10 +34,10 @@ namespace MLCore::AutoGrad {
 	class LeakyReLUGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructor that creates a LeakyReLUGradFn<T> and initializes it with a previous gradient function implementation and the leaky-ReLU alpha (negative slope).
+		/// Constructor that creates a LeakyReLUGradFn and initializes it with a previous gradient function implementation and the leaky-ReLU alpha (negative slope).
 		/// </summary>
 		/// <typeparam name="T">The numeric type used for tensor values and the alpha parameter.</typeparam>
-		/// <param name="a">Shared ownership pointer to the underlying GradFn<T>::Impl that this gradient function depends on (previous node/implementation).</param>
+		/// <param name="a">Shared ownership pointer to the underlying GradFn::Impl that this gradient function depends on (previous node/implementation).</param>
 		/// <param name="alpha">The leaky-ReLU negative-slope coefficient of type T; stored in the object for use during gradient computation.</param>
 		LeakyReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T alpha);
 
@@ -60,12 +60,12 @@ namespace MLCore::AutoGrad {
 	class SoftmaxGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a SoftmaxGradFn<T> object, initializing the base GradFn with the provided input implementation and storing the provided output implementation.
+		/// Constructs a SoftmaxGradFn object, initializing the base GradFn with the provided input implementation and storing the provided output implementation.
 		/// </summary>
 		/// <typeparam name="T">The element/data type used by the gradient functions (e.g., float, double).</typeparam>
-		/// <param name="a">Shared pointer to a GradFn<T>::Impl used to initialize the base gradient function (input implementation).</param>
-		/// <param name="b">Shared pointer to a GradFn<T>::Impl that will be stored as the output implementation.</param>
-		SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		/// <param name="a">Shared pointer to a GradFn::Impl used to initialize the base gradient function (input implementation).</param>
+		/// <param name="output">Shared pointer to a GradFn::Impl that will be stored as the output implementation.</param>
+		SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output);
 
 		/// <summary>
 		/// Performs the backward pass for a softmax activation, computing and propagating the gradient to the input tensor.
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		std::shared_ptr<typename GradFn<T>::Impl> outputImpl; /// The output of the operation as a TensorImpl
+		std::weak_ptr<typename GradFn<T>::Impl> m_OutputImpl; /// The output of the operation as a TensorImpl
 	};
 
 	/// <summary>
@@ -89,10 +89,10 @@ namespace MLCore::AutoGrad {
 		/// Constructs an AxisSoftmaxGradFn that computes the softmax gradient along a specified axis.
 		/// </summary>
 		/// <typeparam name="T">The numeric type used for gradients and internal computations (e.g., float or double).</typeparam>
-		/// <param name="a">Shared pointer to a GradFn<T>::Impl used to initialize the base GradFn (previous/input gradient function).</param>
-		/// <param name="b">Shared pointer to a GradFn<T>::Impl stored as the output implementation (output gradient function).</param>
+		/// <param name="a">Shared pointer to a GradFn::Impl used to initialize the base GradFn (previous/input gradient function).</param>
+		/// <param name="output">Shared pointer to a GradFn::Impl stored as the output implementation (output gradient function).</param>
 		/// <param name="axis">The axis (dimension) along which the softmax gradient is computed.</param>
-		AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b, size_t axis);
+		AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output, size_t axis);
 
 		/// <summary>
 		/// Computes and propagates the gradient of a softmax operation along the configured axis. If the input does not require gradients, the function returns early.
@@ -102,8 +102,8 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		std::shared_ptr<typename GradFn<T>::Impl> outputImpl; /// The output of the operation as a TensorImpl
-		size_t axis; /// Represents the axis that was chosen to Softmax
+		std::weak_ptr<typename GradFn<T>::Impl> m_OutputImpl; /// The output of the operation as a TensorImpl
+		size_t m_Axis; /// Represents the axis that was chosen to Softmax
 	};
 }
 

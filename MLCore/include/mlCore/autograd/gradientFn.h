@@ -24,15 +24,15 @@ namespace MLCore::AutoGrad {
 		GradFn() = default;
 
 		/// <summary>
-		/// Initializes a GradFn<T> by moving the provided implementation pointer into its inputs member.
+		/// Initializes a GradFn by moving the provided implementation pointer into its inputs member.
 		/// </summary>
 		/// <param name="impl">A std::shared_ptr to the implementation object. The pointer is moved into the instance's inputs member, transferring ownership.</param>
 		explicit GradFn(std::shared_ptr<Impl> impl);
 
 		/// <summary>
-		/// Constructs a GradFn<T> by taking a vector of gradient input pointers and moving it into the instance.
+		/// Constructs a GradFn by taking a vector of gradient input pointers and moving it into the instance.
 		/// </summary>
-		/// <param name="gradInput">A vector of std::shared_ptr<Impl> representing gradient inputs. The vector is moved into the object's inputs member, transferring the container and its shared_ptr ownership.</param>
+		/// <param name="gradInput">A vector of std::shared_ptr to an Impl representing gradient inputs. The vector is moved into the object's inputs member, transferring the container and its shared_ptr ownership.</param>
 		explicit GradFn(std::vector<std::shared_ptr<Impl>> gradInput);
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace MLCore::AutoGrad {
 		/// Returns a shared pointer to the Impl object at the specified input index.
 		/// </summary>
 		/// <param name="i">The zero-based index of the input to retrieve.</param>
-		/// <returns>A std::shared_ptr<Impl> referencing the input at the given index.</returns>
+		/// <returns>A std::shared_ptr to an Impl referencing the input at the given index.</returns>
 		std::shared_ptr<Impl> Input(size_t i) {
 			return inputs[i];
 		}
@@ -59,7 +59,7 @@ namespace MLCore::AutoGrad {
 		/// <summary>
 		/// Returns a constant reference to the internal vector of shared pointers to Impl.
 		/// </summary>
-		/// <returns>A const reference to the internal std::vector<std::shared_ptr<Impl>> that holds the inputs. The caller cannot modify the container (e.g., add or remove elements) through this reference, though the pointed-to Impl objects may be modified via the shared_ptrs if their interfaces allow it.</returns>
+		/// <returns>A const reference to the internal std::vector of std::shared_ptr to Impls that holds the inputs. The caller cannot modify the container (e.g., add or remove elements) through this reference, though the pointed-to Impl objects may be modified via the shared_ptrs if their interfaces allow it.</returns>
 		const std::vector<std::shared_ptr<Impl>>& Inputs() const {
 			return inputs;
 		}

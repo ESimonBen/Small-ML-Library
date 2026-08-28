@@ -14,11 +14,11 @@ namespace MLCore::AutoGrad {
 	class DotGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a DotGradFn<T> by initializing the base GradFn<T> with two gradient function implementations.
+		/// Constructs a DotGradFn by initializing the base GradFn with two gradient function implementations.
 		/// </summary>
 		/// <typeparam name="T">The numeric or tensor element type used by the gradient functions.</typeparam>
-		/// <param name="a">A shared pointer to the first GradFn<T>::Impl used by this DotGradFn.</param>
-		/// <param name="b">A shared pointer to the second GradFn<T>::Impl used by this DotGradFn.</param>
+		/// <param name="a">A shared pointer to the first GradFn::Impl used by this DotGradFn.</param>
+		/// <param name="b">A shared pointer to the second GradFn::Impl used by this DotGradFn.</param>
 		DotGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
 
 		/// <summary>
@@ -37,7 +37,7 @@ namespace MLCore::AutoGrad {
 	class MatMulGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Constructs a MatMulGradFn<T> and initializes its base GradFn<T> with two gradient-function implementations for the operands of a matrix multiplication.
+		/// Constructs a MatMulGradFn and initializes its base GradFn with two gradient-function implementations for the operands of a matrix multiplication.
 		/// </summary>
 		/// <typeparam name="T">The numeric type used by the gradient functions (element type for the matrices).</typeparam>
 		/// <param name="a">A shared pointer to the gradient-function implementation for the first (left) operand.</param>
@@ -53,17 +53,17 @@ namespace MLCore::AutoGrad {
 	};
 
 	/// <summary>
-	/// Gradient function that computes and applies the gradient for a transpose operation; implements the GradFn<T> interface.
+	/// Gradient function that computes and applies the gradient for a transpose operation; implements the GradFn interface.
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensors processed by this gradient function.</typeparam>
 	template <typename T>
 	class TransposeGradFn : public GradFn<T> {
 	public:
 		/// <summary>
-		/// Initializes a TransposeGradFn<T> by forwarding the given GradFn implementation to the base GradFn constructor.
+		/// Initializes a TransposeGradFn by forwarding the given GradFn implementation to the base GradFn constructor.
 		/// </summary>
 		/// <typeparam name="T">The type associated with the gradient function (e.g., element or tensor type).</typeparam>
-		/// <param name="a">A shared pointer to a GradFn<T>::Impl that provides the implementation used to initialize the base GradFn.</param>
+		/// <param name="a">A shared pointer to a GradFn::Impl that provides the implementation used to initialize the base GradFn.</param>
 		TransposeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
 
 		/// <summary>

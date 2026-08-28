@@ -79,12 +79,12 @@ namespace MLCore::AutoGrad {
 
 		input.Backward(gradInput);
 	}
-
+	
 	template <typename T>
 	inline ReshapeGradFn<T>::ReshapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
 		: GradFn<T>(a)
 	{}
-
+	
 	template <typename T>
 	inline void ReshapeGradFn<T>::Backward(const TensorCore::Tensor<T>& gradOutput) {
 		TensorCore::Tensor<T> input{ this->inputs[0] };

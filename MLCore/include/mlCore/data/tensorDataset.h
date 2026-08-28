@@ -11,7 +11,7 @@ namespace MLCore::Data {
 	class TensorDataset : public Dataset<T> {
 	public:
 		/// <summary>
-		/// Constructs a TensorDataset<T> from input and target tensors and verifies they contain the same number of samples. Throws std::runtime_error if the sample counts differ.
+		/// Constructs a TensorDataset from input and target tensors and verifies they contain the same number of samples. Throws std::runtime_error if the sample counts differ.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensors (for example, float or double).</typeparam>
 		/// <param name="inputs">Tensor of input samples. Its first dimension is treated as the sample count and must match the targets tensor.</param>
@@ -29,7 +29,7 @@ namespace MLCore::Data {
 		/// Returns the item at the specified index as a pair of tensors.
 		/// </summary>
 		/// <param name="index">Zero-based index of the item to retrieve.</param>
-		/// <returns>A std::pair containing two TensorCore::Tensor<T> objects associated with the item at the given index.</returns>
+		/// <returns>A std::pair containing two TensorCore::Tensor objects associated with the item at the given index.</returns>
 		virtual std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> GetItem(size_t index) const override;
 
 	private:
