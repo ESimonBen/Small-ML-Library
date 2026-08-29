@@ -27,12 +27,12 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> C{ {M, N}, *resultAllocator };
 
 		for (size_t i = 0; i < M; ++i) {
-			for (size_t j = 0; j < N; ++j) {
-				T sum = T{};
-				for (size_t k = 0; k < K; ++k) {
-					sum += A[i * K + k] * B[k * N + j];
+			for (size_t k = 0; k < K; ++k) {
+				T aVal = A[i * K + k];
+
+				for (size_t j = 0; j < N; ++j) {
+					C[i * N + j] += aVal * B[k * N + j];
 				}
-				C[i * N + j] = sum;
 			}
 		}
 

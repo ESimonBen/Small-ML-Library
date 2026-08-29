@@ -1,5 +1,6 @@
 /// main.cpp
 #include <iostream>
+#include <stdfloat>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>
 #include <mlCore/module/layers/layers.h>
@@ -19,41 +20,6 @@ using namespace MLCore::Operations;
 using namespace MLCore::Optimizers;
 using namespace MLCore::Schedulers;
 using namespace MLCore::Serialization;
-
-template <typename T>
-class PtrWrapper {
-public:
-    PtrWrapper(T* obj) noexcept
-        : m_Object(obj)
-    {}
-
-    PtrWrapper(T& obj) noexcept
-        : m_Object(&obj)
-    {}
-
-    PtrWrapper(const PtrWrapper<T>& other) noexcept
-        : m_Object(other.m_Object)
-    {}
-
-    T& GetRef() const {
-        return *m_Object;
-    }
-
-    T* Get() const {
-        return m_Object;
-    }
-
-    operator T* () const noexcept {
-        return m_Object;
-    }
-
-    T* operator->() const noexcept {
-        return m_Object;
-    }
-
-private:
-    T* m_Object;
-};
 
 void TestXOR() {
     std::cout << "=== XOR Nonlinear Test ===\n";
@@ -382,10 +348,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-    auto ones = Tensor<float>::Ones({ 2, 2 });
-
-
+    TestXOR();
 
     return 0;
 }

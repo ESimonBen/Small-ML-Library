@@ -19,17 +19,17 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">The element type stored in the tensors (e.g., float, double, int).</typeparam>
 	/// <param name="A">Const reference to the left-hand tensor operand. Its shape may be equal to B's shape or broadcast-compatible with B.</param>
 	/// <param name="B">Const reference to the right-hand tensor operand. Its shape may be equal to A's shape or broadcast-compatible with A.</param>
-	/// <returns>A newly allocated TensorCore::Tensor<T> containing the element-wise difference A - B using the broadcasted shape. If A.RequiresGrad() or B.RequiresGrad() is true, the returned tensor will have RequiresGrad set and an appropriate gradient function attached.</returns>
+	/// <returns>A newly allocated TensorCore::Tensor containing the element-wise difference A - B using the broadcasted shape. If A.RequiresGrad() or B.RequiresGrad() is true, the returned tensor will have RequiresGrad set and an appropriate gradient function attached.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
 
 	/// <summary>
 	/// Performs elementwise multiplication of two tensors, supporting broadcasting. Throws std::runtime_error if the tensor shapes cannot be broadcast together.
 	/// </summary>
-	/// <typeparam name="T">Element type of the tensors. Must support multiplication (operator*) and storage in TensorCore::Tensor<T>.</typeparam>
+	/// <typeparam name="T">Element type of the tensors. Must support multiplication (operator*) and storage in TensorCore::Tensor.</typeparam>
 	/// <param name="A">Left-hand input tensor. Not modified. Its values are used (with broadcasting) to compute the product.</param>
 	/// <param name="B">Right-hand input tensor. Not modified. Its values are used (with broadcasting) to compute the product.</param>
-	/// <returns>A newly allocated TensorCore::Tensor<T> whose shape is the broadcasted shape of A and B and whose elements are the elementwise products. If either input requires gradients, the returned tensor will require gradients and will have its gradient function set to AutoGrad::MulGradFn<T>.</returns>
+	/// <returns>A newly allocated TensorCore::Tensor whose shape is the broadcasted shape of A and B and whose elements are the elementwise products. If either input requires gradients, the returned tensor will require gradients and will have its gradient function set to AutoGrad::MulGradFn.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
 
@@ -39,7 +39,7 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">The element type of the tensors (e.g., float, double, int).</typeparam>
 	/// <param name="A">The dividend tensor (left operand). May have a different shape than B if broadcastable.</param>
 	/// <param name="B">The divisor tensor (right operand). May have a different shape than A if broadcastable.</param>
-	/// <returns>A TensorCore::Tensor<T> containing the element-wise quotient of A and B (after applying broadcasting). If A.RequiresGrad() or B.RequiresGrad() is true, the returned tensor will require gradients and have its gradient function set accordingly.</returns>
+	/// <returns>A TensorCore::Tensor containing the element-wise quotient of A and B (after applying broadcasting). If A.RequiresGrad() or B.RequiresGrad() is true, the returned tensor will require gradients and have its gradient function set accordingly.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
 
@@ -49,7 +49,7 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">Element type of the tensor (for example float or double). Must support std::pow(T, T) and any operations required by the tensor implementation.</typeparam>
 	/// <param name="A">Input tensor whose elements will be raised to the exponent. Passed by const reference; the result has the same shape as A.</param>
 	/// <param name="exponent">Scalar exponent used for the power operation. Must be compatible with std::pow for type T.</param>
-	/// <returns>A TensorCore::Tensor<T> containing std::pow(A[i], exponent) for each element i. If A.RequiresGrad() is true, the returned tensor will have requiresGrad enabled and an associated gradient function. The function is annotated to encourage using the returned value.</returns>
+	/// <returns>A TensorCore::Tensor containing std::pow(A[i], exponent) for each element i. If A.RequiresGrad() is true, the returned tensor will have requiresGrad enabled and an associated gradient function. The function is annotated to encourage using the returned value.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Power(const TensorCore::Tensor<T>& A, T exponent);
 
@@ -58,7 +58,7 @@ namespace MLCore::Operations {
 	/// </summary>
 	/// <typeparam name="T">The element type of the tensor (e.g., float, double, int).</typeparam>
 	/// <param name="A">The input tensor (const reference). Its elements are not modified; the returned tensor contains their absolute values.</param>
-	/// <returns>A TensorCore::Tensor<T> with the absolute values of A, having the same shape as A. If A.RequiresGrad() is true, the returned tensor will require gradients and will have its gradient function set to AutoGrad::AbsGradFn<T>.</returns>
+	/// <returns>A TensorCore::Tensor with the absolute values of A, having the same shape as A. If A.RequiresGrad() is true, the returned tensor will require gradients and will have its gradient function set to AutoGrad::AbsGradFn.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Abs(const TensorCore::Tensor<T>& A);
 
@@ -69,7 +69,7 @@ namespace MLCore::Operations {
 	/// <param name="A">Input tensor to clamp (const reference).</param>
 	/// <param name="min">Inclusive lower bound for clamping.</param>
 	/// <param name="max">Inclusive upper bound for clamping.</param>
-	/// <returns>A new Tensor<T> with the same shape as A where each element is clamped to [min, max]. If A.RequiresGrad() is true, the returned tensor will require gradients and will have a ClampGradFn configured. The result is allocated using the provided allocator.</returns>
+	/// <returns>A new Tensor with the same shape as A where each element is clamped to [min, max]. If A.RequiresGrad() is true, the returned tensor will require gradients and will have a ClampGradFn configured. The result is allocated using the provided allocator.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Clamp(const TensorCore::Tensor<T>& A, T min, T max);
 
@@ -87,7 +87,7 @@ namespace MLCore::Operations {
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensor. Must be a numeric type compatible with std::exp (typically a floating-point type).</typeparam>
 	/// <param name="A">Input tensor (const reference). Each element is passed to std::exp.</param>
-	/// <returns>A TensorCore::Tensor<T> with the same shape as A where each element is std::exp(A[i]). If A.RequiresGrad() is true, the returned tensor will require gradients and its gradient function will be set to AutoGrad::ExpGradFn<T> associated with A's implementation.</returns>
+	/// <returns>A TensorCore::Tensor with the same shape as A where each element is std::exp(A[i]). If A.RequiresGrad() is true, the returned tensor will require gradients and its gradient function will be set to AutoGrad::ExpGradFn associated with A's implementation.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Exp(const TensorCore::Tensor<T>& A);
 
@@ -97,7 +97,7 @@ namespace MLCore::Operations {
 	/// <typeparam name="T">Element type of the input tensors and of the returned tensor.</typeparam>
 	/// <param name="A">The first input tensor. Must have the same shape as B.</param>
 	/// <param name="B">The second input tensor. Must have the same shape as A.</param>
-	/// <returns>A tensor of the same shape as A and B containing static_cast<T>(1) at positions where A and B are equal and static_cast<T>(0) otherwise. The returned tensor has gradients disabled.</returns>
+	/// <returns>A tensor of the same shape as A and B containing 1 at positions where A and B are equal and 0 otherwise. The returned tensor has gradients disabled.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
 
@@ -106,7 +106,7 @@ namespace MLCore::Operations {
 	/// </summary>
 	/// <typeparam name="T">The element type of the tensor (e.g., float, double, int).</typeparam>
 	/// <param name="A">The input tensor whose elements will be negated. If A.RequiresGrad() is true, the result will preserve the requires-grad flag.</param>
-	/// <returns>A new TensorCore::Tensor<T> containing the element-wise negation of A. The result uses the provided allocator and will have its requires-grad flag set when A.RequiresGrad() is true.</returns>
+	/// <returns>A new TensorCore::Tensor containing the element-wise negation of A. The result uses the provided allocator and will have its requires-grad flag set when A.RequiresGrad() is true.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A);
 
@@ -115,7 +115,7 @@ namespace MLCore::Operations {
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensor.</typeparam>
 	/// <param name="A">The input tensor to square (const reference).</param>
-	/// <returns>A TensorCore::Tensor<T> containing the element-wise square of A. If A.RequiresGrad() is true, the returned tensor will have its requires-grad flag set.</returns>
+	/// <returns>A TensorCore::Tensor containing the element-wise square of A. If A.RequiresGrad() is true, the returned tensor will have its requires-grad flag set.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Square(const TensorCore::Tensor<T>& A);
 
@@ -124,7 +124,7 @@ namespace MLCore::Operations {
 	/// </summary>
 	/// <typeparam name="T">Element type of the tensor (for example, float or double).</typeparam>
 	/// <param name="A">Input tensor whose elements will be inverted (element-wise).</param>
-	/// <returns>A newly allocated TensorCore::Tensor<T> containing the element-wise reciprocals of A. If A.RequiresGrad() is true, the returned tensor will have its requires-grad flag set.</returns>
+	/// <returns>A newly allocated TensorCore::Tensor containing the element-wise reciprocals of A. If A.RequiresGrad() is true, the returned tensor will have its requires-grad flag set.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Reciprocal(const TensorCore::Tensor<T>& A);
 }

@@ -27,8 +27,14 @@ set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug>:ProgramDatabase>")
 # Enable testing
 enable_testing()
 
+option(MLCORE_BUILD_BENCHMARKS "Build the benchmarks suite (requires network access for FetchContent)" OFF)
+
 add_subdirectory(MLCore)
 add_subdirectory(MLExamples)
 add_subdirectory(MLTests)
+
+if (MLCORE_BUILD_BENCHMARKS)
+    add_subdirectory(MLBenchmarks)
+endif()
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MLExample)

@@ -1,0 +1,40 @@
+# benchmarks.yml
+
+# ML Framework Benchmarks Workflow
+
+name: Small ML Library Benchmarks
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Runs nightly
+  workflow_dispatch: {} # Allows for manual triggering from GitHub Actions
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configure CMake
+      - name: Configure CMake with benchmarks
+        run:
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DMLCORE_BUILD_BENCHMARKS=ON
+
+      # Build project
+      - name: Build project
+        run:
+          cmake --build build --target MLBenchmarks --config Release
+
+      # Run benchmarks
+      - name: Run benchmarks
+        run:
+          ./bin/Release-Linux/MLBenchmarks --benchmark_format=json --benchmark_out=results.json
+        
+      # Upload artifact
+      - name: Upload bechmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: results.json

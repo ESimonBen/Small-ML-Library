@@ -30,8 +30,12 @@ namespace MLCore::Operations {
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			T* cData = C.Data();
+
 			for (size_t i = 0; i < size; ++i) {
-				C[i] = A[i] + B[i];
+				cData[i] = aData[i] + bData[i];
 			}
 		}
 		else {
@@ -81,8 +85,12 @@ namespace MLCore::Operations {
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			T* cData = C.Data();
+
 			for (size_t i = 0; i < size; ++i) {
-				C[i] = A[i] - B[i];
+				cData[i] = aData[i] - bData[i];
 			}
 		}
 		else {
@@ -132,8 +140,12 @@ namespace MLCore::Operations {
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			T* cData = C.Data();
+
 			for (size_t i = 0; i < size; ++i) {
-				C[i] = A[i] * B[i];
+				cData[i] = aData[i] * bData[i];
 			}
 		}
 		else {
@@ -183,8 +195,12 @@ namespace MLCore::Operations {
 		const size_t size = C.NumElements();
 
 		if (A.GetShape() == B.GetShape()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			T* cData = C.Data();
+
 			for (size_t i = 0; i < size; ++i) {
-				C[i] = A[i] / B[i];
+				cData[i] = aData[i] / bData[i];
 			}
 		}
 		else {

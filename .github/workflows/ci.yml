@@ -22,17 +22,17 @@ jobs:
       # Configure CMake
       - name: Configure CMake
         run:
-          cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
 
       # Build project
       - name: Build project
         run:
-          cmake --build build --config RelWithDebInfo
+          cmake --build build --config Release
 
       # Run unit tests
       - name: Run unit tests
         run:
-          ctest --test-dir build --output-on-failure -C RelWithDebInfo
+          ctest --test-dir build --output-on-failure -C Release
 
   linux_test_sanitized:
     runs-on: ubuntu-latest
