@@ -11,11 +11,9 @@ namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> Conv1D(const TensorCore::Tensor<T>& input, const TensorCore::Tensor<T>& kernel, const TensorCore::Tensor<T>* bias,
 										size_t stride, size_t padding, size_t dilation) {
-		if (&input.GetAllocator() != &kernel.GetAllocator()) {
-			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
-		}
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator({ &input, &kernel, bias });
 
-		if (bias && &input.GetAllocator() != &bias->GetAllocator()) {
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -61,9 +59,7 @@ namespace MLCore::Operations {
 
 		const size_t outputLength = (paddedInputLength - effectiveKernelLength) / stride + 1;
 
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputLength}, allocator };
+		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputLength}, *resultAllocator };
 
 		for (size_t n = 0; n < batchSize; ++n) {
 			for (size_t oc = 0; oc < outputChannels; ++oc) {
@@ -110,11 +106,9 @@ namespace MLCore::Operations {
 										size_t strideH, size_t strideW, 
 										size_t paddingH, size_t paddingW, 
 										size_t dilationH, size_t dilationW) {
-		if (&input.GetAllocator() != &kernel.GetAllocator()) {
-			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
-		}
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator({ &input, &kernel, bias });
 
-		if (bias && &input.GetAllocator() != &bias->GetAllocator()) {
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 		
@@ -165,9 +159,7 @@ namespace MLCore::Operations {
 		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
 		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
 
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		TensorCore::Tensor<T> output{{batchSize, outputChannels, outputHeight, outputWidth}, allocator};
+		TensorCore::Tensor<T> output{{batchSize, outputChannels, outputHeight, outputWidth}, *resultAllocator};
 
 		for (size_t n = 0; n < batchSize; ++n) {
 			for (size_t oc = 0; oc < outputChannels; ++oc) {
@@ -218,11 +210,9 @@ namespace MLCore::Operations {
 										size_t strideD, size_t strideH, size_t strideW,
 										size_t paddingD, size_t paddingH, size_t paddingW,
 										size_t dilationD, size_t dilationH, size_t dilationW) {
-		if (&input.GetAllocator() != &kernel.GetAllocator()) {
-			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
-		}
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator({ &input, &kernel, bias });
 
-		if (bias && &input.GetAllocator() != &bias->GetAllocator()) {
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -278,9 +268,7 @@ namespace MLCore::Operations {
 		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
 		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
 
-		Memory::ArenaAllocator& allocator = input.GetAllocator();
-
-		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputDepth, outputHeight, outputWidth}, allocator };
+		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputDepth, outputHeight, outputWidth}, *resultAllocator };
 
 		for (size_t n = 0; n < batchSize; ++n) {
 			for (size_t oc = 0; oc < outputChannels; ++oc) {

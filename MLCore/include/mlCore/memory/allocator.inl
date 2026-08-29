@@ -74,6 +74,7 @@ namespace MLCore::Memory {
 
 	inline void ArenaAllocator::Reset() {
 		#ifdef MLCORE_DEBUG
+			assert(m_DebugPersistentRanges.empty() && "Reset() would reclaim allocations registered as persistent — persistent objects (Parameter, TensorDataset) must live on the shared arena, never a thread-local scratch arena.");
 			std::memset(m_Arena, 0xDD, m_ArenaCapacity);
 		#endif
 

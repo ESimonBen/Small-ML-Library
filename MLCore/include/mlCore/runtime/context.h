@@ -35,6 +35,15 @@ namespace MLCore::Runtime {
 		}
 
 		/// <summary>
+		/// Returns a reference to a shared (singleton) Memory::ArenaAllocator instance.
+		/// </summary>
+		/// <returns>A reference to a function-local static Memory::ArenaAllocator that is constructed on first call and remains alive for the program's lifetime.</returns>
+		static Memory::ArenaAllocator& GetSharedAllocator() {
+			static Memory::ArenaAllocator sharedAllocator;
+			return sharedAllocator;
+		}
+
+		/// <summary>
 		/// Returns this thread's random engine, lazily constructed on first use per thread
 		/// and persisting across calls (unlike constructing a new engine per Init() call).
 		/// </summary>

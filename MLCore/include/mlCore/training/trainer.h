@@ -224,13 +224,6 @@ namespace MLCore::Training {
 		std::unordered_map<std::string, T> ComputeMetrics(const TensorCore::Tensor<T>& pred, const TensorCore::Tensor<T>& target);
 
 	private:
-		/// <summary>
-		/// Ensures a parameter checkpoint exists for the Trainer by creating one from the runtime allocator if no checkpoint is present.
-		/// </summary>
-		/// <typeparam name="T">Type parameter of the Trainer class.</typeparam>
-		void EnsureCheckpoint();
-
-	private:
 		NN::Module<T>& m_Model; /// A reference to a neural network model.
 		Optimizers::Optimizer<T>& m_Optimizer; /// A reference to a neural network optimizer.
 		LossFn<T> m_LossFn; /// Loss function for backpropogation.
@@ -246,9 +239,6 @@ namespace MLCore::Training {
 		bool m_HasBestMetric = false; /// Flag determining if the trainer has a best metric
 		std::string m_BestMetricName; /// Stores the name of the best metric.
 		MetricMode m_BestMetricMode = MetricMode::Min; /// Specifies which metric direction is considered better (whether lower or higher values win). It is initialized to MetricMode::Min.
-
-		bool m_HasCheckpoint = false; /// Boolean flag that indicates whether a checkpoint has been set.
-		size_t m_ParamCheckpoint = 0; /// A size_t variable that stores a parameter checkpoint index, initialized to 0.
 	};
 }
 

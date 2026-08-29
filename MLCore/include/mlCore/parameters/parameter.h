@@ -14,11 +14,11 @@ namespace MLCore::NN {
 	class Parameter {
 	public:
 		/// <summary>
-		/// Explicit constructor that initializes a Parameter from a Tensor, copying the tensor into the data member and assigning a new identifier.
+		/// Constructs a Parameter object with the specified shape. Allocates underlying tensor storage using the shared allocator, assigns a unique ID, enables gradient tracking, and initializes gradient storage. In debug builds, registers persistent allocations for the tensor and its gradient.
 		/// </summary>
-		/// <param name="tensor">Reference to a TensorCore::Tensor<T> used to initialize the Parameter's data member.</param>
-		explicit Parameter(const TensorCore::Tensor<T>& tensor)
-			: data(tensor), id(NextID()) {
+		/// <param name="shape">The dimensions/shape used to allocate the underlying tensor storage.</param>
+		explicit Parameter(const Utils::Shape& shape)
+			: data(shape, Runtime::MLContext::GetSharedAllocator()), id(NextID()) {
 			data.SetRequiresGrad(true);
 			data.InitializeGrad();
 

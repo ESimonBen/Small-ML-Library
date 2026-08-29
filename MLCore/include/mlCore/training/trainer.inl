@@ -11,7 +11,6 @@ namespace MLCore::Training {
 	template <typename T>
 	inline void Trainer<T>::Fit(Data::DataLoader<T>& dataLoader, int epochs) {
 		m_Model.Train();
-		EnsureCheckpoint();
 
 		int endEpoch = m_CurrentEpoch + epochs;
 
@@ -56,7 +55,7 @@ namespace MLCore::Training {
 					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
 
-				Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
+				Runtime::MLContext::GetAllocator().Reset();
 			}
 
 			if (batchCount == 0) {
@@ -102,7 +101,6 @@ namespace MLCore::Training {
 	template <typename T>
 	inline void Trainer<T>::Fit(Data::DataLoader<T>& trainLoader, Data::DataLoader<T>& valLoader, int epochs) {
 		m_Model.Train();
-		EnsureCheckpoint();
 
 		int endEpoch = m_CurrentEpoch + epochs;
 
@@ -147,7 +145,7 @@ namespace MLCore::Training {
 					OnBatchEnd(m_CurrentEpoch, pred, y);
 				}
 
-				Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
+				Runtime::MLContext::GetAllocator().Reset();
 			}
 
 			if (batchCount == 0) {
@@ -305,7 +303,7 @@ namespace MLCore::Training {
 
 			batches++;
 
-			Runtime::MLContext::GetAllocator().RestoreCheckpoint(m_ParamCheckpoint);
+			Runtime::MLContext::GetAllocator().Reset();
 		}
 
 		if (batches <= 0) {
@@ -345,13 +343,5 @@ namespace MLCore::Training {
 		}
 
 		return results;
-	}
-	
-	template<typename T>
-	inline void MLCore::Training::Trainer<T>::EnsureCheckpoint() {
-		if (!m_HasCheckpoint) {
-			m_ParamCheckpoint = Runtime::MLContext::GetAllocator().Checkpoint();
-			m_HasCheckpoint = true;
-		}
 	}
 }

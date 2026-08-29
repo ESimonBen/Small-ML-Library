@@ -5,7 +5,7 @@ namespace MLCore::NN {
 	template <typename T>
 	inline Conv1DLayer<T>::Conv1DLayer(size_t inChannels, size_t outChannels, size_t kernelLength, size_t stride,
 		size_t padding, size_t dilation, InitType kernelInit, InitType biasInit)
-		: m_Kernel(TensorCore::Tensor<T>{{outChannels, inChannels, kernelLength}}), m_Bias(TensorCore::Tensor<T>{outChannels}),
+		: m_Kernel({outChannels, inChannels, kernelLength}), m_Bias({outChannels}),
 		m_Stride(stride), m_Padding(padding), m_Dilation(dilation) {
 		const size_t fanIn = inChannels * kernelLength;
 		const size_t fanOut = outChannels * kernelLength;
@@ -43,7 +43,7 @@ namespace MLCore::NN {
 	inline Conv2DLayer<T>::Conv2DLayer(size_t inChannels, size_t outChannels, size_t kernelHeight, size_t kernelWidth,
 		size_t strideH, size_t strideW, size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW,
 		InitType kernelInit, InitType biasInit)
-		: m_Kernel(TensorCore::Tensor<T>{{outChannels, inChannels, kernelHeight, kernelWidth}}), m_Bias(TensorCore::Tensor<T>{{outChannels}}),
+		: m_Kernel({outChannels, inChannels, kernelHeight, kernelWidth}), m_Bias({outChannels}),
 		  m_StrideH(strideH), m_StrideW(strideW), m_PaddingH(paddingH), m_PaddingW(paddingW), m_DilationH(dilationH), m_DilationW(dilationW) {
 		const size_t fanIn = inChannels * kernelHeight * kernelWidth;
 		const size_t fanOut = outChannels * kernelHeight * kernelWidth;
@@ -83,7 +83,7 @@ namespace MLCore::NN {
 									   size_t paddingD, size_t paddingH, size_t paddingW,
 									   size_t dilationD, size_t dilationH, size_t dilationW,
 									   InitType kernelInit, InitType biasInit)
-		: m_Kernel(TensorCore::Tensor<T>{{outChannels, inChannels, kernelDepth, kernelHeight, kernelWidth}}), m_Bias(TensorCore::Tensor<T>{outChannels}),
+		: m_Kernel({outChannels, inChannels, kernelDepth, kernelHeight, kernelWidth}), m_Bias({outChannels}),
 		  m_StrideD(strideD), m_StrideH(strideH), m_StrideW(strideW), m_PaddingD(paddingD), m_PaddingH(paddingH), m_PaddingW(paddingW),
 		  m_DilationD(dilationD), m_DilationH(dilationH), m_DilationW(dilationW) {
 		const size_t fanIn = inChannels * kernelDepth * kernelHeight * kernelWidth;

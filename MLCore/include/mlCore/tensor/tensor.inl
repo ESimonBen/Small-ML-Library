@@ -1,6 +1,7 @@
  /// tensor.inl
 #include <stdexcept>
 #include <mlCore/runtime/context.h>
+#include <mlCore/memory/allocatorPolicy.h>
 
 namespace MLCore::TensorCore {
 	template <typename T>
@@ -443,6 +444,12 @@ namespace MLCore::TensorCore {
 			throw std::runtime_error("ERROR: Cannot concatenate empty tensors");
 		}
 
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(tensors);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Tensor allocator mismatch in concatenation");
+		}
+
 		/// Reference tensor
 		const Tensor<T>& firstTensor = tensors[0];
 
@@ -453,13 +460,11 @@ namespace MLCore::TensorCore {
 			throw std::runtime_error("ERROR: Cannot concatenate scalar tensors");
 		}
 
-		for (size_t i = 1; i < tensors.size(); ++i) {
+		size_t tensorsSize = tensors.size();
+
+		for (size_t i = 1; i < tensorsSize; ++i) {
 			/// Current Tensor
 			const Tensor<T>& currentTensor = tensors[i];
-
-			if (&currentTensor.GetAllocator() != &firstTensor.GetAllocator()) {
-				throw std::runtime_error("ERROR: Tensor allocator mismatch in concatenation");
-			}
 
 			if (currentTensor.Rank() != rank) {
 				throw std::runtime_error("ERROR: Tensor rank mismatch in concatenation");
@@ -483,7 +488,7 @@ namespace MLCore::TensorCore {
 		}
 
 		/// Copy data into output tensor
-		Tensor<T> result{ outDims, firstTensor.GetAllocator() };
+		Tensor<T> result{ outDims, *resultAllocator };
 		size_t writeOffset = 0;
 
 		for (const Tensor<T>& tensor : tensors) {

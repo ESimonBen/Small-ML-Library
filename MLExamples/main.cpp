@@ -20,6 +20,41 @@ using namespace MLCore::Optimizers;
 using namespace MLCore::Schedulers;
 using namespace MLCore::Serialization;
 
+template <typename T>
+class PtrWrapper {
+public:
+    PtrWrapper(T* obj) noexcept
+        : m_Object(obj)
+    {}
+
+    PtrWrapper(T& obj) noexcept
+        : m_Object(&obj)
+    {}
+
+    PtrWrapper(const PtrWrapper<T>& other) noexcept
+        : m_Object(other.m_Object)
+    {}
+
+    T& GetRef() const {
+        return *m_Object;
+    }
+
+    T* Get() const {
+        return m_Object;
+    }
+
+    operator T* () const noexcept {
+        return m_Object;
+    }
+
+    T* operator->() const noexcept {
+        return m_Object;
+    }
+
+private:
+    T* m_Object;
+};
+
 void TestXOR() {
     std::cout << "=== XOR Nonlinear Test ===\n";
 
@@ -91,7 +126,7 @@ void TestXOR() {
 
     SGDMomentum optA{ paramsA, 0.1f, 0.1f };
 
-    StepLR<float> schedulerA{ optA, 1000, .99f };
+    StepLR<float> schedulerA{ optA, 100, .99f };
 
     /// -----------------------------
     /// 3. Training loop
@@ -196,7 +231,7 @@ void TestXOR() {
 
     SGDMomentum optB{ paramsB, 0.1f, 0.1f };
 
-    StepLR<float> schedulerB{ optB, 1000, .99f };
+    StepLR<float> schedulerB{ optB, 100, .99f };
 
     /// -----------------------------
     /// 3. Training loop
@@ -267,7 +302,7 @@ void TestXOR() {
 
     SGDMomentum optC{ paramsC, 0.1f, 0.1f };
 
-    StepLR<float> schedulerC{ optC, 1000, .99f };
+    StepLR<float> schedulerC{ optC, 100, .99f };
 
     /// -----------------------------
     /// 3. Training loop
@@ -347,7 +382,10 @@ void TestXOR() {
 }
 
 int main() {
-    TestXOR();
+    /*TestXOR();*/
+    auto ones = Tensor<float>::Ones({ 2, 2 });
+
+
 
     return 0;
 }

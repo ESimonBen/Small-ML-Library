@@ -1,6 +1,7 @@
  /// elementwise.inl
 #include <cmath>
 #include <stdexcept>
+#include <mlCore/memory/allocatorPolicy.h>
 #include <mlCore/operations/scalar/scalar.h>
 #include <mlCore/operations/broadcast/broadcast.h>
 #include <mlCore/autograd/functions/elementwise/elementwiseGradFn.h>
@@ -8,7 +9,9 @@
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> Add(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -22,9 +25,7 @@ namespace MLCore::Operations {
 
 		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
-		/// Because both tensors are on the same alloactor, the result will be allocated with them
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ info.shape, allocator };
+		TensorCore::Tensor<T> C{ info.shape, *resultAllocator };
 
 		const size_t size = C.NumElements();
 
@@ -59,7 +60,9 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Subtract(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -73,8 +76,7 @@ namespace MLCore::Operations {
 
 		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ info.shape, allocator };
+		TensorCore::Tensor<T> C{ info.shape, *resultAllocator };
 
 		const size_t size = C.NumElements();
 
@@ -109,7 +111,9 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Multiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -123,8 +127,7 @@ namespace MLCore::Operations {
 
 		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ info.shape, allocator };
+		TensorCore::Tensor<T> C{ info.shape, *resultAllocator };
 
 		const size_t size = C.NumElements();
 
@@ -159,7 +162,9 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Divide(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -173,8 +178,7 @@ namespace MLCore::Operations {
 
 		auto info = ComputeBroadcast(A.GetShape(), A.Strides(), B.GetShape(), B.Strides());
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ info.shape, allocator };
+		TensorCore::Tensor<T> C{ info.shape, *resultAllocator };
 
 		const size_t size = C.NumElements();
 
@@ -321,7 +325,9 @@ namespace MLCore::Operations {
 	
 	template<typename T>
 	inline TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -333,8 +339,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Equal: Tensors are not the same shape");
 		}
 		
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ A.GetShape(), allocator};
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator};
 
 		size_t size = A.NumElements();
 

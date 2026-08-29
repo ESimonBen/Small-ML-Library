@@ -3,11 +3,12 @@
 #include <stdexcept>
 #include <algorithm>
 #include <mlCore/operations/operations.h>
+#include <mlCore/memory/allocatorPolicy.h>
 
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
-		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(predictions, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -49,7 +50,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
-		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(predictions, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -91,7 +92,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
-		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(predictions, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -147,7 +148,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config) {
-		if (&logits.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(logits, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -199,7 +200,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses) {
-		if (&predictions.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(predictions, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -247,7 +248,7 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, size_t axis, Reduction config, bool avgOverClasses) {
-		if (&logits.GetAllocator() != &targets.GetAllocator()) {
+		if (!Memory::ResolveOperationAllocator(logits, targets)) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -294,7 +295,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanSquaredError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
-		if (predictions.IsEmpty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: MeanSquaredError: Invalid shape rank");
 		}
 
@@ -303,7 +304,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MeanAbsoluteError(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
-		if (predictions.IsEmpty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: MeanAbsoluteError: Invalid shape rank");
 		}
 
@@ -312,7 +313,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config) {
-		if (predictions.IsEmpty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropy: Invalid shape rank");
 		}
 
@@ -321,7 +322,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> BinaryCrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config) {
-		if (logits.IsEmpty()) {
+		if (logits.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: BinaryCrossEntropyWithLogits: Invalid shape rank");
 		}
 
@@ -330,7 +331,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropy(const TensorCore::Tensor<T>& predictions, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses) {
-		if (predictions.IsEmpty()) {
+		if (predictions.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: CrossEntropy: Invalid shape rank");
 		}
 
@@ -339,7 +340,7 @@ namespace MLCore::Operations {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> CrossEntropyWithLogits(const TensorCore::Tensor<T>& logits, const TensorCore::Tensor<T>& targets, Reduction config, bool avgOverClasses) {
-		if (logits.IsEmpty()) {
+		if (logits.IsEmpty() || targets.IsEmpty()) {
 			throw std::runtime_error("ERROR: CrossEntropyWithLogits: Invalid shape rank");
 		}
 

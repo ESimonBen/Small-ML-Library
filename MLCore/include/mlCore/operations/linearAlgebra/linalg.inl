@@ -6,7 +6,9 @@
 namespace MLCore::Operations {
 	template <typename T>
 	inline TensorCore::Tensor<T> MatMultiply(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -22,8 +24,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MatMultiply: Inner dimensions do not match");
 		}
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-		TensorCore::Tensor<T> C{ {M, N}, allocator };
+		TensorCore::Tensor<T> C{ {M, N}, *resultAllocator };
 
 		for (size_t i = 0; i < M; ++i) {
 			for (size_t j = 0; j < N; ++j) {
@@ -76,7 +77,9 @@ namespace MLCore::Operations {
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> Dot(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
-		if (&A.GetAllocator() != &B.GetAllocator()) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
 			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
 		}
 
@@ -94,9 +97,7 @@ namespace MLCore::Operations {
 			sum += A[i] * B[i];
 		}
 
-		Memory::ArenaAllocator& allocator = A.GetAllocator();
-
-		TensorCore::Tensor<T> C{ {1}, allocator };
+		TensorCore::Tensor<T> C{ {1}, *resultAllocator };
 		C[0] = sum;
 
 		if (A.RequiresGrad() || B.RequiresGrad()) {

@@ -33,6 +33,15 @@ namespace MLCore::Data {
 		virtual std::pair<TensorCore::Tensor<T>, TensorCore::Tensor<T>> GetItem(size_t index) const override;
 
 	private:
+		/// <summary>
+		/// Copies the given tensor into the shared allocator, returning a new tensor with the same shape and contents.
+		/// </summary>
+		/// <typeparam name="T">The element type of the tensor.</typeparam>
+		/// <param name="source">The source tensor to copy. Passed by const reference; its shape and element values are replicated in the returned tensor.</param>
+		/// <returns>A TensorCore::Tensor allocated with the shared allocator (Runtime::MLContext::GetSharedAllocator()) containing a copy of the source tensor.</returns>
+		static TensorCore::Tensor<T> CopyToSharedArena(const TensorCore::Tensor<T>& source);
+
+	private:
 		TensorCore::Tensor<T> m_Inputs; /// The input tensor for the containing class.
 		TensorCore::Tensor<T> m_Targets; /// The target tenor for the containing class.
 	};

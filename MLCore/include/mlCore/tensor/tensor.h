@@ -442,8 +442,8 @@ namespace MLCore::TensorCore {
 		/// Concatenates a list of tensors along the first dimension (dimension 0) and returns a new tensor containing the concatenated data. All tensors must be non-empty, have rank > 0, share the same allocator as the first tensor, and have identical sizes for all dimensions except the first. The result uses the allocator of the first tensor and contains a copy of the elements.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensors.</typeparam>
-		/// <param name="tensors">A const reference to a vector of Tensor<T> objects to concatenate. Must not be empty. All tensors must have the same rank (> 0), the same allocator as the first tensor, and matching sizes for dimensions 1..rank-1; their dimension 0 sizes are summed to form the result's first dimension.</param>
-		/// <returns>A new Tensor<T> whose shape equals the input shape with dimension 0 set to the sum of the input tensors' dimension-0 sizes. The returned tensor contains copies of the input elements in order.</returns>
+		/// <param name="tensors">A const reference to a vector of Tensor objects to concatenate. Must not be empty. All tensors must have the same rank (> 0), the same allocator as the first tensor, and matching sizes for dimensions 1..rank-1; their dimension 0 sizes are summed to form the result's first dimension.</param>
+		/// <returns>A new Tensor whose shape equals the input shape with dimension 0 set to the sum of the input tensors' dimension-0 sizes. The returned tensor contains copies of the input elements in order.</returns>
 		static Tensor<T> Concat(const std::vector<Tensor<T>>& tensors);
 
 		/// <summary>

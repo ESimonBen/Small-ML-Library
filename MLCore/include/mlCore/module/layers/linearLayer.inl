@@ -5,7 +5,7 @@
 namespace MLCore::NN {
 	template <typename T>
 	inline LinearLayer<T>::LinearLayer(size_t in, size_t out, InitType weightInit, InitType biasInit)
-		: m_Weight(TensorCore::Tensor<T>{{in, out}}), m_Bias(TensorCore::Tensor<T>{{1, out}}){
+		: m_Weight({in, out}), m_Bias({1, out}){
 		Init(m_Weight.Data(), in, out, weightInit);
 		Init(m_Bias.Data(), 1, out, biasInit);
 	}
