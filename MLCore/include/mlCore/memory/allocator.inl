@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
+#include <stdexcept>
 
 namespace MLCore::Memory {
 	inline ArenaAllocator::ArenaAllocator(size_t arenaSize)
