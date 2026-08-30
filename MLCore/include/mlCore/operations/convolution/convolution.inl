@@ -61,33 +61,72 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputLength}, *resultAllocator };
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t ol = 0; ol < outputLength; ++ol) {
-					T sum = static_cast<T>(0);
+		if (input.IsContiguous() && kernel.IsContiguous() && (!bias || bias->IsContiguous())) {
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			const T* biasData = bias ? bias->Data() : nullptr;
+			T* outputData = output.Data();
 
-					for (size_t ic = 0; ic < inputChannels; ++ic) {
-						for (size_t kl = 0; kl < kernelLength; ++kl) {
-							const int inputPos = static_cast<int>(ol * stride) + static_cast<int>(kl * dilation) - static_cast<int>(padding);
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t ol = 0; ol < outputLength; ++ol) {
+						T sum = static_cast<T>(0);
 
-							if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
-								continue;
+						for (size_t ic = 0; ic < inputChannels; ++ic) {
+							for (size_t kl = 0; kl < kernelLength; ++kl) {
+								const int inputPos = static_cast<int>(ol * stride) + static_cast<int>(kl * dilation) - static_cast<int>(padding);
+
+								if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
+									continue;
+								}
+
+								const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
+								const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
+
+								sum += inputData[inputIndex] * kernelData[kernelIndex];
 							}
-
-							const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
-							const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
-
-							sum += input[inputIndex] * kernel[kernelIndex];
 						}
+
+						if (biasData) {
+							sum += biasData[oc];
+						}
+
+						const size_t outputIndex = (n * outputChannels + oc) * outputLength + ol;
+
+						outputData[outputIndex] = sum;
 					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t ol = 0; ol < outputLength; ++ol) {
+						T sum = static_cast<T>(0);
 
-					if (bias) {
-						sum += (*bias)[oc];
+						for (size_t ic = 0; ic < inputChannels; ++ic) {
+							for (size_t kl = 0; kl < kernelLength; ++kl) {
+								const int inputPos = static_cast<int>(ol * stride) + static_cast<int>(kl * dilation) - static_cast<int>(padding);
+
+								if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
+									continue;
+								}
+
+								const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
+								const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
+
+								sum += input[inputIndex] * kernel[kernelIndex];
+							}
+						}
+
+						if (bias) {
+							sum += (*bias)[oc];
+						}
+
+						const size_t outputIndex = (n * outputChannels + oc) * outputLength + ol;
+
+						output[outputIndex] = sum;
 					}
-
-					const size_t outputIndex = (n * outputChannels + oc) * outputLength + ol;
-
-					output[outputIndex] = sum;
 				}
 			}
 		}
@@ -161,36 +200,79 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> output{{batchSize, outputChannels, outputHeight, outputWidth}, *resultAllocator};
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t oh = 0; oh < outputHeight; ++oh) {
-					for (size_t ow = 0; ow < outputWidth; ++ow) {
-						T sum = static_cast<T>(0);
+		if (input.IsContiguous() && kernel.IsContiguous() && (!bias || bias->IsContiguous())) {
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			const T* biasData = bias ? bias->Data() : nullptr;
+			T* outputData = output.Data();
 
-						for (size_t ic = 0; ic < inputChannels; ++ic) {
-							for (size_t kh = 0; kh < kernelHeight; ++kh) {
-								for (size_t kw = 0; kw < kernelWidth; ++kw) {
-									const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
-									const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t oh = 0; oh < outputHeight; ++oh) {
+						for (size_t ow = 0; ow < outputWidth; ++ow) {
+							T sum = static_cast<T>(0);
 
-									if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
-										continue;
+							for (size_t ic = 0; ic < inputChannels; ++ic) {
+								for (size_t kh = 0; kh < kernelHeight; ++kh) {
+									for (size_t kw = 0; kw < kernelWidth; ++kw) {
+										const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
+										const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+
+										if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+											continue;
+										}
+
+										const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+										const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+
+										sum += inputData[inputIndex] * kernelData[kernelIndex];
 									}
-
-									const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
-									const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
-
-									sum += input[inputIndex] * kernel[kernelIndex];
 								}
 							}
-						}
 
-						if (bias) {
-							sum += (*bias)[oc];
-						}
+							if (biasData) {
+								sum += biasData[oc];
+							}
 
-						const size_t outputIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
-						output[outputIndex] = sum;
+							const size_t outputIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
+							outputData[outputIndex] = sum;
+						}
+					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t oh = 0; oh < outputHeight; ++oh) {
+						for (size_t ow = 0; ow < outputWidth; ++ow) {
+							T sum = static_cast<T>(0);
+
+							for (size_t ic = 0; ic < inputChannels; ++ic) {
+								for (size_t kh = 0; kh < kernelHeight; ++kh) {
+									for (size_t kw = 0; kw < kernelWidth; ++kw) {
+										const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
+										const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+
+										if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+											continue;
+										}
+
+										const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+										const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+
+										sum += input[inputIndex] * kernel[kernelIndex];
+									}
+								}
+							}
+
+							if (bias) {
+								sum += (*bias)[oc];
+							}
+
+							const size_t outputIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
+							output[outputIndex] = sum;
+						}
 					}
 				}
 			}
@@ -270,40 +352,88 @@ namespace MLCore::Operations {
 
 		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputDepth, outputHeight, outputWidth}, *resultAllocator };
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t od = 0; od < outputDepth; ++od) {
-					for (size_t oh = 0; oh < outputHeight; ++oh) {
-						for (size_t ow = 0; ow < outputWidth; ++ow) {
-							T sum = static_cast<T>(0);
+		if (input.IsContiguous() && kernel.IsContiguous() && (!bias || bias->IsContiguous())) {
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			const T* biasData = bias ? bias->Data() : nullptr;
+			T* outputData = output.Data();
 
-							for (size_t ic = 0; ic < inputChannels; ++ic) {
-								for (size_t kd = 0; kd < kernelDepth; ++kd) {
-									for (size_t kh = 0; kh < kernelHeight; ++kh) {
-										for (size_t kw = 0; kw < kernelWidth; ++kw) {
-											const int inputDepthPos = static_cast<int>(od * strideD) + static_cast<int>(kd * dilationD) - static_cast<int>(paddingD);
-											const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
-											const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t od = 0; od < outputDepth; ++od) {
+						for (size_t oh = 0; oh < outputHeight; ++oh) {
+							for (size_t ow = 0; ow < outputWidth; ++ow) {
+								T sum = static_cast<T>(0);
 
-											if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
-												continue;
+								for (size_t ic = 0; ic < inputChannels; ++ic) {
+									for (size_t kd = 0; kd < kernelDepth; ++kd) {
+										for (size_t kh = 0; kh < kernelHeight; ++kh) {
+											for (size_t kw = 0; kw < kernelWidth; ++kw) {
+												const int inputDepthPos = static_cast<int>(od * strideD) + static_cast<int>(kd * dilationD) - static_cast<int>(paddingD);
+												const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
+												const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+
+												if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+													continue;
+												}
+
+												const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+												const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
+
+												sum += inputData[inputIndex] * kernelData[kernelIndex];
 											}
-
-											const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
-											const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
-
-											sum += input[inputIndex] * kernel[kernelIndex];
 										}
 									}
 								}
-							}
 
-							if (bias) {
-								sum += (*bias)[oc];
-							}
+								if (biasData) {
+									sum += biasData[oc];
+								}
 
-							const size_t outputIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
-							output[outputIndex] = sum;
+								const size_t outputIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
+								outputData[outputIndex] = sum;
+							}
+						}
+					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t od = 0; od < outputDepth; ++od) {
+						for (size_t oh = 0; oh < outputHeight; ++oh) {
+							for (size_t ow = 0; ow < outputWidth; ++ow) {
+								T sum = static_cast<T>(0);
+
+								for (size_t ic = 0; ic < inputChannels; ++ic) {
+									for (size_t kd = 0; kd < kernelDepth; ++kd) {
+										for (size_t kh = 0; kh < kernelHeight; ++kh) {
+											for (size_t kw = 0; kw < kernelWidth; ++kw) {
+												const int inputDepthPos = static_cast<int>(od * strideD) + static_cast<int>(kd * dilationD) - static_cast<int>(paddingD);
+												const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(kh * dilationH) - static_cast<int>(paddingH);
+												const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(kw * dilationW) - static_cast<int>(paddingW);
+
+												if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+													continue;
+												}
+
+												const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+												const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
+
+												sum += input[inputIndex] * kernel[kernelIndex];
+											}
+										}
+									}
+								}
+
+								if (bias) {
+									sum += (*bias)[oc];
+								}
+
+								const size_t outputIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
+								output[outputIndex] = sum;
+							}
 						}
 					}
 				}

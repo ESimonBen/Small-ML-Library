@@ -3,7 +3,6 @@
 #include <mlCore/runtime/context.h>
 #include <mlCore/operations/elementwise/elementwise.h>
 
-using namespace MLCore::Utils;
 using namespace MLCore::TensorCore;
 using namespace MLCore::Operations;
 
