@@ -25,6 +25,7 @@ namespace MLCore::Operations {
 		}
 
 		TensorCore::Tensor<T> C{ {M, N}, *resultAllocator };
+		C.Fill(static_cast<T>(0));
 
 		for (size_t i = 0; i < M; ++i) {
 			for (size_t k = 0; k < K; ++k) {

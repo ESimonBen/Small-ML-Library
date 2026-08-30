@@ -29,7 +29,7 @@ namespace MLCore::Operations {
 
 		const size_t size = C.NumElements();
 
-		if (A.GetShape() == B.GetShape()) {
+		if ((A.GetShape() == B.GetShape()) && (A.IsContiguous() && B.IsContiguous())) {
 			const T* aData = A.Data();
 			const T* bData = B.Data();
 			T* cData = C.Data();
@@ -84,7 +84,7 @@ namespace MLCore::Operations {
 
 		const size_t size = C.NumElements();
 
-		if (A.GetShape() == B.GetShape()) {
+		if ((A.GetShape() == B.GetShape()) && (A.IsContiguous() && B.IsContiguous())) {
 			const T* aData = A.Data();
 			const T* bData = B.Data();
 			T* cData = C.Data();
@@ -139,7 +139,7 @@ namespace MLCore::Operations {
 
 		const size_t size = C.NumElements();
 
-		if (A.GetShape() == B.GetShape()) {
+		if ((A.GetShape() == B.GetShape()) && (A.IsContiguous() && B.IsContiguous())) {
 			const T* aData = A.Data();
 			const T* bData = B.Data();
 			T* cData = C.Data();
@@ -194,7 +194,7 @@ namespace MLCore::Operations {
 
 		const size_t size = C.NumElements();
 
-		if (A.GetShape() == B.GetShape()) {
+		if ((A.GetShape() == B.GetShape()) && (A.IsContiguous() && B.IsContiguous())) {
 			const T* aData = A.Data();
 			const T* bData = B.Data();
 			T* cData = C.Data();

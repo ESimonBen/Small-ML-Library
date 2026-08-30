@@ -29,6 +29,18 @@ namespace MLCore::NN {
 			#endif
 		}
 
+		explicit Parameter(const TensorCore::Tensor<T>& tensor)
+			: data(ImportToSharedArena(tensor)), id(NextID()) {
+			data.SetRequiresGrad(true);
+			data.InitializeGrad();
+
+			#ifdef MLCORE_DEBUG
+				data.GetAllocator().RegisterPersistent(data.Data(), data.NumElements() * sizeof(T));
+				TensorCore::Tensor<T> grad = data.Grad();
+				grad.GetAllocator().RegisterPersistent(grad.Data(), grad.NumElements() * sizeof(T));
+			#endif
+		}
+
 		Parameter(const Parameter&) = delete;
 		Parameter& operator=(const Parameter&) = delete;
 
@@ -82,6 +94,24 @@ namespace MLCore::NN {
 		/// <returns>A read-only pointer (const T*) to the underlying array of elements. The pointer refers to the internal storage and remains valid until the object is modified or destroyed; it may be null if the container is empty.</returns>
 		const T* RawData() const {
 			return data.Data();
+		}
+
+	private:
+		static TensorCore::Tensor<T> ImportToSharedArena(const TensorCore::Tensor<T>& source) {
+			Memory::ArenaAllocator& sharedAllocator = Runtime::MLContext::GetSharedAllocator();
+			
+			if (&source.GetAllocator() == & sharedAllocator) {
+				return source;
+			}
+
+			TensorCore::Tensor<T> dest{ source.GetShape(), sharedAllocator };
+			size_t size = source.NumElements();
+
+			for (size_t i = 0; i < size; ++i) {
+				dest[i] = source[i];
+			}
+
+			return dest;
 		}
 
 	private:

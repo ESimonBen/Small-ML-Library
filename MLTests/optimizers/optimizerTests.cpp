@@ -58,11 +58,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			DummyOptimizer opt{ params, 0.1f, .05f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -30.0f);
@@ -91,11 +91,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			DummyOptimizer opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -139,8 +139,8 @@ TEST_SUITE("Optimizer Tests") {
 					size_t numElements = param1.NumElements(); /// Both tensors are the same size, so I can use this to iterate both
 
 					for (size_t j = 0; j < numElements; ++j) {
-						CHECK(param1[j] == A[j]);
-						CHECK(param2[j] == B[j]);
+						CHECK(param1[j] == paramA.Data()[j]);
+						CHECK(param2[j] == paramB.Data()[j]);
 					}
 				}
 			}
@@ -162,11 +162,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGD opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -174,7 +174,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == 2.2f);
 			}
 		}
@@ -195,11 +195,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGD opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -207,7 +207,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(2.195f));
 			}
 		}
@@ -244,17 +244,17 @@ TEST_SUITE("Optimizer Tests") {
 			SGD opt{ params, 0.1f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA);
+			auto predictA = Multiply(inputA, paramA.Data());
 			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB);
+			auto predictB = Multiply(inputB, paramB.Data());
 			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
-			auto weightAGrad = weightA.Grad();
-			auto weightBGrad = weightB.Grad();
+			auto weightAGrad = paramA.Data().Grad();
+			auto weightBGrad = paramB.Data().Grad();
 
 			for (auto& val : weightAGrad) {
 				CHECK(val == -12.0f);
@@ -266,11 +266,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weightA) {
+			for (auto& val : paramA.Data()) {
 				CHECK(val == 2.2f);
 			}
 
-			for (auto& val : weightB) {
+			for (auto& val : paramB.Data()) {
 				CHECK(val == -3.6f);
 			}
 		}
@@ -328,11 +328,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGDMomentum opt{ params, 0.1f, 0.5f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -340,7 +340,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == 2.2f);
 			}
 
@@ -350,7 +350,7 @@ TEST_SUITE("Optimizer Tests") {
 				CHECK(val == -12.0f); /// Same as before
 			}
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == 4.0f);
 			}
 		}
@@ -371,11 +371,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			SGDMomentum opt{ params, 0.1f, 0.5f, 0.05f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -383,7 +383,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(2.195f));
 			}
 		}
@@ -420,17 +420,17 @@ TEST_SUITE("Optimizer Tests") {
 			SGDMomentum opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA);
+			auto predictA = Multiply(inputA, paramA.Data());
 			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB);
+			auto predictB = Multiply(inputB, paramB.Data());
 			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
-			auto weightAGrad = weightA.Grad();
-			auto weightBGrad = weightB.Grad();
+			auto weightAGrad = paramA.Data().Grad();
+			auto weightBGrad = paramB.Data().Grad();
 
 			for (auto& val : weightAGrad) {
 				CHECK(val == -12.0f);
@@ -442,11 +442,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weightA) {
+			for (auto& val : paramA.Data()) {
 				CHECK(val == 2.2f);
 			}
 
-			for (auto& val : weightB) {
+			for (auto& val : paramB.Data()) {
 				CHECK(val == -3.6f);
 			}
 		}
@@ -504,11 +504,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			Adam opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -516,7 +516,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == 1.1f);
 			}
 
@@ -526,7 +526,7 @@ TEST_SUITE("Optimizer Tests") {
 				CHECK(val == -12.0f); /// Same as before
 			}
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(1.2f));
 			}
 		}
@@ -547,11 +547,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			Adam opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -559,7 +559,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(1.10f));
 			}
 		}
@@ -596,17 +596,17 @@ TEST_SUITE("Optimizer Tests") {
 			Adam opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA);
+			auto predictA = Multiply(inputA, paramA.Data());
 			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB);
+			auto predictB = Multiply(inputB, paramB.Data());
 			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
-			auto weightAGrad = weightA.Grad();
-			auto weightBGrad = weightB.Grad();
+			auto weightAGrad = paramA.Data().Grad();
+			auto weightBGrad = paramB.Data().Grad();
 
 			for (auto& val : weightAGrad) {
 				CHECK(val == -12.0f);
@@ -618,11 +618,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weightA) {
+			for (auto& val : paramA.Data()) {
 				CHECK(val == 1.1f);
 			}
 
-			for (auto& val : weightB) {
+			for (auto& val : paramB.Data()) {
 				CHECK(val == 1.9f);
 			}
 		}
@@ -680,11 +680,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			AdamW opt{ params, 0.1f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -692,7 +692,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == 1.1f);
 			}
 
@@ -702,7 +702,7 @@ TEST_SUITE("Optimizer Tests") {
 				CHECK(val == -12.0f); /// Same as before
 			}
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(1.2f));
 			}
 		}
@@ -723,11 +723,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			AdamW opt{ params, 0.1f, 0.05f };
 
-			auto predict = Multiply(input, weight);
+			auto predict = Multiply(input, param.Data());
 			auto loss = MeanSquaredError(predict, target, Reduction::Mean);
 			loss.Backward();
 
-			auto weightGrad = weight.Grad();
+			auto weightGrad = param.Data().Grad();
 
 			for (auto& val : weightGrad) {
 				CHECK(val == -12.0f);
@@ -735,7 +735,7 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weight) {
+			for (auto& val : param.Data()) {
 				CHECK(val == doctest::Approx(1.095f));
 			}
 		}
@@ -772,17 +772,17 @@ TEST_SUITE("Optimizer Tests") {
 			AdamW opt{ params, 0.1f, 0.5f };
 
 			/// Find gradient of Param A
-			auto predictA = Multiply(inputA, weightA);
+			auto predictA = Multiply(inputA, paramA.Data());
 			auto lossA = MeanSquaredError(predictA, targetA, Reduction::Mean);
 			lossA.Backward();
 
 			/// Find gradient of Param B
-			auto predictB = Multiply(inputB, weightB);
+			auto predictB = Multiply(inputB, paramB.Data());
 			auto lossB = MeanSquaredError(predictB, targetB, Reduction::Mean);
 			lossB.Backward();
 
-			auto weightAGrad = weightA.Grad();
-			auto weightBGrad = weightB.Grad();
+			auto weightAGrad = paramA.Data().Grad();
+			auto weightBGrad = paramB.Data().Grad();
 
 			for (auto& val : weightAGrad) {
 				CHECK(val == -12.0f);
@@ -794,11 +794,11 @@ TEST_SUITE("Optimizer Tests") {
 
 			opt.Step();
 
-			for (auto& val : weightA) {
+			for (auto& val : paramA.Data()) {
 				CHECK(val == doctest::Approx(1.05f));
 			}
 
-			for (auto& val : weightB) {
+			for (auto& val : paramB.Data()) {
 				CHECK(val == 1.8f);
 			}
 		}

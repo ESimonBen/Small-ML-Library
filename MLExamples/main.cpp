@@ -348,7 +348,22 @@ void TestXOR() {
 }
 
 int main() {
-    TestXOR();
+    /*TestXOR();*/
+
+    Tensor<float> A({ 2, 2 });
+    A[0] = 1;
+    A[1] = 0;
+    A[2] = 0;
+    A[3] = 1;
+
+    Tensor<float> B({ 2, 2 });
+    B.Fill(2.0f);
+
+    auto C = MatMultiply(A, B);
+
+    for (auto& val : C) {
+        std::cout << val << " ";
+    }
 
     return 0;
 }
