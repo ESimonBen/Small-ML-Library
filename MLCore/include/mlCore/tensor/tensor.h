@@ -337,8 +337,20 @@ namespace MLCore::TensorCore {
 		template <typename... Indices, typename = std::enable_if_t<(std::is_integral_v<Indices> && ...)>>
 		const T& operator()(Indices... indices) const;
 
+		/// <summary>
+		/// Returns a reference to the element at the specified physical offset in the tensor's underlying storage.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="physicalOffset">The physical index (offset) into the tensor's underlying data.</param>
+		/// <returns>A reference to the element at the given offset in the tensor's storage. The reference can be used to read or modify the element. Behavior is undefined if the offset is out of range.</returns>
 		T& AtOffset(size_t physicalOffset);
 
+		/// <summary>
+		/// Returns a const reference to the tensor element at the specified physical offset.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
+		/// <param name="physicalOffset">Zero-based index into the tensor's underlying data buffer (physical offset). The function directly indexes the buffer and does not perform bounds checking.</param>
+		/// <returns>A const reference to the element of type T at the given physical offset.</returns>
 		const T& AtOffset(size_t physicalOffset) const;
 
 		/// <summary>

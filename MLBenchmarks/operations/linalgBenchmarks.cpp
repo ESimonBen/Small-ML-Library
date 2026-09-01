@@ -66,3 +66,27 @@ static void BM_MatMul_ShortFat(benchmark::State& state) {
 
 BENCHMARK(BM_MatMul_TallSkinny);
 BENCHMARK(BM_MatMul_ShortFat);
+
+static void BM_Dot(benchmark::State& state) {
+	const size_t n = static_cast<size_t>(state.range(0));
+
+	Tensor<float> A{ {n} };
+	Tensor<float> B{ {n} };
+	A.Fill(2.0f);
+	B.Fill(3.0f);
+
+	size_t checkpoint = MLCore::Runtime::MLContext::GetAllocator().Checkpoint();
+
+	for (auto _ : state) {
+		auto C = Dot(A, B);
+		benchmark::DoNotOptimize(C.Data());
+
+		state.PauseTiming();
+		MLCore::Runtime::MLContext::GetAllocator().RestoreCheckpoint(checkpoint);
+		state.ResumeTiming();
+	}
+
+	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+}
+
+BENCHMARK(BM_Dot)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);

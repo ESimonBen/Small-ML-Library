@@ -286,7 +286,7 @@ namespace MLCore::TensorCore {
 
 		return (*this)(idx);
 	}
-
+	
 	template <typename T>
 	inline T& Tensor<T>::AtOffset(size_t physicalOffset) {
 		return Data()[physicalOffset];

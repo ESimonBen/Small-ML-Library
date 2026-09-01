@@ -42,7 +42,7 @@ namespace MLCore::Operations {
 	/// <param name="paddingW">Horizontal padding applied to the input (number of columns padded on each side).</param>
 	/// <param name="dilationH">Vertical dilation factor for the kernel (must be > 0).</param>
 	/// <param name="dilationW">Horizontal dilation factor for the kernel (must be > 0).</param>
-	/// <returns>A TensorCore::Tensor<T> with shape [N, C_out, H_out, W_out], where H_out and W_out are computed from the input size, padding, effective kernel size (kernel and dilation), and stride. The output may be marked to require gradients and have a Conv2D gradient function attached if input, kernel, or bias require gradients. The function throws std::runtime_error for invalid ranks, allocator mismatches, channel mismatches, zero strides/dilations, zero kernel dimensions, or when the kernel is larger than the padded input.</returns>
+	/// <returns>A TensorCore::Tensor with shape [N, C_out, H_out, W_out], where H_out and W_out are computed from the input size, padding, effective kernel size (kernel and dilation), and stride. The output may be marked to require gradients and have a Conv2D gradient function attached if input, kernel, or bias require gradients. The function throws std::runtime_error for invalid ranks, allocator mismatches, channel mismatches, zero strides/dilations, zero kernel dimensions, or when the kernel is larger than the padded input.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Conv2D(const TensorCore::Tensor<T>& input, const TensorCore::Tensor<T>& kernel, const TensorCore::Tensor<T>* bias = nullptr,
 								 size_t strideH = 1, size_t strideW = 1,
@@ -65,7 +65,7 @@ namespace MLCore::Operations {
 	/// <param name="dilationD">Dilation factor for the kernel along the depth dimension. Must be > 0.</param>
 	/// <param name="dilationH">Dilation factor for the kernel along the height dimension. Must be > 0.</param>
 	/// <param name="dilationW">Dilation factor for the kernel along the width dimension. Must be > 0.</param>
-	/// <returns>A 5-D TensorCore::Tensor<T> with shape [batch, out_channels, outputDepth, outputHeight, outputWidth], where each output spatial dimension is computed as ((inputDim + 2*padding - effectiveKernelDim) / stride) + 1. If any input (input, kernel, or bias) requires gradients, the returned tensor will be marked to require gradients and will have a Conv3D gradient function attached.</returns>
+	/// <returns>A 5-D TensorCore::Tensor with shape [batch, out_channels, outputDepth, outputHeight, outputWidth], where each output spatial dimension is computed as ((inputDim + 2*padding - effectiveKernelDim) / stride) + 1. If any input (input, kernel, or bias) requires gradients, the returned tensor will be marked to require gradients and will have a Conv3D gradient function attached.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Conv3D(const TensorCore::Tensor<T>& input, const TensorCore::Tensor<T>& kernel, const TensorCore::Tensor<T>* bias = nullptr,
 								 size_t strideD = 1, size_t strideH = 1, size_t strideW = 1,
