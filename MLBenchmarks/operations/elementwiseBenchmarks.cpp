@@ -285,7 +285,7 @@ static void RunClamp(benchmark::State& state, float min, float max) {
 	Tensor<float> A{ {1000} };
 	
 	for (size_t i = 0; i < 1000; ++i) {
-		if (i < (1024 / 2)) {
+		if (i < (1000 / 2)) {
 			A[i] = static_cast<float>(i);
 		}
 		else {
