@@ -242,9 +242,14 @@ static void BM_Power_Square(benchmark::State& state) {
 	RunPower(state, 2);
 }
 
+static void BM_Power_Cube(benchmark::State& state) {
+	RunPower(state, 3);
+}
+
 BENCHMARK(BM_Power_Zero)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
 BENCHMARK(BM_Power_One)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
 BENCHMARK(BM_Power_Square)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
+BENCHMARK(BM_Power_Cube)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
 
 static void BM_Abs(benchmark::State& state) {
 	const size_t n = static_cast<size_t>(state.range(0));
@@ -279,7 +284,7 @@ BENCHMARK(BM_Abs)->RangeMultiplier(4)->Range(1 << 6, 1 << 22);
 static void RunClamp(benchmark::State& state, float min, float max) {
 	Tensor<float> A{ {1000} };
 	
-	for (size_t i = 0; i < 1024; ++i) {
+	for (size_t i = 0; i < 1000; ++i) {
 		if (i < (1024 / 2)) {
 			A[i] = static_cast<float>(i);
 		}

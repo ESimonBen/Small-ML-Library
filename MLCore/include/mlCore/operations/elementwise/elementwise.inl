@@ -238,15 +238,6 @@ namespace MLCore::Operations {
 		const size_t size = B.NumElements();
 
 		for (size_t i = 0; i < size; ++i) {
-			if (exponent == 0) {
-				B[i] = 1;
-				continue;
-			}
-			else if (exponent == 1) {
-				B[i] = A[i];
-				continue;
-			}
-
 			B[i] = std::pow(A[i], exponent);
 		}
 
