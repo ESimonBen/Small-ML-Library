@@ -1,6 +1,5 @@
 /// main.cpp
 #include <iostream>
-#include <stdfloat>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>
 #include <mlCore/module/layers/layers.h>
@@ -348,22 +347,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-
-    Tensor<float> A({ 2, 2 });
-    A[0] = 1;
-    A[1] = 0;
-    A[2] = 0;
-    A[3] = 1;
-
-    Tensor<float> B({ 2, 2 });
-    B.Fill(2.0f);
-
-    auto C = MatMultiply(A, B);
-
-    for (auto& val : C) {
-        std::cout << val << " ";
-    }
+    TestXOR();
 
     return 0;
 }

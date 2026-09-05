@@ -6,7 +6,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	SumGradFn<T>::SumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	SumGradFn<T>::SumGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a), inputShape(a->shape)
 	{}
 	
@@ -30,7 +30,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	MaxGradFn<T>::MaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T maxValue)
+	MaxGradFn<T>::MaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T maxValue)
 		: GradFn<T>(a), inputShape(a->shape), maxValue(maxValue)
 	{}
 	
@@ -70,7 +70,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	MinGradFn<T>::MinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T minValue)
+	MinGradFn<T>::MinGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T minValue)
 		: GradFn<T>(a), inputShape(a->shape), minValue(minValue)
 	{}
 	
@@ -110,7 +110,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+	AxisSumGradFn<T>::AxisSumGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims)
 		: GradFn<T>(a), m_InputShape(a->shape), m_Axis(axis), m_KeepDims(keepDims) {
 		if (m_Axis >= m_InputShape.Rank()) {
 			throw std::invalid_argument("ERROR: AxisSumGradFn: Axis must be within shape rank");
@@ -137,7 +137,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AxisMaxGradFn<T>::AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+	AxisMaxGradFn<T>::AxisMaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims)
 		: GradFn<T>(a), m_Axis(axis), m_KeepDims(keepDims)
 	{}
 	
@@ -173,7 +173,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AxisMinGradFn<T>::AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims)
+	AxisMinGradFn<T>::AxisMinGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims)
 		: GradFn<T>(a), m_Axis(axis), m_KeepDims(keepDims)
 	{}
 	

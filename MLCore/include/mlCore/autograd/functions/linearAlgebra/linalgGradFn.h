@@ -19,7 +19,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric or tensor element type used by the gradient functions.</typeparam>
 		/// <param name="a">A shared pointer to the first GradFn::Impl used by this DotGradFn.</param>
 		/// <param name="b">A shared pointer to the second GradFn::Impl used by this DotGradFn.</param>
-		DotGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		DotGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Backpropagates a scalar gradient through a dot-product operation: validates shapes, extracts the scalar gradient, and, if needed, computes and dispatches per-input gradients by multiplying the detached other input by the scalar and calling their Backward methods.
@@ -42,7 +42,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric type used by the gradient functions (element type for the matrices).</typeparam>
 		/// <param name="a">A shared pointer to the gradient-function implementation for the first (left) operand.</param>
 		/// <param name="b">A shared pointer to the gradient-function implementation for the second (right) operand.</param>
-		MatMulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		MatMulGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Backpropagates gradients for a matrix multiplication node by computing and passing gradients to input tensors.
@@ -64,7 +64,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The type associated with the gradient function (e.g., element or tensor type).</typeparam>
 		/// <param name="a">A shared pointer to a GradFn::Impl that provides the implementation used to initialize the base GradFn.</param>
-		TransposeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+		TransposeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a);
 
 		/// <summary>
 		/// Performs the backward pass for a transpose operation: validates shapes, transposes the incoming gradient, and propagates it to the input if the input requires gradients.

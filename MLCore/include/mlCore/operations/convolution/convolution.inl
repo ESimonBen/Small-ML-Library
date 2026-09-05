@@ -5,6 +5,11 @@ namespace MLCore::Operations {
 	inline size_t ComputeConvOutputSize(size_t inputSize, size_t kernelSize, size_t stride, size_t padding, size_t dilation) {
 		const size_t effectiveKernelSize = dilation * (kernelSize - 1) + 1;
 		const size_t paddedInputSize = inputSize + 2 * padding;
+
+		if (paddedInputSize < effectiveKernelSize) {
+			throw std::runtime_error("ERROR: Conv*D: Kernel is larger than padded input");
+		}
+
 		return (paddedInputSize - effectiveKernelSize) / stride + 1;
 	}
 
@@ -49,15 +54,7 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Conv1D: Kernel dimension cannot be 0");
 		}
 
-		const size_t effectiveKernelLength = dilation * (kernelLength - 1) + 1;
-
-		const size_t paddedInputLength = inputLength + 2 * padding;
-
-		if (paddedInputLength < effectiveKernelLength) {
-			throw std::runtime_error("ERROR: Conv1D: Kernel is larger than padded input");
-		}
-
-		const size_t outputLength = (paddedInputLength - effectiveKernelLength) / stride + 1;
+		const size_t outputLength = ComputeConvOutputSize(inputLength, kernelLength, stride, padding, dilation);
 
 		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputLength}, *resultAllocator };
 
@@ -185,18 +182,8 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Conv2D: Kernel dimensions cannot be 0");
 		}
 
-		const size_t effectiveKernelHeight = dilationH * (kernelHeight - 1) + 1;
-		const size_t effectiveKernelWidth = dilationW * (kernelWidth - 1) + 1;
-
-		const size_t paddedInputHeight = inputHeight + 2 * paddingH;
-		const size_t paddedInputWidth = inputWidth + 2 * paddingW;
-
-		if (paddedInputHeight < effectiveKernelHeight || paddedInputWidth < effectiveKernelWidth) {
-			throw std::runtime_error("ERROR: Conv2D: Kernel is larger than padded input");
-		}
-
-		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
-		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
+		const size_t outputHeight = ComputeConvOutputSize(inputHeight, kernelHeight, strideH, paddingH, dilationH);
+		const size_t outputWidth = ComputeConvOutputSize(inputWidth, kernelWidth, strideW, paddingW, dilationW);
 
 		TensorCore::Tensor<T> output{{batchSize, outputChannels, outputHeight, outputWidth}, *resultAllocator};
 
@@ -334,21 +321,9 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: Conv3D: Kernel dimensions cannot be 0");
 		}
 
-		const size_t effectiveKernelDepth = dilationD * (kernelDepth - 1) + 1;
-		const size_t effectiveKernelHeight = dilationH * (kernelHeight - 1) + 1;
-		const size_t effectiveKernelWidth = dilationW * (kernelWidth - 1) + 1;
-
-		const size_t paddedInputDepth = inputDepth + 2 * paddingD;
-		const size_t paddedInputHeight = inputHeight + 2 * paddingH;
-		const size_t paddedInputWidth = inputWidth + 2 * paddingW;
-
-		if (paddedInputDepth < effectiveKernelDepth || paddedInputHeight < effectiveKernelHeight || paddedInputWidth < effectiveKernelWidth) {
-			throw std::runtime_error("ERROR: Conv3D: Kernel is larger than padded input");
-		}
-
-		const size_t outputDepth = (paddedInputDepth - effectiveKernelDepth) / strideD + 1;
-		const size_t outputHeight = (paddedInputHeight - effectiveKernelHeight) / strideH + 1;
-		const size_t outputWidth = (paddedInputWidth - effectiveKernelWidth) / strideW + 1;
+		const size_t outputDepth = ComputeConvOutputSize(inputDepth, kernelDepth, strideD, paddingD, dilationD);
+		const size_t outputHeight = ComputeConvOutputSize(inputHeight, kernelHeight, strideH, paddingH, dilationH);
+		const size_t outputWidth = ComputeConvOutputSize(inputWidth, kernelWidth, strideW, paddingW, dilationW);
 
 		TensorCore::Tensor<T> output{ {batchSize, outputChannels, outputDepth, outputHeight, outputWidth}, *resultAllocator };
 

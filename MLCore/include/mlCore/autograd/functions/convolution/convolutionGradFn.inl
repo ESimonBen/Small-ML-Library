@@ -4,7 +4,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	inline Conv1DGradFn<T>::Conv1DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+	inline Conv1DGradFn<T>::Conv1DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 										 size_t stride, size_t padding, size_t dilation)
 		: GradFn<T>({input, kernel, bias}), m_Stride(stride), m_Padding(padding), m_Dilation(dilation)
 	{}
@@ -89,39 +89,86 @@ namespace MLCore::AutoGrad {
 			gradBias.value().Fill(static_cast<T>(0));
 		}
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t ol = 0; ol < outputLength; ++ol) {
-					size_t gradIndex = (n * outputChannels + oc) * outputLength + ol;
+		if (gradOutput.IsContiguous() && input.IsContiguous() && kernel.IsContiguous() && (bias && bias.value().IsContiguous())) {
+			const T* gradOutputData = gradOutput.Data();
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			T* gradInputData = gradInput ? gradInput.value().Data() : nullptr;
+			T* gradKernelData = gradKernel ? gradKernel.value().Data() : nullptr;
+			T* gradBiasData = gradBias ? gradBias.value().Data() : nullptr;
 
-					const T grad = gradOutput[gradIndex];
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t ol = 0; ol < outputLength; ++ol) {
+						size_t gradIndex = (n * outputChannels + oc) * outputLength + ol;
 
-					if (requiresBiasGrad) {
-						auto& gb = gradBias.value();
-						gb[oc] += grad;
+						const T grad = gradOutputData[gradIndex];
+
+						if (requiresBiasGrad) {
+							gradBiasData[oc] += grad;
+						}
+
+						for (size_t ic = 0; ic < inputChannels; ++ic) {
+							for (size_t kl = 0; kl < kernelLength; ++kl) {
+								const size_t kernelOffset = kl * m_Dilation;
+
+								const int inputPos = static_cast<int>(ol * m_Stride) + static_cast<int>(kernelOffset) - static_cast<int>(m_Padding);
+
+								if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
+									continue;
+								}
+
+								const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
+								const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
+
+								if (requiresInputGrad) {
+									gradInputData[inputIndex] += grad * kernelData[kernelIndex];
+								}
+
+								if (requiresKernelGrad) {
+									gradKernelData[kernelIndex] += grad * inputData[inputIndex];
+								}
+							}
+						}
 					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t ol = 0; ol < outputLength; ++ol) {
+						size_t gradIndex = (n * outputChannels + oc) * outputLength + ol;
 
-					for (size_t ic = 0; ic < inputChannels; ++ic) {
-						for (size_t kl = 0; kl < kernelLength; ++kl) {
-							const size_t kernelOffset = kl * m_Dilation;
+						const T grad = gradOutput[gradIndex];
 
-							const int inputPos = static_cast<int>(ol * m_Stride) + static_cast<int>(kernelOffset) - static_cast<int>(m_Padding);
+						if (requiresBiasGrad) {
+							auto& gb = gradBias.value();
+							gradBias[oc] += grad;
+						}
 
-							if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
-								continue;
-							}
+						for (size_t ic = 0; ic < inputChannels; ++ic) {
+							for (size_t kl = 0; kl < kernelLength; ++kl) {
+								const size_t kernelOffset = kl * m_Dilation;
 
-							const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
-							const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
+								const int inputPos = static_cast<int>(ol * m_Stride) + static_cast<int>(kernelOffset) - static_cast<int>(m_Padding);
 
-							if (requiresInputGrad) {
-								auto& gi = gradInput.value();
-								gi[inputIndex] += grad * kernel[kernelIndex];
-							}
+								if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
+									continue;
+								}
 
-							if (requiresKernelGrad) {
-								auto& gk = gradKernel.value();
-								gk[kernelIndex] += grad * input[inputIndex];
+								const size_t inputIndex = (n * inputChannels + ic) * inputLength + static_cast<size_t>(inputPos);
+								const size_t kernelIndex = (oc * inputChannels + ic) * kernelLength + kl;
+
+								if (requiresInputGrad) {
+									auto& gi = gradInput.value();
+									gi[inputIndex] += grad * kernel[kernelIndex];
+								}
+
+								if (requiresKernelGrad) {
+									auto& gk = gradKernel.value();
+									gk[kernelIndex] += grad * input[inputIndex];
+								}
 							}
 						}
 					}
@@ -143,7 +190,7 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	inline Conv2DGradFn<T>::Conv2DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+	inline Conv2DGradFn<T>::Conv2DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 										 size_t strideH, size_t strideW,
 										 size_t paddingH, size_t paddingW,
 										 size_t dilationH, size_t dilationW)
@@ -234,43 +281,96 @@ namespace MLCore::AutoGrad {
 			gradBias.value().Fill(static_cast<T>(0));
 		}
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t oh = 0; oh < outputHeight; ++oh) {
-					for (size_t ow = 0; ow < outputWidth; ++ow) {
-						size_t gradIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
+		if (gradOutput.IsContiguous() && input.IsContiguous() && kernel.IsContiguous() && (bias && bias.value().IsContiguous())) {
+			const T* gradOutputData = gradOutput.Data();
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			T* gradInputData = gradInput ? gradInput.value().Data() : nullptr;
+			T* gradKernelData = gradKernel ? gradKernel.value().Data() : nullptr;
+			T* gradBiasData = gradBias ? gradBias.value().Data() : nullptr;
 
-						const T grad = gradOutput[gradIndex];
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t oh = 0; oh < outputHeight; ++oh) {
+						for (size_t ow = 0; ow < outputWidth; ++ow) {
+							size_t gradIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
 
-						if (requiresBiasGrad) {
-							auto& gb = gradBias.value();
-							gb[oc] += grad;
+							const T grad = gradOutputData[gradIndex];
+
+							if (requiresBiasGrad) {
+								gradBiasData[oc] += grad;
+							}
+
+							for (size_t ic = 0; ic < inputChannels; ++ic) {
+								for (size_t kh = 0; kh < kernelHeight; ++kh) {
+									for (size_t kw = 0; kw < kernelWidth; ++kw) {
+										const size_t kernelOffsetH = kh * m_DilationH;
+										const size_t kernelOffsetW = kw * m_DilationW;
+
+										const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
+										const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
+
+										if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+											continue;
+										}
+
+										const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+										const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+
+										if (requiresInputGrad) {
+											gradInputData[inputIndex] += grad * kernelData[kernelIndex];
+										}
+
+										if (requiresKernelGrad) {
+											gradKernelData[kernelIndex] += grad * inputData[inputIndex];
+										}
+									}
+								}
+							}
 						}
+					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t oh = 0; oh < outputHeight; ++oh) {
+						for (size_t ow = 0; ow < outputWidth; ++ow) {
+							size_t gradIndex = ((n * outputChannels + oc) * outputHeight + oh) * outputWidth + ow;
 
-						for (size_t ic = 0; ic < inputChannels; ++ic) {
-							for (size_t kh = 0; kh < kernelHeight; ++kh) {
-								for (size_t kw = 0; kw < kernelWidth; ++kw) {
-									const size_t kernelOffsetH = kh * m_DilationH;
-									const size_t kernelOffsetW = kw * m_DilationW;
+							const T grad = gradOutput[gradIndex];
 
-									const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
-									const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
+							if (requiresBiasGrad) {
+								auto& gb = gradBias.value();
+								gb[oc] += grad;
+							}
 
-									if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
-										continue;
-									}
+							for (size_t ic = 0; ic < inputChannels; ++ic) {
+								for (size_t kh = 0; kh < kernelHeight; ++kh) {
+									for (size_t kw = 0; kw < kernelWidth; ++kw) {
+										const size_t kernelOffsetH = kh * m_DilationH;
+										const size_t kernelOffsetW = kw * m_DilationW;
 
-									const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
-									const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+										const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
+										const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
 
-									if (requiresInputGrad) {
-										auto& gi = gradInput.value();
-										gi[inputIndex] += grad * kernel[kernelIndex];
-									}
+										if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+											continue;
+										}
 
-									if (requiresKernelGrad) {
-										auto& gk = gradKernel.value();
-										gk[kernelIndex] += grad * input[inputIndex];
+										const size_t inputIndex = ((n * inputChannels + ic) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+										const size_t kernelIndex = ((oc * inputChannels + ic) * kernelHeight + kh) * kernelWidth + kw;
+
+										if (requiresInputGrad) {
+											auto& gi = gradInput.value();
+											gi[inputIndex] += grad * kernel[kernelIndex];
+										}
+
+										if (requiresKernelGrad) {
+											auto& gk = gradKernel.value();
+											gk[kernelIndex] += grad * input[inputIndex];
+										}
 									}
 								}
 							}
@@ -294,7 +394,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	inline Conv3DGradFn<T>::Conv3DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+	inline Conv3DGradFn<T>::Conv3DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 										 size_t strideD, size_t strideH, size_t strideW,
 										 size_t paddingD, size_t paddingH, size_t paddingW,
 										 size_t dilationD, size_t dilationH, size_t dilationW)
@@ -389,47 +489,106 @@ namespace MLCore::AutoGrad {
 			gradBias.value().Fill(static_cast<T>(0));
 		}
 
-		for (size_t n = 0; n < batchSize; ++n) {
-			for (size_t oc = 0; oc < outputChannels; ++oc) {
-				for (size_t od = 0; od < outputDepth; ++od) {
-					for (size_t oh = 0; oh < outputHeight; ++oh) {
-						for (size_t ow = 0; ow < outputWidth; ++ow) {
-							size_t gradIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
+		if (gradOutput.IsContiguous() && input.IsContiguous() && kernel.IsContiguous() && (bias && bias.value().IsContiguous())) {
+			const T* gradOutputData = gradOutput.Data();
+			const T* inputData = input.Data();
+			const T* kernelData = kernel.Data();
+			T* gradInputData = gradInput ? gradInput.value().Data() : nullptr;
+			T* gradKernelData = gradKernel ? gradKernel.value().Data() : nullptr;
+			T* gradBiasData = gradBias ? gradBias.value().Data() : nullptr;
 
-							const T grad = gradOutput[gradIndex];
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t od = 0; od < outputDepth; ++od) {
+						for (size_t oh = 0; oh < outputHeight; ++oh) {
+							for (size_t ow = 0; ow < outputWidth; ++ow) {
+								size_t gradIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
 
-							if (requiresBiasGrad) {
-								auto& gb = gradBias.value();
-								gb[oc] += grad;
+								const T grad = gradOutputData[gradIndex];
+
+								if (requiresBiasGrad) {
+									gradBiasData[oc] += grad;
+								}
+
+								for (size_t ic = 0; ic < inputChannels; ++ic) {
+									for (size_t kd = 0; kd < kernelDepth; ++kd) {
+										for (size_t kh = 0; kh < kernelHeight; ++kh) {
+											for (size_t kw = 0; kw < kernelWidth; ++kw) {
+												const size_t kernelOffsetD = kd * m_DilationD;
+												const size_t kernelOffsetH = kh * m_DilationH;
+												const size_t kernelOffsetW = kw * m_DilationW;
+
+												const int inputDepthPos = static_cast<int>(od * m_StrideD) + static_cast<int>(kernelOffsetD) - static_cast<int>(m_PaddingD);
+												const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
+												const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
+
+												if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+													continue;
+												}
+
+												const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+												const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
+
+												if (requiresInputGrad) {
+													gradInputData[inputIndex] += grad * kernelData[kernelIndex];
+												}
+
+												if (requiresKernelGrad) {
+													gradKernelData[kernelIndex] += grad * inputData[inputIndex];
+												}
+											}
+										}
+									}
+								}
 							}
+						}
+					}
+				}
+			}
+		}
+		else {
+			for (size_t n = 0; n < batchSize; ++n) {
+				for (size_t oc = 0; oc < outputChannels; ++oc) {
+					for (size_t od = 0; od < outputDepth; ++od) {
+						for (size_t oh = 0; oh < outputHeight; ++oh) {
+							for (size_t ow = 0; ow < outputWidth; ++ow) {
+								size_t gradIndex = (((n * outputChannels + oc) * outputDepth + od) * outputHeight + oh) * outputWidth + ow;
 
-							for (size_t ic = 0; ic < inputChannels; ++ic) {
-								for (size_t kd = 0; kd < kernelDepth; ++kd) {
-									for (size_t kh = 0; kh < kernelHeight; ++kh) {
-										for (size_t kw = 0; kw < kernelWidth; ++kw) {
-											const size_t kernelOffsetD = kd * m_DilationD;
-											const size_t kernelOffsetH = kh * m_DilationH;
-											const size_t kernelOffsetW = kw * m_DilationW;
+								const T grad = gradOutput[gradIndex];
 
-											const int inputDepthPos = static_cast<int>(od * m_StrideD) + static_cast<int>(kernelOffsetD) - static_cast<int>(m_PaddingD);
-											const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
-											const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
+								if (requiresBiasGrad) {
+									auto& gb = gradBias.value();
+									gb[oc] += grad;
+								}
 
-											if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
-												continue;
-											}
+								for (size_t ic = 0; ic < inputChannels; ++ic) {
+									for (size_t kd = 0; kd < kernelDepth; ++kd) {
+										for (size_t kh = 0; kh < kernelHeight; ++kh) {
+											for (size_t kw = 0; kw < kernelWidth; ++kw) {
+												const size_t kernelOffsetD = kd * m_DilationD;
+												const size_t kernelOffsetH = kh * m_DilationH;
+												const size_t kernelOffsetW = kw * m_DilationW;
 
-											const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
-											const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
+												const int inputDepthPos = static_cast<int>(od * m_StrideD) + static_cast<int>(kernelOffsetD) - static_cast<int>(m_PaddingD);
+												const int inputRow = static_cast<int>(oh * m_StrideH) + static_cast<int>(kernelOffsetH) - static_cast<int>(m_PaddingH);
+												const int inputCol = static_cast<int>(ow * m_StrideW) + static_cast<int>(kernelOffsetW) - static_cast<int>(m_PaddingW);
 
-											if (requiresInputGrad) {
-												auto& gi = gradInput.value();
-												gi[inputIndex] += grad * kernel[kernelIndex];
-											}
+												if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
+													continue;
+												}
 
-											if (requiresKernelGrad) {
-												auto& gk = gradKernel.value();
-												gk[kernelIndex] += grad * input[inputIndex];
+												const size_t inputIndex = (((n * inputChannels + ic) * inputDepth + static_cast<size_t>(inputDepthPos)) * inputHeight + static_cast<size_t>(inputRow)) * inputWidth + static_cast<size_t>(inputCol);
+												const size_t kernelIndex = (((oc * inputChannels + ic) * kernelDepth + kd) * kernelHeight + kh) * kernelWidth + kw;
+
+												if (requiresInputGrad) {
+													auto& gi = gradInput.value();
+													gi[inputIndex] += grad * kernel[kernelIndex];
+												}
+
+												if (requiresKernelGrad) {
+													auto& gk = gradKernel.value();
+													gk[kernelIndex] += grad * input[inputIndex];
+												}
 											}
 										}
 									}

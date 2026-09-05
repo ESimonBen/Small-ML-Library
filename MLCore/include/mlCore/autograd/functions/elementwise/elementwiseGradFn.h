@@ -17,7 +17,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The value type used by GradFn and its implementation (the element type for gradients).</typeparam>
 		/// <param name="a">Shared pointer to the first GradFn::Impl to include in the combined function.</param>
 		/// <param name="b">Shared pointer to the second GradFn::Impl to include in the combined function.</param>
-		AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		AddGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Performs the backward pass for an elementwise addition node: propagates the output gradient to each input, reducing the gradient to the input shapes as needed, and calls each input's Backward if it requires gradients.
@@ -40,7 +40,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The element/value type used by the gradient functions.</typeparam>
 		/// <param name="a">Shared pointer to the first GradFn::Impl instance to include.</param>
 		/// <param name="b">Shared pointer to the second GradFn::Impl instance to include.</param>
-		SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		SubGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Performs the backward pass for a subtraction operation: distributes gradOutput to the two input tensors (adds reduced gradient to the first input and the negated, reduced gradient to the second) and calls Backward on inputs that require gradients. Throws std::runtime_error if either input is null.
@@ -63,7 +63,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The value type handled by the gradient functions.</typeparam>
 		/// <param name="a">Shared pointer to the first GradFn::Impl, representing the left operand's gradient implementation.</param>
 		/// <param name="b">Shared pointer to the second GradFn::Impl, representing the right operand's gradient implementation.</param>
-		MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		MulGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Performs the backward pass for an element-wise multiplication node: computes and propagates gradients to its input tensors. If an input requires gradients, it multiplies the output gradient by the other input (detached), reduces the result to the input's shape, and calls Backward on that input. Throws std::runtime_error if an input is null.
@@ -86,7 +86,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The value type used by GradFn and its implementation type (GradFn::Impl).</typeparam>
 		/// <param name="a">A shared pointer to a GradFn::Impl instance to be passed to the base GradFn.</param>
 		/// <param name="b">A shared pointer to a second GradFn::Impl instance to be passed to the base GradFn.</param>
-		DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b);
+		DivGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b);
 
 		/// <summary>
 		/// Performs the backward pass for a division operation: validates inputs, detaches tensors as needed, computes gradients for each input, and calls Backward on inputs that require gradients. 
@@ -111,7 +111,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The value type used by the gradient function (e.g., float, double or a user-defined numeric type).</typeparam>
 		/// <param name="a">A shared_ptr to the underlying implementation of the operand gradient function (GradFn::Impl). Ownership is shared with other holders of the pointer.</param>
 		/// <param name="exponent">The exponent value to apply to the operand; stored in the object's exponent member.</param>
-		PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent);
+		PowerGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T exponent);
 
 		/// <summary>
 		/// Computes and propagates the gradient for a power operation. It builds the input gradient as gradInput = gradOutput * exponent * base^(exponent - 1) and calls input.Backward(gradInput). If the input does not require gradients, the method returns without action.
@@ -136,7 +136,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function.</typeparam>
 		/// <param name="input">A shared_ptr to a GradFn::Impl that represents the underlying function implementation; it is forwarded to the base class constructor.</param>
-		AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+		AbsGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input);
 
 		/// <summary>
 		/// Computes and propagates the gradient for an element-wise absolute value operation. If the stored input is null, throws a runtime_error. If the input does not require gradients, returns immediately. Otherwise allocates a gradInput tensor using the provided allocator, sets gradInput[i] = gradOutput[i] * sign(input[i]) where sign is -1 for negative, 1 for positive, and 0 for zero, then calls input.Backward(gradInput).
@@ -160,7 +160,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="input">Shared pointer to the input gradient function implementation used as the source of gradients.</param>
 		/// <param name="min">Lower bound for clamping; values below this are raised to this value.</param>
 		/// <param name="max">Upper bound for clamping; values above this are lowered to this value.</param>
-		ClampGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, T min, T max);
+		ClampGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, T min, T max);
 
 		/// <summary>
 		/// Performs the backward pass for a clamp operation: computes gradients for the input by copying gradOutput where the input value is strictly between m_Min and m_Max, zeroing gradients elsewhere, and then propagates the resulting gradInput to the input tensor. Throws std::runtime_error if the stored input is null and returns early if the input does not require gradients.
@@ -186,7 +186,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The numeric or data type used by the gradient function.</typeparam>
 		/// <param name="input">A shared_ptr to GradFn::Impl that supplies the underlying implementation or input for this LogGradFn.</param>
-		LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+		LogGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input);
 
 		/// <summary>
 		/// Performs the backward pass for a logarithm operation: computes the gradient with respect to the input and propagates it downstream.
@@ -208,7 +208,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The value type used by the gradient function and its implementation.</typeparam>
 		/// <param name="input">A shared pointer to a GradFn::Impl instance that provides the underlying implementation; forwarded to initialize the base GradFn.</param>
-		ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input);
+		ExpGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input);
 
 		/// <summary>
 		/// Performs the backward pass for an exponential operation: computes exp(input) element-wise, multiplies it by gradOutput to form the gradient for the input, and propagates that gradient to the input tensor. If the stored input is null a std::runtime_error is thrown; if the input does not require gradients the function returns immediately.

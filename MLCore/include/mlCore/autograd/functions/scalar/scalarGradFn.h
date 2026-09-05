@@ -16,7 +16,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The value/gradient type associated with this gradient function.</typeparam>
 		/// <param name="a">A shared pointer to a GradFn<T>::Impl representing the underlying gradient-function implementation to wrap.</param>
-		AddScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+		AddScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a);
 
 		/// <summary>
 		/// Performs the backward pass for an AddScalar operation by propagating the output gradient to the input if the input requires gradients.
@@ -39,7 +39,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The value type used by the gradient function implementation.</typeparam>
 		/// <param name="a">Shared pointer to the underlying gradient function implementation (GradFn::Impl) that this object wraps.</param>
 		/// <param name="scalarOnLeft">If true, indicates the scalar operand is on the left side of the subtraction; if false, the scalar is on the right.</param>
-		SubScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, bool scalarOnLeft);
+		SubScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, bool scalarOnLeft);
 
 		/// <summary>
 		/// Performs the backward pass for a tensor minus scalar (sub-scalar) operation, computing and propagating the appropriate gradient to the input tensor.
@@ -65,7 +65,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric type used for gradient values and the scalar multiplier.</typeparam>
 		/// <param name="a">Shared pointer to the underlying GradFn::Impl that provides the gradient implementation.</param>
 		/// <param name="scalar">Scalar value of type T to be used for multiplying the gradient; stored in the instance.</param>
-		MulScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar);
+		MulScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T scalar);
 
 		/// <summary>
 		/// Backpropagates the gradient through a multiply-by-scalar operation: if the input requires gradients, multiplies the outgoing gradient by the stored scalar and passes the resulting gradient to the input's backward method.
@@ -92,7 +92,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="a">Shared pointer to the underlying GradFn::Impl to wrap and compute gradients from.</param>
 		/// <param name="scalar">The scalar value used in the division operation.</param>
 		/// <param name="scalarOnLeft">If true, the operation is scalar / a; if false, the operation is a / scalar.</param>
-		DivScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar, bool scalarOnLeft);
+		DivScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T scalar, bool scalarOnLeft);
 
 		/// <summary>
 		/// Performs the backward pass for a division-by-scalar operation. Computes the gradient with respect to the input tensor (taking into account whether the scalar was on the left or right) and calls input.Backward to propagate it. The function detaches inputs/gradients to avoid creating new graph edges and uses the provided allocator for intermediate tensors. If the input does not require gradients, it returns immediately.

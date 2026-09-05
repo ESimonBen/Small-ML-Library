@@ -4,7 +4,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	inline AddScalarGradFn<T>::AddScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline AddScalarGradFn<T>::AddScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 	
@@ -22,7 +22,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	SubScalarGradFn<T>::SubScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, bool scalarOnLeft)
+	SubScalarGradFn<T>::SubScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, bool scalarOnLeft)
 		: GradFn<T>(a), m_ScalarOnLeft(scalarOnLeft)
 	{}
 	
@@ -42,7 +42,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	MulScalarGradFn<T>::MulScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar)
+	MulScalarGradFn<T>::MulScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T scalar)
 		: GradFn<T>(a), m_Scalar(scalar)
 	{}
 	
@@ -62,7 +62,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	DivScalarGradFn<T>::DivScalarGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T scalar, bool scalarOnLeft)
+	DivScalarGradFn<T>::DivScalarGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T scalar, bool scalarOnLeft)
 		: GradFn<T>(a), m_Scalar(scalar), m_ScalarOnLeft(scalarOnLeft)
 	{}
 	

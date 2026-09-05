@@ -3,7 +3,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	inline SqueezeGradFn<T>::SqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
+	inline SqueezeGradFn<T>::SqueezeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis)
 		: GradFn<T>(a), m_Axis(axis)
 	{}
 	
@@ -23,7 +23,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	inline UnsqueezeGradFn<T>::UnsqueezeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis)
+	inline UnsqueezeGradFn<T>::UnsqueezeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis)
 		: GradFn<T>(a), m_Axis(axis)
 	{}
 	
@@ -43,7 +43,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	inline ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline ReduceToShapeGradFn<T>::ReduceToShapeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 	
@@ -62,7 +62,7 @@ namespace MLCore::AutoGrad {
 	}
 
 	template <typename T>
-	inline ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline ExpandToShapeGradFn<T>::ExpandToShapeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 
@@ -81,7 +81,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	inline ReshapeGradFn<T>::ReshapeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	inline ReshapeGradFn<T>::ReshapeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 	

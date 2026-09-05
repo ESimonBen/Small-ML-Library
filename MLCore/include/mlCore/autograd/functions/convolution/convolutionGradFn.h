@@ -21,7 +21,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="stride">Stride size for the 1D convolution.</param>
 		/// <param name="padding">Padding size applied to the input.</param>
 		/// <param name="dilation">Dilation factor for the convolution kernel.</param>
-		Conv1DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+		Conv1DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 					 size_t stride, size_t padding, size_t dilation);
 
 		/// <summary>
@@ -57,7 +57,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="paddingW">Horizontal padding applied to the input (in columns).</param>
 		/// <param name="dilationH">Vertical dilation (spacing between kernel elements along rows).</param>
 		/// <param name="dilationW">Horizontal dilation (spacing between kernel elements along columns).</param>
-		Conv2DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+		Conv2DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 					 size_t strideH, size_t strideW,
 					 size_t paddingH, size_t paddingW,
 					 size_t dilationH, size_t dilationW);
@@ -100,7 +100,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="dilationD">Dilation (spacing) of kernel elements along the depth dimension (size_t).</param>
 		/// <param name="dilationH">Dilation (spacing) of kernel elements along the height dimension (size_t).</param>
 		/// <param name="dilationW">Dilation (spacing) of kernel elements along the width dimension (size_t).</param>
-		Conv3DGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, std::shared_ptr<typename GradFn<T>::Impl> kernel, std::shared_ptr<typename GradFn<T>::Impl> bias,
+		Conv3DGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, std::shared_ptr<TensorCore::TensorImpl<T>> kernel, std::shared_ptr<TensorCore::TensorImpl<T>> bias,
 					 size_t strideD, size_t strideH, size_t strideW,
 					 size_t paddingD, size_t paddingH, size_t paddingW,
 					 size_t dilationD, size_t dilationH, size_t dilationW);

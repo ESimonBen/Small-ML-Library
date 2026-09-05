@@ -4,7 +4,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	AddGradFn<T>::AddGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	AddGradFn<T>::AddGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -31,7 +31,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	SubGradFn<T>::SubGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	SubGradFn<T>::SubGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -58,7 +58,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	MulGradFn<T>::MulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	MulGradFn<T>::MulGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -88,7 +88,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	DivGradFn<T>::DivGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	DivGradFn<T>::DivGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -123,7 +123,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	PowerGradFn<T>::PowerGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T exponent)
+	PowerGradFn<T>::PowerGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T exponent)
 		: GradFn<T>(a), m_Exponent(exponent)
 	{}
 	
@@ -152,7 +152,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AbsGradFn<T>::AbsGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+	AbsGradFn<T>::AbsGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input)
 		: GradFn<T>(input)
 	{}
 	
@@ -183,7 +183,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	ClampGradFn<T>::ClampGradFn(std::shared_ptr<typename GradFn<T>::Impl> input, T min, T max)
+	ClampGradFn<T>::ClampGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input, T min, T max)
 		: GradFn<T>(input), m_Min(min), m_Max(max)
 	{}
 	
@@ -218,7 +218,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	LogGradFn<T>::LogGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+	LogGradFn<T>::LogGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input)
 		: GradFn<T>(input)
 	{}
 	
@@ -244,7 +244,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	ExpGradFn<T>::ExpGradFn(std::shared_ptr<typename GradFn<T>::Impl> input)
+	ExpGradFn<T>::ExpGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> input)
 		: GradFn<T>(input)
 	{}
 	

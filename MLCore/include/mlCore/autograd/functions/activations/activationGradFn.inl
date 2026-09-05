@@ -4,7 +4,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	ReLUGradFn<T>::ReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	ReLUGradFn<T>::ReLUGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 	
@@ -32,7 +32,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	LeakyReLUGradFn<T>::LeakyReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T alpha)
+	LeakyReLUGradFn<T>::LeakyReLUGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T alpha)
 		: GradFn<T>(a), alpha(alpha)
 	{}
 	
@@ -61,7 +61,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output)
+	SoftmaxGradFn<T>::SoftmaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> output)
 		: GradFn<T>(a), m_OutputImpl(output)
 	{}
 	
@@ -103,7 +103,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output, size_t axis)
+	AxisSoftmaxGradFn<T>::AxisSoftmaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> output, size_t axis)
 		: GradFn<T>(a), m_OutputImpl(output), m_Axis(axis)
 	{}
 	

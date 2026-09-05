@@ -16,7 +16,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The value type handled by the gradient function (e.g., the element type of tensors or gradients).</typeparam>
 		/// <param name="a">A std::shared_ptr to a GradFn::Impl that provides the underlying implementation. It is passed to the GradFn base-class constructor and its shape (a->shape) is used to initialize inputShape.</param>
-		SumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+		SumGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a);
 
 		/// <summary>
 		/// Backward pass for a sum operation: propagates a scalar output gradient to the input by detaching and expanding it to the input shape, then calling the input's Backward.
@@ -42,7 +42,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric type of the elements and gradients.</typeparam>
 		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn::Impl). The constructor uses this to initialize the base GradFn and to obtain the input shape.</param>
 		/// <param name="maxValue">Maximum value of type T used for clamping gradients.</param>
-		MaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T maxValue);
+		MaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T maxValue);
 
 		/// <summary>
 		/// Performs the backward pass for a max operation: expects a scalar output gradient, splits that scalar gradient evenly among all input elements equal to the stored maximum, and propagates the resulting input gradient.
@@ -69,7 +69,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric type for gradients (e.g., float, double).</typeparam>
 		/// <param name="a">Shared pointer to the input gradient function implementation (GradFn::Impl). This is passed to the base GradFn and its shape is used to initialize inputShape.</param>
 		/// <param name="minValue">The minimum value used to clamp gradients.</param>
-		MinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T minValue);
+		MinGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T minValue);
 
 		/// <summary>
 		/// Backpropagates a scalar gradient through a min reduction. The scalar gradient is distributed equally among all input elements equal to the minimum value, and then propagated to the input tensor.
@@ -97,7 +97,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="a">A shared pointer to the upstream GradFn::Impl. Used to initialize the base GradFn and to obtain the input shape (a->shape).</param>
 		/// <param name="axis">The axis index along which the sum reduction was performed. Must be less than the input shape rank.</param>
 		/// <param name="keepDims">If true, reduced dimensions are kept with size 1; if false, reduced dimensions are removed.</param>
-		AxisSumGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
+		AxisSumGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims);
 
 		/// <summary>
 		/// Performs the backward pass for an axis-wise sum operation, reconstructing and propagating the gradient to the input tensor.
@@ -126,7 +126,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="a">Shared pointer to the implementation of the preceding gradient function (std::shared_ptr of GradFn::Impl).</param>
 		/// <param name="axis">Index of the axis along which the max operation was performed.</param>
 		/// <param name="keepDims">If true, reduced dimensions were kept with size 1; if false, they were removed.</param>
-		AxisMaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
+		AxisMaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims);
 
 		/// <summary>
 		/// Performs the backward pass for an AxisMax operation: computes the gradient with respect to the input by distributing the output gradient to positions equal to the axis-wise maximum and then invokes the input's Backward to propagate that gradient.
@@ -154,7 +154,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="a">A shared pointer to the underlying GradFn::Impl that this gradient function wraps or uses as its input.</param>
 		/// <param name="axis">The index of the axis along which the minimum reduction was performed.</param>
 		/// <param name="keepDims">If true, keep reduced dimensions with size 1; if false, remove reduced dimensions.</param>
-		AxisMinGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, size_t axis, bool keepDims);
+		AxisMinGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, size_t axis, bool keepDims);
 
 		/// <summary>
 		/// Performs the backward pass for an axis-wise minimum operation: constructs a mask of elements equal to the axis minimum, expands and distributes the incoming gradient among tied minima, and propagates the resulting gradient to the input tensor. If the input does not require gradients, no action is taken.

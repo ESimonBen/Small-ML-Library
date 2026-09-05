@@ -4,7 +4,7 @@
 
 namespace MLCore::AutoGrad {
 	template <typename T>
-	DotGradFn<T>::DotGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	DotGradFn<T>::DotGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -37,7 +37,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	MatMulGradFn<T>::MatMulGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> b)
+	MatMulGradFn<T>::MatMulGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> b)
 		: GradFn<T>({ a, b })
 	{}
 	
@@ -70,7 +70,7 @@ namespace MLCore::AutoGrad {
 	}
 	
 	template <typename T>
-	TransposeGradFn<T>::TransposeGradFn(std::shared_ptr<typename GradFn<T>::Impl> a)
+	TransposeGradFn<T>::TransposeGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a)
 		: GradFn<T>(a)
 	{}
 	

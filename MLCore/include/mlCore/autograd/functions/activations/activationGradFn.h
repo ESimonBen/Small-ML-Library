@@ -16,7 +16,7 @@ namespace MLCore::AutoGrad {
 		/// </summary>
 		/// <typeparam name="T">The element type (e.g., numeric or tensor element type) used by the gradient function.</typeparam>
 		/// <param name="a">A shared_ptr to a GradFn::Impl that supplies the underlying implementation; forwarded to the base GradFn constructor.</param>
-		ReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a);
+		ReLUGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a);
 
 		/// <summary>
 		/// Performs the backward pass for a ReLU activation. Validates shapes, builds the input gradient by masking the output gradient where the input is positive (gradInput[i] = gradOutput[i] if input[i] > 0, otherwise 0), and propagates it by calling input.Backward(gradInput). Throws std::runtime_error if the output gradient and input shapes differ. If the input does not require gradients, the function returns early without allocating or propagating.
@@ -39,7 +39,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The numeric type used for tensor values and the alpha parameter.</typeparam>
 		/// <param name="a">Shared ownership pointer to the underlying GradFn::Impl that this gradient function depends on (previous node/implementation).</param>
 		/// <param name="alpha">The leaky-ReLU negative-slope coefficient of type T; stored in the object for use during gradient computation.</param>
-		LeakyReLUGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, T alpha);
+		LeakyReLUGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, T alpha);
 
 		/// <summary>
 		/// Computes the gradient of a LeakyReLU activation w.r.t. its input and propagates it to the previous node.
@@ -65,7 +65,7 @@ namespace MLCore::AutoGrad {
 		/// <typeparam name="T">The element/data type used by the gradient functions (e.g., float, double).</typeparam>
 		/// <param name="a">Shared pointer to a GradFn::Impl used to initialize the base gradient function (input implementation).</param>
 		/// <param name="output">Shared pointer to a GradFn::Impl that will be stored as the output implementation.</param>
-		SoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output);
+		SoftmaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> output);
 
 		/// <summary>
 		/// Performs the backward pass for a softmax activation, computing and propagating the gradient to the input tensor.
@@ -75,7 +75,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		std::weak_ptr<typename GradFn<T>::Impl> m_OutputImpl; /// The output of the operation as a TensorImpl
+		std::weak_ptr<TensorCore::TensorImpl<T>> m_OutputImpl; /// The output of the operation as a TensorImpl
 	};
 
 	/// <summary>
@@ -92,7 +92,7 @@ namespace MLCore::AutoGrad {
 		/// <param name="a">Shared pointer to a GradFn::Impl used to initialize the base GradFn (previous/input gradient function).</param>
 		/// <param name="output">Shared pointer to a GradFn::Impl stored as the output implementation (output gradient function).</param>
 		/// <param name="axis">The axis (dimension) along which the softmax gradient is computed.</param>
-		AxisSoftmaxGradFn(std::shared_ptr<typename GradFn<T>::Impl> a, std::shared_ptr<typename GradFn<T>::Impl> output, size_t axis);
+		AxisSoftmaxGradFn(std::shared_ptr<TensorCore::TensorImpl<T>> a, std::shared_ptr<TensorCore::TensorImpl<T>> output, size_t axis);
 
 		/// <summary>
 		/// Computes and propagates the gradient of a softmax operation along the configured axis. If the input does not require gradients, the function returns early.
@@ -102,7 +102,7 @@ namespace MLCore::AutoGrad {
 		virtual void Backward(const TensorCore::Tensor<T>& gradOutput) override;
 
 	private:
-		std::weak_ptr<typename GradFn<T>::Impl> m_OutputImpl; /// The output of the operation as a TensorImpl
+		std::weak_ptr<TensorCore::TensorImpl<T>> m_OutputImpl; /// The output of the operation as a TensorImpl
 		size_t m_Axis; /// Represents the axis that was chosen to Softmax
 	};
 }

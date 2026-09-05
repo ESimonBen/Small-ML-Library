@@ -256,7 +256,7 @@ namespace MLCore::TensorCore {
 		/// Returns a shared pointer to the tensor's underlying implementation.
 		/// </summary>
 		/// <typeparam name="T">The element type of the Tensor and of the underlying TensorImpl.</typeparam>
-		/// <returns>A std::shared_ptr to the TensorImpl<T> backing this Tensor. Ownership is shared; the pointer may be empty (nullptr) if there is no implementation.</returns>
+		/// <returns>A std::shared_ptr to the TensorImpl backing this Tensor. Ownership is shared; the pointer may be empty (nullptr) if there is no implementation.</returns>
 		std::shared_ptr<Impl> GetImpl() const;
 
 		/// <summary>
