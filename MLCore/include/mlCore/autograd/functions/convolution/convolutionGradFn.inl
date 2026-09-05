@@ -144,7 +144,7 @@ namespace MLCore::AutoGrad {
 
 						if (requiresBiasGrad) {
 							auto& gb = gradBias.value();
-							gradBias.value()[oc] += grad;
+							gb[oc] += grad;
 						}
 
 						for (size_t ic = 0; ic < inputChannels; ++ic) {
