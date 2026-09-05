@@ -25,6 +25,8 @@ static void RunMatMul(benchmark::State& state, size_t M, size_t K, size_t N) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(2 * M * K * N));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 /// Square Benchmarks
@@ -87,6 +89,8 @@ static void BM_Dot(benchmark::State& state) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_Dot)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);

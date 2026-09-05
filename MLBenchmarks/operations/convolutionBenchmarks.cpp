@@ -31,6 +31,8 @@ static void RunConv1D(benchmark::State& state, size_t batch, size_t inChannels, 
     int64_t flopsPerOutput = static_cast<int64_t>(inChannels * kL) * 2;
     int64_t numOutputs = static_cast<int64_t>(batch * outChannels * outL);
     state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * numOutputs * flopsPerOutput);
+
+    MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Conv1D_EarlyLayer(benchmark::State& state) {
@@ -140,6 +142,8 @@ static void RunConv2D(benchmark::State& state, size_t batch, size_t inChannels, 
     int64_t flopsPerOutput = static_cast<int64_t>(inChannels * kH * kW) * 2;
     int64_t numOutputs = static_cast<int64_t>(batch * outChannels * outH * outW);
     state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * numOutputs * flopsPerOutput);
+
+    MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Conv2D_EarlyLayer(benchmark::State& state) {
