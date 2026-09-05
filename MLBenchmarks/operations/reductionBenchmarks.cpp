@@ -24,6 +24,8 @@ static void BM_SumAll(benchmark::State& state) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_MeanAll(benchmark::State& state) {
@@ -44,6 +46,8 @@ static void BM_MeanAll(benchmark::State& state) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_MaxAll(benchmark::State& state) {
@@ -68,6 +72,8 @@ static void BM_MaxAll(benchmark::State& state) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_MinAll(benchmark::State& state) {
@@ -92,6 +98,8 @@ static void BM_MinAll(benchmark::State& state) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_SumAll)->RangeMultiplier(4)->Range(1 << 8, 1 << 22);
@@ -115,6 +123,8 @@ static void RunAxisSum(benchmark::State& state, size_t dim0, size_t dim1, size_t
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(dim0 * dim1));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_AxisSum_OuterAxis(benchmark::State& state) {
@@ -144,6 +154,8 @@ static void RunAxisMean(benchmark::State& state, size_t dim0, size_t dim1, size_
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(dim0 * dim1));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_AxisMean_OuterAxis(benchmark::State& state) {
@@ -177,6 +189,8 @@ static void RunAxisMax(benchmark::State& state, size_t dim0, size_t dim1, size_t
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(dim0 * dim1));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_AxisMax_OuterAxis(benchmark::State& state) {
@@ -210,6 +224,8 @@ static void RunAxisMin(benchmark::State& state, size_t dim0, size_t dim1, size_t
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(dim0 * dim1));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_AxisMin_OuterAxis(benchmark::State& state) {

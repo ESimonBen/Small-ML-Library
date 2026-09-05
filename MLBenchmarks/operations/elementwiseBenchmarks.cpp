@@ -29,6 +29,8 @@ static void BM_Add_Contiguous(benchmark::State& state) {
 	/// useful once you're comparing against a SIMD path later.
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3); /// 3 values being processed: A and B being read, C being writter
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Add_Broadcast(benchmark::State& state) {
@@ -53,6 +55,8 @@ static void BM_Add_Broadcast(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Subtract_Contiguous(benchmark::State& state) {
@@ -78,6 +82,8 @@ static void BM_Subtract_Contiguous(benchmark::State& state) {
 	/// useful once you're comparing against a SIMD path later.
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3); /// 3 values being processed: A and B being read, C being writter
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Subtract_Broadcast(benchmark::State& state) {
@@ -102,6 +108,8 @@ static void BM_Subtract_Broadcast(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Multiply_Contiguous(benchmark::State& state) {
@@ -125,6 +133,8 @@ static void BM_Multiply_Contiguous(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Multiply_Broadcast(benchmark::State& state) {
@@ -149,6 +159,8 @@ static void BM_Multiply_Broadcast(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Divide_Contiguous(benchmark::State& state) {
@@ -172,6 +184,8 @@ static void BM_Divide_Contiguous(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Divide_Broadcast(benchmark::State& state) {
@@ -196,6 +210,8 @@ static void BM_Divide_Broadcast(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 /// Sweep from small (latency-dominated, everything fits in L1/L2) to large
@@ -228,6 +244,8 @@ static void RunPower(benchmark::State& state, float exponent) {
 	}
 
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Power_Zero(benchmark::State& state) {
@@ -277,6 +295,8 @@ static void BM_Abs(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 2);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_Abs)->RangeMultiplier(4)->Range(1 << 6, 1 << 22);
@@ -306,6 +326,8 @@ static void RunClamp(benchmark::State& state, float min, float max) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * 1000 * sizeof(float) * 2);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * 1000);
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Clamp_WideRange(benchmark::State& state) {
@@ -338,6 +360,8 @@ static void BM_Log(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 2);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_Log)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
@@ -361,6 +385,8 @@ static void BM_Exp(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * 2);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_Exp)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);
@@ -386,6 +412,8 @@ static void BM_Equal(benchmark::State& state) {
 
 	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
+
+	MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 BENCHMARK(BM_Equal)->RangeMultiplier(4)->Range(1 << 6, 1 << 22);

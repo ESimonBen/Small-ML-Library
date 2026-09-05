@@ -250,6 +250,8 @@ static void RunConv3D(benchmark::State& state, size_t batch, size_t inChannels, 
     int64_t flopsPerOutput = static_cast<int64_t>(inChannels * kD * kH * kW) * 2;
     int64_t numOutputs = static_cast<int64_t>(batch * outChannels * outD * outH * outW);
     state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * numOutputs * flopsPerOutput);
+
+    MLCore::Runtime::MLContext::GetAllocator().Reset();
 }
 
 static void BM_Conv3D_EarlyLayer(benchmark::State& state) {

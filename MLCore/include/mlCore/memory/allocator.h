@@ -13,7 +13,7 @@ namespace MLCore::Memory {
 		/// Constructs an ArenaAllocator by allocating a contiguous memory arena of the specified size. Initializes internal capacity and offset, and (when MLCORE_DEBUG is defined) fills the arena with 0xCD. Throws std::bad_alloc if allocation fails.
 		/// </summary>
 		/// <param name="arenaSize">The size in bytes of the arena to allocate.</param>
-		ArenaAllocator(size_t arenaSize = 0x1C0000000);
+		ArenaAllocator(size_t arenaSize = 0x40000000);
 
 		/// <summary>
 		/// Destructor for ArenaAllocator that frees the arena memory and clears the internal pointer.
