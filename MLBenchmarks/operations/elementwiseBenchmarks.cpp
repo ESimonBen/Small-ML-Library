@@ -235,7 +235,7 @@ static void RunPower(benchmark::State& state, float exponent) {
 	size_t checkpoint = MLCore::Runtime::MLContext::GetAllocator().Checkpoint();
 
 	for (auto _ : state) {
-		auto B = Power(A, 0.0f);
+		auto B = Power(A, exponent);
 		benchmark::DoNotOptimize(B.Data());
 
 		state.PauseTiming();
@@ -249,19 +249,19 @@ static void RunPower(benchmark::State& state, float exponent) {
 }
 
 static void BM_Power_Zero(benchmark::State& state) {
-	RunPower(state, 0);
+	RunPower(state, 0.0f);
 }
 
 static void BM_Power_One(benchmark::State& state) {
-	RunPower(state, 1);
+	RunPower(state, 1.0f);
 }
 
 static void BM_Power_Square(benchmark::State& state) {
-	RunPower(state, 2);
+	RunPower(state, 2.0f);
 }
 
 static void BM_Power_Cube(benchmark::State& state) {
-	RunPower(state, 3);
+	RunPower(state, 3.0f);
 }
 
 BENCHMARK(BM_Power_Zero)->RangeMultiplier(4)->Range(1 << 6, 1 << 18);

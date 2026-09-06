@@ -18,14 +18,16 @@ namespace MLCore::Operations {
 
 		return (paddedInputSize - effectiveKernelSize) / stride + 1;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride, size_t padding, size_t dilation, bool ceilMode) {
 		if (input.Rank() != 3) {
 			throw std::runtime_error("ERROR: MaxPool1D: Input must have 3 dimensions");
 		}
 
-		if (stride == 0) {
+		size_t actualStride = (stride == 0) ? filterLength : stride;
+
+		if (actualStride == 0) {
 			throw std::runtime_error("ERROR: MaxPool1D: Stride cannot be 0");
 		}
 
@@ -41,7 +43,7 @@ namespace MLCore::Operations {
 		const size_t channels = input.Dims()[1];
 		const size_t inputLength = input.Dims()[2];
 
-		const size_t outputLength = ComputePoolOutputSize(inputLength, filterLength, stride, padding, dilation, ceilMode);
+		const size_t outputLength = ComputePoolOutputSize(inputLength, filterLength, actualStride, padding, dilation, ceilMode);
 
 		TensorCore::Tensor<T> output{ {batchSize, channels, outputLength} };
 
@@ -63,7 +65,7 @@ namespace MLCore::Operations {
 						size_t maxIdx = -1;
 
 						for (size_t fl = 0; fl < filterLength; ++fl) {
-							const int inputPos = static_cast<int>(ol * stride) + static_cast<int>(fl * dilation) - static_cast<int>(padding);
+							const int inputPos = static_cast<int>(ol * actualStride) + static_cast<int>(fl * dilation) - static_cast<int>(padding);
 
 							if (inputPos < 0 || inputPos >= static_cast<int>(inputLength) ) {
 								continue;
@@ -95,7 +97,7 @@ namespace MLCore::Operations {
 						size_t maxIdx = -1;
 
 						for (size_t fl = 0; fl < filterLength; ++fl) {
-							const int inputPos = static_cast<int>(ol * stride) + static_cast<int>(fl * dilation) - static_cast<int>(padding);
+							const int inputPos = static_cast<int>(ol * actualStride) + static_cast<int>(fl * dilation) - static_cast<int>(padding);
 
 							if (inputPos < 0 || inputPos >= static_cast<int>(inputLength)) {
 								continue;
@@ -122,12 +124,12 @@ namespace MLCore::Operations {
 
 		if (input.RequiresGrad()) {
 			output.SetRequiresGrad(true);
-			output.SetGradFn(std::make_shared<AutoGrad::MaxPool1DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), stride, padding, dilation));
+			output.SetGradFn(std::make_shared<AutoGrad::MaxPool1DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), actualStride, padding, dilation));
 		}
 
 		return output;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
 										   size_t strideH, size_t strideW, size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW, bool ceilMode) {
@@ -135,7 +137,10 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MaxPool2D: Input must have 4 dimensions");
 		}
 
-		if (strideH == 0 || strideW == 0) {
+		size_t actualStrideH = (strideH == 0) ? filterHeight : strideH;
+		size_t actualStrideW = (strideW == 0) ? filterWidth : strideW;
+
+		if (actualStrideH == 0 || actualStrideW == 0) {
 			throw std::runtime_error("ERROR: MaxPool2D: Stride cannot be 0");
 		}
 
@@ -152,8 +157,8 @@ namespace MLCore::Operations {
 		const size_t inputHeight = input.Dims()[2];
 		const size_t inputWidth = input.Dims()[3];
 
-		const size_t outputHeight = ComputePoolOutputSize(inputHeight, filterHeight, strideH, paddingH, dilationH, ceilMode);
-		const size_t outputWidth = ComputePoolOutputSize(inputWidth, filterWidth, strideW, paddingW, dilationW, ceilMode);
+		const size_t outputHeight = ComputePoolOutputSize(inputHeight, filterHeight, actualStrideH, paddingH, dilationH, ceilMode);
+		const size_t outputWidth = ComputePoolOutputSize(inputWidth, filterWidth, actualStrideW, paddingW, dilationW, ceilMode);
 
 		TensorCore::Tensor<T> output{ {batchSize, channels, outputHeight, outputWidth} };
 
@@ -177,8 +182,8 @@ namespace MLCore::Operations {
 
 							for (size_t fh = 0; fh < filterHeight; ++fh) {
 								for (size_t fw = 0; fw < filterWidth; ++fw) {
-									const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
-									const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
+									const int inputRow = static_cast<int>(oh * actualStrideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
+									const int inputCol = static_cast<int>(ow * actualStrideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
 
 									if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
 										continue;
@@ -214,8 +219,8 @@ namespace MLCore::Operations {
 
 							for (size_t fh = 0; fh < filterHeight; ++fh) {
 								for (size_t fw = 0; fw < filterWidth; ++fw) {
-									const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
-									const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
+									const int inputRow = static_cast<int>(oh * actualStrideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
+									const int inputCol = static_cast<int>(ow * actualStrideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
 
 									if (inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
 										continue;
@@ -244,12 +249,12 @@ namespace MLCore::Operations {
 
 		if (input.RequiresGrad()) {
 			output.SetRequiresGrad(true);
-			output.SetGradFn(std::make_shared<AutoGrad::MaxPool2DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), strideH, strideW, paddingH, paddingW, dilationH, dilationW));
+			output.SetGradFn(std::make_shared<AutoGrad::MaxPool2DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), actualStrideH, actualStrideW, paddingH, paddingW, dilationH, dilationW));
 		}
 
 		return output;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
 											size_t strideD, size_t strideH, size_t strideW,
@@ -259,7 +264,11 @@ namespace MLCore::Operations {
 			throw std::runtime_error("ERROR: MaxPool3D: Input must have 5 dimensions");
 		}
 
-		if (strideD == 0 || strideH == 0 || strideW == 0) {
+		size_t actualStrideD = (strideD == 0) ? filterDepth : strideD;
+		size_t actualStrideH = (strideH == 0) ? filterHeight : strideH;
+		size_t actualStrideW = (strideW == 0) ? filterWidth : strideW;
+
+		if (actualStrideD == 0 || actualStrideH == 0 || actualStrideW == 0) {
 			throw std::runtime_error("ERROR: MaxPool3D: Stride cannot be 0");
 		}
 
@@ -277,9 +286,9 @@ namespace MLCore::Operations {
 		const size_t inputHeight = input.Dims()[3];
 		const size_t inputWidth = input.Dims()[4];
 
-		const size_t outputDepth = ComputePoolOutputSize(inputDepth, filterDepth, strideD, paddingD, dilationD, ceilMode);
-		const size_t outputHeight = ComputePoolOutputSize(inputHeight, filterHeight, strideH, paddingH, dilationH, ceilMode);
-		const size_t outputWidth = ComputePoolOutputSize(inputWidth, filterWidth, strideW, paddingW, dilationW, ceilMode);
+		const size_t outputDepth = ComputePoolOutputSize(inputDepth, filterDepth, actualStrideD, paddingD, dilationD, ceilMode);
+		const size_t outputHeight = ComputePoolOutputSize(inputHeight, filterHeight, actualStrideH, paddingH, dilationH, ceilMode);
+		const size_t outputWidth = ComputePoolOutputSize(inputWidth, filterWidth, actualStrideW, paddingW, dilationW, ceilMode);
 
 		TensorCore::Tensor<T> output{ {batchSize, channels, outputDepth, outputHeight, outputWidth} };
 
@@ -305,9 +314,9 @@ namespace MLCore::Operations {
 								for (size_t fd = 0; fd < filterDepth; ++fd) {
 									for (size_t fh = 0; fh < filterHeight; ++fh) {
 										for (size_t fw = 0; fw < filterWidth; ++fw) {
-											const int inputDepthPos = static_cast<int>(od * strideD) + static_cast<int>(fd * dilationD) - static_cast<int>(paddingD);
-											const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
-											const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
+											const int inputDepthPos = static_cast<int>(od * actualStrideD) + static_cast<int>(fd * dilationD) - static_cast<int>(paddingD);
+											const int inputRow = static_cast<int>(oh * actualStrideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
+											const int inputCol = static_cast<int>(ow * actualStrideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
 
 											if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
 												continue;
@@ -347,9 +356,9 @@ namespace MLCore::Operations {
 								for (size_t fd = 0; fd < filterDepth; ++fd) {
 									for (size_t fh = 0; fh < filterHeight; ++fh) {
 										for (size_t fw = 0; fw < filterWidth; ++fw) {
-											const int inputDepthPos = static_cast<int>(od * strideD) + static_cast<int>(fd * dilationD) - static_cast<int>(paddingD);
-											const int inputRow = static_cast<int>(oh * strideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
-											const int inputCol = static_cast<int>(ow * strideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
+											const int inputDepthPos = static_cast<int>(od * actualStrideD) + static_cast<int>(fd * dilationD) - static_cast<int>(paddingD);
+											const int inputRow = static_cast<int>(oh * actualStrideH) + static_cast<int>(fh * dilationH) - static_cast<int>(paddingH);
+											const int inputCol = static_cast<int>(ow * actualStrideW) + static_cast<int>(fw * dilationW) - static_cast<int>(paddingW);
 
 											if (inputDepthPos < 0 || inputDepthPos >= static_cast<int>(inputDepth) || inputRow < 0 || inputRow >= static_cast<int>(inputHeight) || inputCol < 0 || inputCol >= static_cast<int>(inputWidth)) {
 												continue;
@@ -380,29 +389,10 @@ namespace MLCore::Operations {
 
 		if (input.RequiresGrad()) {
 			output.SetRequiresGrad(true);
-			output.SetGradFn(std::make_shared<AutoGrad::MaxPool3DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), strideD, strideH, strideW, paddingD, 
+			output.SetGradFn(std::make_shared<AutoGrad::MaxPool3DGradFn<T>>(input.GetImpl(), indices.value().GetImpl(), actualStrideD, actualStrideH, actualStrideW, paddingD, 
 																			paddingH, paddingW, dilationD, dilationH, dilationW));
 		}
 
 		return output;
-	}
-
-	template <typename T>
-	inline TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t padding, size_t dilation, bool ceilMode) {
-		return MaxPool1D(input, filterLength, filterLength, padding, dilation, ceilMode);
-	}
-
-	template <typename T>
-	inline TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth, size_t paddingH, size_t paddingW,
-										   size_t dilationH, size_t dilationW, bool ceilMode) {
-		return MaxPool2D(input, filterHeight, filterWidth, filterHeight, filterWidth, paddingH, paddingW, dilationH, dilationW, ceilMode);
-	}
-
-	template <typename T>
-	inline TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
-										   size_t paddingD, size_t paddingH, size_t paddingW,
-										   size_t dilationD, size_t dilationH, size_t dilationW, bool ceilMode) {
-		return MaxPool3D(input, filterDepth, filterHeight, filterWidth, filterDepth, filterHeight, filterWidth, 
-						 paddingD, paddingH, paddingW, dilationD, dilationH, dilationW, ceilMode);
 	}
 }

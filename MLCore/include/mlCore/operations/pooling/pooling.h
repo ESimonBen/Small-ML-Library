@@ -5,29 +5,61 @@
 namespace MLCore::Operations {
 	size_t ComputePoolOutputSize(size_t inputSize, size_t filterSize, size_t stride, size_t padding, size_t dilation, bool ceilMode);
 
+	/// <summary>
+	/// Performs 1D max pooling over the last dimension of a 3D tensor (batch, channels, length). For each sliding window of length filterLength (with given stride, padding and dilation) it selects the maximum value. The output length is computed with ComputePoolOutputSize. If the input requires gradients, the operator records the indices of the maxima and configures the returned tensor to require gradients.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input and output tensors (numeric type stored by TensorCore::Tensor).</typeparam>
+	/// <param name="input">A 3D input tensor with shape {batchSize, channels, inputLength}. The function throws std::runtime_error if input.Rank() != 3.</param>
+	/// <param name="filterLength">The size of the pooling window (must be > 0).</param>
+	/// <param name="stride">The step between successive pooling windows (must be > 0).</param>
+	/// <param name="padding">Amount of implicit padding applied to both sides of the input along the length dimension.</param>
+	/// <param name="dilation">Spacing between elements within the pooling window (must be > 0).</param>
+	/// <param name="ceilMode">If true, use ceil when computing output length; otherwise use floor (affects ComputePoolOutputSize).</param>
+	/// <returns>A TensorCore::Tensor of shape {batchSize, channels, outputLength} containing the maximum values from each pooling window along the last dimension. If input.RequiresGrad() was true, the returned tensor is marked to require gradients and a backward function is attached; in that case the implementation also records the flattened input indices of the maxima for use in the gradient computation.</returns>
 	template <typename T>
-	TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride, size_t padding = 0, size_t dilation = 1, bool ceilMode = false);
+	TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride = 0, size_t padding = 0, size_t dilation = 1, bool ceilMode = false);
 
+	/// <summary>
+	/// Performs 2D max pooling on a 4-D tensor (batch, channels, height, width). Computes the maximum value in each pooling window and returns a tensor of pooled values. If the input requires gradients, argmax indices are recorded and the returned tensor is configured for backpropagation.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input and output tensors (numeric type).</typeparam>
+	/// <param name="input">Input tensor of rank 4 with shape [batch, channels, height, width]. May require gradients; if so, argmax indices are stored for use in the backward pass.</param>
+	/// <param name="filterHeight">Height of the pooling filter (must be > 0).</param>
+	/// <param name="filterWidth">Width of the pooling filter (must be > 0).</param>
+	/// <param name="strideH">Vertical stride (must be > 0).</param>
+	/// <param name="strideW">Horizontal stride (must be > 0).</param>
+	/// <param name="paddingH">Vertical padding applied to the input (can be 0).</param>
+	/// <param name="paddingW">Horizontal padding applied to the input (can be 0).</param>
+	/// <param name="dilationH">Vertical dilation factor for the filter (must be > 0).</param>
+	/// <param name="dilationW">Horizontal dilation factor for the filter (must be > 0).</param>
+	/// <param name="ceilMode">If true, use ceil when computing the output spatial size; if false, use floor.</param>
+	/// <returns>A TensorCore::Tensor containing the pooled output with shape [batch, channels, outputHeight, outputWidth], where outputHeight and outputWidth are computed by ComputePoolOutputSize. If the input required gradients, the returned tensor will require gradients and carry a gradient function that uses stored argmax indices.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
-									size_t strideH, size_t strideW, size_t paddingH = 0, size_t paddingW = 0, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
+									size_t strideH = 0, size_t strideW = 0, size_t paddingH = 0, size_t paddingW = 0, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
 
+	/// <summary>
+	/// Performs 3D max pooling on a 5-D tensor (batch, channels, depth, height, width). Computes pooled output dimensions using the provided filter size, strides, paddings, dilations and ceilMode. If the input requires gradients, records argmax indices and wires a gradient function for backward propagation. Throws std::runtime_error on invalid input shape or zero-valued stride/dilation/filter dimensions.
+	/// </summary>
+	/// <typeparam name="T">Element type stored in the input and output tensors (e.g., float, double). Also used as the element type for stored argmax indices when gradients are required.</typeparam>
+	/// <param name="input">Input tensor of rank 5 with shape {batch, channels, depth, height, width}. Must be 5-D or a runtime_error is thrown. If input.RequiresGrad() is true, argmax indices are recorded to support the backward pass.</param>
+	/// <param name="filterDepth">Depth of the pooling kernel (must be > 0).</param>
+	/// <param name="filterHeight">Height of the pooling kernel (must be > 0).</param>
+	/// <param name="filterWidth">Width of the pooling kernel (must be > 0).</param>
+	/// <param name="strideD">Stride along the depth dimension (must be > 0).</param>
+	/// <param name="strideH">Stride along the height dimension (must be > 0).</param>
+	/// <param name="strideW">Stride along the width dimension (must be > 0).</param>
+	/// <param name="paddingD">Zero-padding added to both sides of the depth dimension.</param>
+	/// <param name="paddingH">Zero-padding added to both sides of the height dimension.</param>
+	/// <param name="paddingW">Zero-padding added to both sides of the width dimension.</param>
+	/// <param name="dilationD">Dilation factor along the depth dimension (must be > 0).</param>
+	/// <param name="dilationH">Dilation factor along the height dimension (must be > 0).</param>
+	/// <param name="dilationW">Dilation factor along the width dimension (must be > 0).</param>
+	/// <param name="ceilMode">If true, use ceil when computing output spatial dimensions; otherwise use floor. Affects how output size is computed by ComputePoolOutputSize().</param>
+	/// <returns>A TensorCore::Tensor containing the pooled output with shape {batch, channels, outputDepth, outputHeight, outputWidth}. Each element is the maximum value over the corresponding receptive field. If the input required gradients, the returned tensor will have requires_grad set and a backward function attached.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
-									size_t strideD, size_t strideH, size_t strideW,
-									size_t paddingD = 0, size_t paddingH = 0, size_t paddingW = 0,
-									size_t dilationD = 1, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
-
-	/// Overloaded versions with default strides (uses filter size as default stride)
-
-	template <typename T>
-	TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t padding = 0, size_t dilation = 1, bool ceilMode = false);
-
-	template <typename T>
-	TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth, size_t paddingH = 0, size_t paddingW = 0, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
-
-	template <typename T>
-	TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
+									size_t strideD = 0, size_t strideH = 0, size_t strideW = 0,
 									size_t paddingD = 0, size_t paddingH = 0, size_t paddingW = 0,
 									size_t dilationD = 1, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
 }
