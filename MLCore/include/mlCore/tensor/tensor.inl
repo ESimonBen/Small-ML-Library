@@ -25,7 +25,7 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T>::Tensor(const Utils::Shape& shape) {
 		Memory::ArenaAllocator& allocator = Runtime::MLContext::GetContext().GetAllocator();
-		auto storage = Memory::MakeStorage<T>(shape.NumElements());
+		auto storage = Memory::MakeStorage<T>(allocator, shape.NumElements());
 
 		m_Impl = std::make_shared<Impl>(shape, Utils::ComputeContiguousStrides(shape), std::move(storage), &allocator);
 	}
@@ -82,6 +82,53 @@ namespace MLCore::TensorCore {
 	template <typename T>
 	inline Tensor<T> Tensor<T>::Custom(std::initializer_list<size_t> dims, const T& value) {
 		return Tensor<T>::Custom(Utils::Shape{ dims }, value);
+	}
+	
+	template <typename T>
+	inline Tensor<T> Tensor<T>::Range(const T& start, const T& end, int64_t stepSize) {
+		if (stepSize == 0) {
+			throw std::runtime_error("ERROR: Step size cannot be 0");
+		}
+
+		if (start == end || (start < end && stepSize < 0) || (start > end && stepSize > 0)) {
+			Tensor<T> empty{ Utils::Shape() };
+			return empty;
+		}
+
+		int64_t size = (start < end) ? (static_cast<int64_t>(end - start) + stepSize - 1) / stepSize : (static_cast<int64_t>(end - start) + stepSize + 1) / stepSize;
+
+		Tensor<T> result{ {static_cast<size_t>(size)} };
+		result.FillRange(start, stepSize);
+
+		return result;
+	}
+	
+	template <typename T>
+	inline Tensor<T> Tensor<T>::LinSpace(const T& start, const T& end, int64_t numElements) {
+		if (numElements < 0) {
+			throw std::runtime_error("ERROR: Cannot have negative number of elements");
+		}
+
+		if (numElements == 0) {
+			Tensor<T> empty{ Utils::Shape() };
+			return empty;
+		}
+
+		if (numElements == 1) {
+			Tensor<T> one{ {1} };
+			one[0] = start;
+			return one;
+		}
+
+		Tensor<T> result{ {static_cast<size_t>(numElements)} };
+
+		for (int64_t i = 0; i < numElements; ++i) {
+			T weight = static_cast<T>(i) / (numElements - 1);
+			result[i] = start + weight * (end - start);
+		}
+
+		result[numElements - 1] = end;
+		return result;
 	}
 
 	template <typename T>
@@ -143,6 +190,24 @@ namespace MLCore::TensorCore {
 
 		for (size_t i = 0; i < size; ++i) {
 			(*this)[i] = value;
+		}
+	}
+	
+	template <typename T>
+	inline void Tensor<T>::FillRange(const T& value, int64_t stepSize) {
+		if (stepSize == 0) {
+			Fill(value);
+			return;
+		}
+
+		if (IsEmpty()) {
+			throw std::runtime_error("ERROR: Cannot fill empty tensor with a value");
+		}
+
+		int64_t size = static_cast<int64_t>(NumElements());
+
+		for (int64_t i = 0; i < size; ++i) {
+			(*this)[i] = value + static_cast<T>(i * stepSize);
 		}
 	}
 	

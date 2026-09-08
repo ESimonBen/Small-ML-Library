@@ -368,6 +368,151 @@ namespace MLCore::Operations {
 		return C;
 	}
 	
+	template<typename T>
+	inline TensorCore::Tensor<T> NotEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
+		if (A.IsEmpty() || B.IsEmpty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
+		if (A.GetShape() != B.GetShape()) {
+			throw std::runtime_error("ERROR: NotEqual: Tensors are not the same shape");
+		}
+
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator };
+
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			C[i] = (A[i] != B[i]) ? static_cast<T>(1) : static_cast<T>(0);
+		}
+
+		C.SetRequiresGrad(false); /// No gradient function necessary
+
+		return C;
+	}
+	
+	template<typename T>
+	TensorCore::Tensor<T> GreaterThan(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
+		if (A.IsEmpty() || B.IsEmpty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
+		if (A.GetShape() != B.GetShape()) {
+			throw std::runtime_error("ERROR: GreaterThan: Tensors are not the same shape");
+		}
+
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator };
+
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			C[i] = (A[i] > B[i]) ? static_cast<T>(1) : static_cast<T>(0);
+		}
+
+		C.SetRequiresGrad(false); /// No gradient function necessary
+
+		return C;
+	}
+	
+	template<typename T>
+	TensorCore::Tensor<T> LessThan(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
+		if (A.IsEmpty() || B.IsEmpty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
+		if (A.GetShape() != B.GetShape()) {
+			throw std::runtime_error("ERROR: LessThan: Tensors are not the same shape");
+		}
+
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator };
+
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			C[i] = (A[i] < B[i]) ? static_cast<T>(1) : static_cast<T>(0);
+		}
+
+		C.SetRequiresGrad(false); /// No gradient function necessary
+
+		return C;
+	}
+	
+	template<typename T>
+	TensorCore::Tensor<T> GreaterThanOrEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
+		if (A.IsEmpty() || B.IsEmpty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
+		if (A.GetShape() != B.GetShape()) {
+			throw std::runtime_error("ERROR: GreaterThan: Tensors are not the same shape");
+		}
+
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator };
+
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			C[i] = (A[i] >= B[i]) ? static_cast<T>(1) : static_cast<T>(0);
+		}
+
+		C.SetRequiresGrad(false); /// No gradient function necessary
+
+		return C;
+	}
+	
+	template<typename T>
+	TensorCore::Tensor<T> LessThanOrEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B) {
+		Memory::ArenaAllocator* resultAllocator = Memory::ResolveOperationAllocator(A, B);
+
+		if (!resultAllocator) {
+			throw std::runtime_error("ERROR: Operations between tensors on different allocators are forbidden");
+		}
+
+		if (A.IsEmpty() || B.IsEmpty()) {
+			throw std::runtime_error("ERROR: Input tensors cannot be null");
+		}
+
+		if (A.GetShape() != B.GetShape()) {
+			throw std::runtime_error("ERROR: GreaterThan: Tensors are not the same shape");
+		}
+
+		TensorCore::Tensor<T> C{ A.GetShape(), *resultAllocator };
+
+		size_t size = A.NumElements();
+
+		for (size_t i = 0; i < size; ++i) {
+			C[i] = (A[i] <= B[i]) ? static_cast<T>(1) : static_cast<T>(0);
+		}
+
+		C.SetRequiresGrad(false); /// No gradient function necessary
+
+		return C;
+	}
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Negate(const TensorCore::Tensor<T>& A) {
 		return MultiplyScalar(A, static_cast<T>(-1));

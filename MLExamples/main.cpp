@@ -1,4 +1,5 @@
 /// main.cpp
+#include <cstdarg>
 #include <iostream>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>
@@ -347,16 +348,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-
-    auto input = Tensor<float>::Ones({ 1, 1, 4, 4, 4 });
-
-    auto output = MaxPool3D(input, 2, 2, 2, 1, 1, 1, 0, 0, 0, 2, 2, 2);
-    auto dims = output.Dims();
-
-    for (auto& val : dims) {
-        std::cout << val << " ";
-    }
+    TestXOR();
 
     return 0;
 }

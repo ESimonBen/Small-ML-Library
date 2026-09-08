@@ -6,7 +6,7 @@
 
 namespace MLCore::Utils{
 	/// <summary>
-	/// Represents the shape of a multi-dimensional array or tensor, including its dimensions, strides, and total number of elements.
+	/// Represents the shape of a multi-dimensional array or tensor, including its dimensions and total number of elements.
 	/// </summary>
 	class Shape {
 	public:
@@ -16,7 +16,7 @@ namespace MLCore::Utils{
 		Shape() = default;
 
 		/// <summary>
-		/// Copy constructor. Initializes a new Shape by copying the dimensions, strides, and number of elements from another Shape. The operation is noexcept and does not throw.
+		/// Copy constructor. Initializes a new Shape by copying the dimensions and number of elements from another Shape. The operation is noexcept and does not throw.
 		/// </summary>
 		/// <param name="other">The Shape to copy from. Its m_Dims and m_NumElements are copied into the new object.</param>
 		Shape(const Shape& other) noexcept;
@@ -28,7 +28,7 @@ namespace MLCore::Utils{
 		Shape(Shape&& other) noexcept;
 
 		/// <summary>
-		/// Copy assignment operator for Shape. Copies dimensions, strides, and element count from another Shape if they differ; marked noexcept.
+		/// Copy assignment operator for Shape. Copies dimensions and element count from another Shape if they differ; marked noexcept.
 		/// </summary>
 		/// <param name="other">The Shape to copy from. If this and other are equal, no members are modified.</param>
 		/// <returns>A reference to this Shape (i.e., *this) after assignment.</returns>
@@ -42,13 +42,13 @@ namespace MLCore::Utils{
 		Shape& operator=(Shape&& other) noexcept;
 
 		/// <summary>
-		/// Constructs a Shape object from the provided dimensions, computes internal strides, and calculates the total number of elements.
+		/// Constructs a Shape object from the provided dimensions and calculates the total number of elements.
 		/// </summary>
-		/// <param name="dims">A vector of sizes for each dimension. Used to initialize the shape's internal dimensions; ComputeStrides() is called and the total number of elements is set to the product of these sizes.</param>
+		/// <param name="dims">A vector of sizes for each dimension. Used to initialize the shape's internal dimensions, and the total number of elements is set to the product of these sizes.</param>
 		explicit Shape(const std::vector<size_t>& dims);
 
 		/// <summary>
-		/// Constructs a Shape from a pack of integral dimension sizes, initializing the internal dimensions vector, computing row-major strides, and calculating the total number of elements.
+		/// Constructs a Shape from a pack of integral dimension sizes, initializing the internal dimensions vector and calculating the total number of elements.
 		/// </summary>
 		/// <typeparam name="Dimensions">A parameter pack of integral types used to specify each dimension size; the constructor is enabled only when all types are integral.</typeparam>
 		/// <param name="dims">A list of dimension sizes (one per axis), provided as individual integral arguments; each value is interpreted as the size for the corresponding dimension.</param>

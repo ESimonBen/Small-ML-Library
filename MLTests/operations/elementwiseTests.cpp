@@ -1,6 +1,6 @@
 /// elementwiseTests.cpp
 #include <doctest/doctest.h>
-#include <mlCore/operations/elementwise/elementwise.h>
+#include <mlCore/operations/operatorOverloads.h>
 
 using namespace MLCore::Utils;
 
@@ -19,7 +19,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Add(A, B);
+            auto C = A + B;
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -40,7 +40,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Add(A, B);
+            auto C = A + B;
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -56,10 +56,7 @@ TEST_SUITE("Elementwise Operations") {
             Tensor<float> A({ 2, 3 });
             Tensor<float> B({ 2, 2 });
 
-            CHECK_THROWS_AS(
-                Add(A, B),
-                std::runtime_error
-            );
+            CHECK_THROWS_AS(A + B, std::runtime_error);
         }
 
         SUBCASE("Elementwise Add propagates requires-grad") {
@@ -68,7 +65,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto C = Add(A, B);
+            auto C = A + B;
 
             CHECK(C.RequiresGrad());
         }
@@ -85,7 +82,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Subtract(B, A);
+            auto C = B - A;
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -106,7 +103,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Subtract(B, A);
+            auto C = B - A;
 
             CHECK(C.GetShape() == Shape(2, 3));
 
@@ -125,7 +122,7 @@ TEST_SUITE("Elementwise Operations") {
             A.Fill(5.0f);
             B.Fill(3.0f);
 
-            CHECK_THROWS_AS(Subtract(A, B), std::runtime_error);
+            CHECK_THROWS_AS(A - B, std::runtime_error);
         }
 
         SUBCASE("Elementwise Subtract propagates requires-grad") {
@@ -137,7 +134,7 @@ TEST_SUITE("Elementwise Operations") {
 
             A.SetRequiresGrad(true);
 
-            auto C = Subtract(A, B);
+            auto C = A - B;
 
             CHECK(C.RequiresGrad());
         }
@@ -154,7 +151,7 @@ TEST_SUITE("Elementwise Operations") {
             B[0] = 5; B[1] = 6;
             B[2] = 7; B[3] = 8;
 
-            auto C = Multiply(A, B);
+            auto C = A * B;
 
             CHECK(C.GetShape() == Shape(2, 2));
 
@@ -175,7 +172,7 @@ TEST_SUITE("Elementwise Operations") {
             B[1] = 20;
             B[2] = 30;
 
-            auto C = Multiply(A, B);
+            auto C = A * B;
 
             CHECK(C.GetShape() == Shape(2, 3));
 

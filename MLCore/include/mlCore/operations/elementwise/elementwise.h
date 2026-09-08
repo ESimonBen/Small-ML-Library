@@ -102,6 +102,57 @@ namespace MLCore::Operations {
 	TensorCore::Tensor<T> Equal(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
 
 	/// <summary>
+	/// Performs an element-wise inequality comparison between two tensors and returns a tensor of the same shape containing 1 (true) or 0 (false) values of type T.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input tensors and of the returned tensor. The result elements are set to static_cast(1) when A[i] != B[i], otherwise static_cast(0).</typeparam>
+	/// <param name="A">Left-hand input tensor to compare. Must not be empty and must share the same allocator and shape as B.</param>
+	/// <param name="B">Right-hand input tensor to compare. Must not be empty and must share the same allocator and shape as A.</param>
+	/// <returns>A TensorCore::Tensor with the same shape as the inputs, allocated using the resolved operation allocator. Each element is 1 (cast to T) where the corresponding elements of A and B differ, and 0 otherwise. The returned tensor has requiresGrad set to false.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> NotEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
+
+	/// <summary>
+	/// Performs an element-wise greater-than comparison between two tensors, returning a tensor of the same shape with elements set to 1 where A > B and 0 otherwise. Throws std::runtime_error if the tensors use different allocators, are empty, or have different shapes.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input tensors and of the resulting tensor.</typeparam>
+	/// <param name="A">Left-hand input tensor. Must not be empty and must have the same shape and allocator as B.</param>
+	/// <param name="B">Right-hand input tensor. Must not be empty and must have the same shape and allocator as A.</param>
+	/// <returns>A TensorCore::Tensor with the same shape as the inputs, containing 1 (as T) where A element-wise > B and 0 (as T) otherwise. The returned tensor uses the resolved operation allocator and has requiresGrad set to false.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> GreaterThan(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
+
+	/// <summary>
+	/// Performs an element-wise less-than comparison between two tensors and returns a tensor of the same shape containing 1 (cast to T) where A < B and 0 otherwise. Validates that both tensors are non-empty, have the same shape, and reside on the same allocator; throws std::runtime_error on failure.
+	/// </summary>
+	/// <typeparam name="T">The element type of the input tensors and of the returned tensor. Output elements are either 1 or 0 cast to T.</typeparam>
+	/// <param name="A">The first input tensor (const reference). Must be non-empty, have the same shape as B, and be on the same allocator as B.</param>
+	/// <param name="B">The second input tensor (const reference). Must be non-empty, have the same shape as A, and be on the same allocator as A.</param>
+	/// <returns>A TensorCore::Tensor with the same shape as the inputs, where each element is static_cast(1) if the corresponding element of A is less than B, otherwise static_cast(0). The returned tensor has requiresGrad set to false and is allocated using the resolved operation allocator.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> LessThan(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
+
+	/// <summary>
+	/// Performs an element-wise greater-than-or-equal comparison between two tensors, returning a tensor of the same shape with elements set to 1 (true) or 0 (false). Throws if the tensors are on different allocators, are empty, or have mismatched shapes.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input and output tensors. Output values are produced as static_cast(1) for true and static_cast(0) for false.</typeparam>
+	/// <param name="A">Left-hand input tensor. Must be non-empty, have the same shape as B, and use an allocator that can be resolved for the operation.</param>
+	/// <param name="B">Right-hand input tensor. Must be non-empty, have the same shape as A, and use an allocator that can be resolved for the operation.</param>
+	/// <returns>A tensor with the same shape as the inputs containing element-wise comparison results (1 when A[i] >= B[i], otherwise 0). The result uses the resolved operation allocator and has requiresGrad set to false.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> GreaterThanOrEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
+
+	/// <summary>
+	/// Performs an element-wise less-than-or-equal comparison between two tensors.
+	/// </summary>
+	/// <typeparam name="T">Element type of the input tensors and of the returned tensor. Result elements are set to (T)1 for true and (T)0 for false.</typeparam>
+	/// <param name="A">Left input tensor. Must be non-empty and have the same shape and allocator as B.</param>
+	/// <param name="B">Right input tensor. Must be non-empty and have the same shape and allocator as A.</param>
+	/// <returns>A tensor with the same shape as the inputs whose elements are (T)1 where A[i] &lt;= B[i] and (T)0 otherwise. The returned tensor has requiresGrad set to false. Throws std::runtime_error if the tensors use different allocators, are empty, or have mismatched shapes.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> LessThanOrEqual(const TensorCore::Tensor<T>& A, const TensorCore::Tensor<T>& B);
+
+
+	/// <summary>
 	/// Returns a tensor with each element negated.
 	/// </summary>
 	/// <typeparam name="T">The element type of the tensor (e.g., float, double, int).</typeparam>

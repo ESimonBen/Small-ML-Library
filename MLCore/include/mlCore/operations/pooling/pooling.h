@@ -3,6 +3,16 @@
 #include <mlCore/tensor/tensor.h>
 
 namespace MLCore::Operations {
+	/// <summary>
+	/// Calculates the output size for a pooling operation along a single dimension.
+	/// </summary>
+	/// <param name="inputSize">Size of the input dimension (e.g., width or height).</param>
+	/// <param name="filterSize">Size of the pooling filter (kernel).</param>
+	/// <param name="stride">Stride (step) of the pooling operation.</param>
+	/// <param name="padding">Amount of padding added to both sides of the input.</param>
+	/// <param name="dilation">Dilation factor for the filter; effective kernel size is computed as dilation * (filterSize - 1) + 1.</param>
+	/// <param name="ceilMode">If true, uses ceiling when dividing to compute the output size; otherwise uses floor (standard integer division).</param>
+	/// <returns>The computed output size (number of positions) for the pooled dimension.</returns>
 	size_t ComputePoolOutputSize(size_t inputSize, size_t filterSize, size_t stride, size_t padding, size_t dilation, bool ceilMode);
 
 	/// <summary>

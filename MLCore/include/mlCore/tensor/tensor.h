@@ -162,6 +162,26 @@ namespace MLCore::TensorCore {
 		static Tensor<T> Custom(std::initializer_list<size_t> dims, const T& value);
 
 		/// <summary>
+		/// Creates a 1-D Tensor whose elements form an arithmetic sequence starting at start and advancing by stepSize toward end (end is exclusive). Returns an empty Tensor if start == end or if the step does not progress toward end. Throws std::runtime_error if stepSize is 0.
+		/// </summary>
+		/// <typeparam name="T">The tensor element type. Must support comparison and the arithmetic operations required to compute and increment the sequence (used by FillRange).</typeparam>
+		/// <param name="start">The starting value of the sequence (included).</param>
+		/// <param name="end">The end bound; values are generated up to but not including this value.</param>
+		/// <param name="stepSize">The step increment between consecutive elements. Must be non-zero. A positive step produces an increasing sequence when start &lt; end; a negative step produces a decreasing sequence when start &gt; end. If the step direction does not move start toward end, the function returns an empty Tensor.</param>
+		/// <returns>A 1-D Tensor containing the generated sequence. If no elements are produced (start == end or incompatible step direction), an empty Tensor is returned. Throws std::runtime_error when stepSize is zero.</returns>
+		static Tensor<T> Range(const T& start, const T& end, int64_t stepSize = 1);
+
+		/// <summary>
+		/// Creates a Tensor containing a linearly spaced sequence of numElements values from start to end (inclusive). Throws std::runtime_error if numElements is negative.
+		/// </summary>
+		/// <typeparam name="T">The element type stored in the Tensor. Must support construction/assignment from integer values and arithmetic operations used for interpolation (subtraction, addition, multiplication/division by scalar).</typeparam>
+		/// <param name="start">The starting value of the sequence (value at index 0).</param>
+		/// <param name="end">The ending value of the sequence (value at the last index).</param>
+		/// <param name="numElements">The number of elements to generate. If 0, returns an empty Tensor. If 1, returns a Tensor with a single element equal to start. Must be >= 0.</param>
+		/// <returns>A Tensor of length numElements with values linearly interpolated between start and end (start at index 0, end at index numElements-1).</returns>
+		static Tensor<T> LinSpace(const T& start, const T& end, int64_t numElements);
+
+		/// <summary>
 		/// Creates and returns a deep copy of this tensor.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
@@ -202,6 +222,14 @@ namespace MLCore::TensorCore {
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
 		/// <param name="value">The value to assign to each element of the tensor.</param>
 		void Fill(const T& value);
+
+		/// <summary>
+		/// Fills the tensor with a sequence starting from value, adding stepSize for each subsequent element. If stepSize is 0, all elements are set to value. Throws std::runtime_error if the tensor is empty.
+		/// </summary>
+		/// <typeparam name="T">Type of the tensor elements; must support addition with a value obtained from static_cast(i * stepSize).</typeparam>
+		/// <param name="value">Starting value assigned to the first element; element i is set to value + static_cast(i * stepSize).</param>
+		/// <param name="stepSize">Increment applied between consecutive elements. If zero, the tensor is filled with the same value for every element.</param>
+		void FillRange(const T& value, int64_t stepSize = 1);
 
 		/// <summary>
 		/// Returns a pointer to the tensor's underlying element data at the tensor's offset.
@@ -331,8 +359,8 @@ namespace MLCore::TensorCore {
 		/// <summary>
 		/// Returns a read-only reference to the tensor element identified by the provided compile-time integral indices.
 		/// </summary>
-		/// <typeparam name="Indices">A parameter pack of integral index types; the number of indices must match the tensor's rank and each index is zero-based.</typeparam>
-		/// <param name="indices">Zero-based indices for each tensor dimension; the indices are flattened using the tensor's Shape and validated. Throws std::out_of_range if any index is out of bounds.</param>
+		/// <typeparam name="Indices">A parameter pack of integral index types. The number of indices must match the tensor's rank and each index is zero-based.</typeparam>
+		/// <param name="indices">Zero-based indices for each tensor dimension. The indices are flattened using the tensor's Shape and validated. Throws std::out_of_range if any index is out of bounds.</param>
 		/// <returns>A const reference (const T&) to the element at the specified multi-dimensional position.</returns>
 		template <typename... Indices, typename = std::enable_if_t<(std::is_integral_v<Indices> && ...)>>
 		const T& operator()(Indices... indices) const;
@@ -384,28 +412,28 @@ namespace MLCore::TensorCore {
 		/// Returns the gradient tensor for this Tensor. If no gradient is set, returns a new tensor with the same shape filled with zeros.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
-		/// <returns>A Tensor<T> containing the gradient: either the existing gradient or a newly created zero-filled tensor with the same shape and allocator.</returns>
+		/// <returns>A Tensor containing the gradient: either the existing gradient or a newly created zero-filled tensor with the same shape and allocator.</returns>
 		Tensor<T> Grad();
 
 		/// <summary>
 		/// Returns the gradient tensor for this tensor instance.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the Tensor.</typeparam>
-		/// <returns>A const Tensor<T> representing the gradient. Throws std::runtime_error if the gradient is not available.</returns>
+		/// <returns>A const Tensor representing the gradient. Throws std::runtime_error if the gradient is not available.</returns>
 		const Tensor<T> Grad() const;
 
 		/// <summary>
 		/// Returns the gradient function associated with this tensor.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
-		/// <returns>A std::shared_ptr<AutoGrad::GradFn<T>> pointing to the tensor's gradient function. May be nullptr if no gradient function is set.</returns>
+		/// <returns>A std::shared_ptr to a AutoGrad::GradFn pointing to the tensor's gradient function. May be nullptr if no gradient function is set.</returns>
 		std::shared_ptr<AutoGrad::GradFn<T>> GradFn();
 
 		/// <summary>
 		/// Returns the gradient function associated with this tensor without modifying the tensor.
 		/// </summary>
 		/// <typeparam name="T">The tensor's element/value type; the template parameter used by Tensor and its GradFn.</typeparam>
-		/// <returns>A std::shared_ptr to the AutoGrad::GradFn<T> instance for this tensor. The returned pointer may be null if no gradient function is attached.</returns>
+		/// <returns>A std::shared_ptr to the AutoGrad::GradFn instance for this tensor. The returned pointer may be null if no gradient function is attached.</returns>
 		const std::shared_ptr<AutoGrad::GradFn<T>> GradFn() const;
 
 		/// <summary>
