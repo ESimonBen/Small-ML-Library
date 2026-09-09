@@ -11,7 +11,7 @@ namespace MLCore::NN {
 	class Conv1DLayer : public Module<T> {
 	public:
 		/// <summary>
-		/// Constructs a Conv1DLayer<T> with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
+		/// Constructs a Conv1DLayer with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
 		/// </summary>
 		/// <typeparam name="T">Numeric type used for tensor elements and layer parameters (e.g., float or double).</typeparam>
 		/// <param name="inChannels">Number of input channels.</param>
@@ -29,7 +29,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
-		/// <returns>A new TensorCore::Tensor<T> containing the result of the 1D convolution. The method is const and does not modify the layer's stored parameters.</returns>
+		/// <returns>A new TensorCore::Tensor containing the result of the 1D convolution. The method is const and does not modify the layer's stored parameters.</returns>
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
@@ -38,7 +38,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the layer's parameter data (for example, float or double).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If non-empty, a dot is inserted before the suffix (e.g., "prefix.kernel"); if empty, the suffix alone is used (e.g., "kernel").</param>
-		/// <param name="out">Reference to a vector where NamedParameter<T> entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
+		/// <param name="out">Reference to a vector where NamedParameter entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) override;
 
 		/// <summary>
@@ -46,12 +46,12 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric/tensor element type used by the layer (the type parameter for ConstNamedParameter).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If empty, the parameter suffixes "kernel" and "bias" are used as-is; otherwise the prefix and suffix are joined with a '.' (e.g., "prefix.kernel").</param>
-		/// <param name="out">Reference to a vector that will receive ConstNamedParameter<T> entries for the layer's kernel and bias; entries are appended to the vector.</param>
+		/// <param name="out">Reference to a vector that will receive ConstNamedParameter entries for the layer's kernel and bias; entries are appended to the vector.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const override;
 
 	private:
-		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter<T> instance.
-		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter<T> instance.
+		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter instance.
+		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter instance.
 		size_t m_Stride; /// Stride along the length for the convolution operation.
 		size_t m_Padding; /// Padding along the length for the convolution operation.
 		size_t m_Dilation; /// Dilation along the length for the convolution operation.
@@ -65,7 +65,7 @@ namespace MLCore::NN {
 	class Conv2DLayer : public Module<T> {
 	public:
 		/// <summary>
-		/// Constructs a Conv2DLayer<T> with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
+		/// Constructs a Conv2DLayer with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
 		/// </summary>
 		/// <typeparam name="T">Numeric type used for tensor elements and layer parameters (e.g., float or double).</typeparam>
 		/// <param name="inChannels">Number of input channels.</param>
@@ -89,7 +89,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
-		/// <returns>A new TensorCore::Tensor<T> containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
+		/// <returns>A new TensorCore::Tensor containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
@@ -98,7 +98,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the layer's parameter data (for example, float or double).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If non-empty, a dot is inserted before the suffix (e.g., "prefix.kernel"); if empty, the suffix alone is used (e.g., "kernel").</param>
-		/// <param name="out">Reference to a vector where NamedParameter<T> entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
+		/// <param name="out">Reference to a vector where NamedParameter entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) override;
 
 		/// <summary>
@@ -106,12 +106,12 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric/tensor element type used by the layer (the type parameter for ConstNamedParameter).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If empty, the parameter suffixes "kernel" and "bias" are used as-is; otherwise the prefix and suffix are joined with a '.' (e.g., "prefix.kernel").</param>
-		/// <param name="out">Reference to a vector that will receive ConstNamedParameter<T> entries for the layer's kernel and bias; entries are appended to the vector.</param>
+		/// <param name="out">Reference to a vector that will receive ConstNamedParameter entries for the layer's kernel and bias; entries are appended to the vector.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const override;
 
 	private:
-		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter<T> instance.
-		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter<T> instance.
+		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter instance.
+		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter instance.
 		size_t m_StrideH, m_StrideW; /// Stride along height and width dimensions for the convolution operation.
 		size_t m_PaddingH, m_PaddingW; /// Padding along height and width dimensions for the convolution operation.
 		size_t m_DilationH, m_DilationW; /// Dilation along height and width dimensions for the convolution operation.
@@ -125,7 +125,7 @@ namespace MLCore::NN {
 	class Conv3DLayer : public Module<T> {
 	public:
 		/// <summary>
-		/// Constructs a Conv3DLayer<T> with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
+		/// Constructs a Conv3DLayer with the specified input/output channels, kernel size, stride, padding, dilation, and initialization settings. Allocates kernel and bias tensors, enables gradient tracking for them, computes fan-in/fan-out, and initializes the parameters.
 		/// </summary>
 		/// <typeparam name="T">Numeric type used for tensor elements and layer parameters (e.g., float or double).</typeparam>
 		/// <param name="inChannels">Number of input channels.</param>
@@ -155,7 +155,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The element type of the tensors (e.g., float or double) used for the input, kernel, bias, and output.</typeparam>
 		/// <param name="input">The input tensor to convolve. Supplied by const reference and must have a layout and element type compatible with this layer.</param>
-		/// <returns>A new TensorCore::Tensor<T> containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
+		/// <returns>A new TensorCore::Tensor containing the result of the 2D convolution. The method is const and does not modify the layer's stored parameters.</returns>
 		virtual TensorCore::Tensor<T> Forward(const TensorCore::Tensor<T>& input) override;
 
 	protected:
@@ -164,7 +164,7 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric type of the layer's parameter data (for example, float or double).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If non-empty, a dot is inserted before the suffix (e.g., "prefix.kernel"); if empty, the suffix alone is used (e.g., "kernel").</param>
-		/// <param name="out">Reference to a vector where NamedParameter<T> entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
+		/// <param name="out">Reference to a vector where NamedParameter entries will be appended. This function emplaces entries for the layer's "kernel" and "bias" parameters.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<NamedParameter<T>>& out) override;
 
 		/// <summary>
@@ -172,12 +172,12 @@ namespace MLCore::NN {
 		/// </summary>
 		/// <typeparam name="T">The numeric/tensor element type used by the layer (the type parameter for ConstNamedParameter).</typeparam>
 		/// <param name="name">Optional prefix for parameter names. If empty, the parameter suffixes "kernel" and "bias" are used as-is; otherwise the prefix and suffix are joined with a '.' (e.g., "prefix.kernel").</param>
-		/// <param name="out">Reference to a vector that will receive ConstNamedParameter<T> entries for the layer's kernel and bias; entries are appended to the vector.</param>
+		/// <param name="out">Reference to a vector that will receive ConstNamedParameter entries for the layer's kernel and bias; entries are appended to the vector.</param>
 		virtual void CollectNamedParameters(const std::string& name, std::vector<ConstNamedParameter<T>>& out) const override;
 
 	private:
-		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter<T> instance.
-		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter<T> instance.
+		Parameter<T> m_Kernel; /// Member variable that holds a kernel parameter as a Parameter instance.
+		Parameter<T> m_Bias; /// Member variable that holds a bias parameter as a Parameter instance.
 		size_t m_StrideD, m_StrideH, m_StrideW; /// Stride along depth, height and width dimensions for the convolution operation.
 		size_t m_PaddingD, m_PaddingH, m_PaddingW; /// Padding along depth, height and width dimensions for the convolution operation.
 		size_t m_DilationD, m_DilationH, m_DilationW; /// Dilation along depth, height and width dimensions for the convolution operation.

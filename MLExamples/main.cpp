@@ -1,5 +1,4 @@
 /// main.cpp
-#include <cstdarg>
 #include <iostream>
 #include <mlCore/training/trainer.h>
 #include <mlCore/module/sequential.h>
