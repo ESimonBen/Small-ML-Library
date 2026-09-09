@@ -102,6 +102,9 @@ namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> operator-(T Scalar, const TensorCore::Tensor<T>& Input);
 
+	template <typename T>
+	TensorCore::Tensor<T> operator-(const TensorCore::Tensor<T>& Input);
+
 	/// <summary>
 	/// Prefix decrement operator that subtracts one from every element of the tensor, modifying the input tensor in place.
 	/// </summary>

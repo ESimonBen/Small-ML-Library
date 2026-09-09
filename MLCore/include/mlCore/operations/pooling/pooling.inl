@@ -1,6 +1,7 @@
 /// pooling.inl
 #include <numeric>
 #include <optional>
+#include <mlCore/operations/operatorOverloads.h>
 #include <mlCore/autograd/functions/pooling/poolingGradFn.h>
 
 namespace MLCore::Operations {
@@ -131,6 +132,11 @@ namespace MLCore::Operations {
 	}
 	
 	template <typename T>
+	inline TensorCore::Tensor<T> MinPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride, size_t padding, size_t dilation, bool ceilMode) {
+		return -MaxPool1D(-input, filterLength, stride, padding, dilation, ceilMode);
+	}
+
+	template <typename T>
 	inline TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
 										   size_t strideH, size_t strideW, size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW, bool ceilMode) {
 		if (input.Rank() != 4) {
@@ -255,6 +261,12 @@ namespace MLCore::Operations {
 		return output;
 	}
 	
+	template <typename T>
+	inline TensorCore::Tensor<T> MinPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
+										   size_t strideH, size_t strideW, size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW, bool ceilMode) {
+		return -MaxPool2D(-input, filterHeight, filterWidth, strideH, strideW, paddingH, paddingW, dilationH, dilationW, ceilMode);
+	}
+
 	template <typename T>
 	inline TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
 											size_t strideD, size_t strideH, size_t strideW,
@@ -394,5 +406,13 @@ namespace MLCore::Operations {
 		}
 
 		return output;
+	}
+	
+	template <typename T>
+	inline TensorCore::Tensor<T> MinPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
+										   size_t strideD, size_t strideH, size_t strideW,
+										   size_t paddingD, size_t paddingH, size_t paddingW,
+										   size_t dilationD, size_t dilationH, size_t dilationW, bool ceilMode) {
+		return -MaxPool3D(-input, filterDepth, filterHeight, filterWidth, strideD, strideH, strideW, paddingD, paddingH, paddingW, dilationD, dilationH, dilationW, ceilMode);
 	}
 }

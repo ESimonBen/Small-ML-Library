@@ -30,6 +30,20 @@ namespace MLCore::Operations {
 	TensorCore::Tensor<T> MaxPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride = 0, size_t padding = 0, size_t dilation = 1, bool ceilMode = false);
 
 	/// <summary>
+	/// Performs 1D minimum pooling on the input tensor by applying MaxPool1D to the negated input.
+	/// </summary>
+	/// <typeparam name="T">Element type of the tensor values.</typeparam>
+	/// <param name="input">Constant reference to the input tensor to be pooled.</param>
+	/// <param name="filterLength">Length of the pooling window (number of elements in the filter).</param>
+	/// <param name="stride">Stride (step) between consecutive pooling windows.</param>
+	/// <param name="padding">Amount of padding applied to both sides of the input (in elements).</param>
+	/// <param name="dilation">Dilation factor for the pooling window (spacing between elements in the filter).</param>
+	/// <param name="ceilMode">If true, use ceiling when computing output dimensions; if false, use floor.</param>
+	/// <returns>A tensor of type TensorCore::Tensor containing the min-pooled result. The output shape is determined by filterLength, stride, padding, dilation, and ceilMode.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> MinPool1D(const TensorCore::Tensor<T>& input, size_t filterLength, size_t stride = 0, size_t padding = 0, size_t dilation = 1, bool ceilMode = false);
+
+	/// <summary>
 	/// Performs 2D max pooling on a 4-D tensor (batch, channels, height, width). Computes the maximum value in each pooling window and returns a tensor of pooled values. If the input requires gradients, argmax indices are recorded and the returned tensor is configured for backpropagation.
 	/// </summary>
 	/// <typeparam name="T">Element type of the input and output tensors (numeric type).</typeparam>
@@ -46,6 +60,25 @@ namespace MLCore::Operations {
 	/// <returns>A TensorCore::Tensor containing the pooled output with shape [batch, channels, outputHeight, outputWidth], where outputHeight and outputWidth are computed by ComputePoolOutputSize. If the input required gradients, the returned tensor will require gradients and carry a gradient function that uses stored argmax indices.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> MaxPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
+									size_t strideH = 0, size_t strideW = 0, size_t paddingH = 0, size_t paddingW = 0, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
+
+	/// <summary>
+	/// Computes 2D minimum pooling on the input tensor using the specified filter size, strides, padding, dilation, and ceil mode. This implementation obtains minima by negating the input, applying max pooling, and negating that result.
+	/// </summary>
+	/// <typeparam name="T">Element type of the tensor (e.g., float, double, int).</typeparam>
+	/// <param name="input">Input tensor to apply min pooling to.</param>
+	/// <param name="filterHeight">Height of the pooling filter (kernel).</param>
+	/// <param name="filterWidth">Width of the pooling filter (kernel).</param>
+	/// <param name="strideH">Vertical stride (step) between pooling windows.</param>
+	/// <param name="strideW">Horizontal stride (step) between pooling windows.</param>
+	/// <param name="paddingH">Vertical padding applied to the input.</param>
+	/// <param name="paddingW">Horizontal padding applied to the input.</param>
+	/// <param name="dilationH">Vertical dilation (spacing) between kernel elements.</param>
+	/// <param name="dilationW">Horizontal dilation (spacing) between kernel elements.</param>
+	/// <param name="ceilMode">If true, use ceiling when computing output dimensions for uneven divisions due to padding; if false, use floor.</param>
+	/// <returns>A tensor of type Tensor containing the minimum values computed over each pooling window.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> MinPool2D(const TensorCore::Tensor<T>& input, size_t filterHeight, size_t filterWidth,
 									size_t strideH = 0, size_t strideW = 0, size_t paddingH = 0, size_t paddingW = 0, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
 
 	/// <summary>
@@ -69,6 +102,31 @@ namespace MLCore::Operations {
 	/// <returns>A TensorCore::Tensor containing the pooled output with shape {batch, channels, outputDepth, outputHeight, outputWidth}. Each element is the maximum value over the corresponding receptive field. If the input required gradients, the returned tensor will have requires_grad set and a backward function attached.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> MaxPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
+									size_t strideD = 0, size_t strideH = 0, size_t strideW = 0,
+									size_t paddingD = 0, size_t paddingH = 0, size_t paddingW = 0,
+									size_t dilationD = 1, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);
+
+	/// <summary>
+	/// Performs 3D minimum pooling on the input tensor. Implemented by negating the input, applying MaxPool3D, then negating the result.
+	/// </summary>
+	/// <typeparam name="T">Element type stored in the input and output tensors.</typeparam>
+	/// <param name="input">The input tensor to be pooled (const reference).</param>
+	/// <param name="filterDepth">Depth of the pooling window.</param>
+	/// <param name="filterHeight">Height of the pooling window.</param>
+	/// <param name="filterWidth">Width of the pooling window.</param>
+	/// <param name="strideD">Stride (step) along the depth dimension.</param>
+	/// <param name="strideH">Stride (step) along the height dimension.</param>
+	/// <param name="strideW">Stride (step) along the width dimension.</param>
+	/// <param name="paddingD">Padding applied to the depth dimension.</param>
+	/// <param name="paddingH">Padding applied to the height dimension.</param>
+	/// <param name="paddingW">Padding applied to the width dimension.</param>
+	/// <param name="dilationD">Dilation factor for the pooling window along the depth dimension.</param>
+	/// <param name="dilationH">Dilation factor for the pooling window along the height dimension.</param>
+	/// <param name="dilationW">Dilation factor for the pooling window along the width dimension.</param>
+	/// <param name="ceilMode">If true, use ceiling when computing output spatial dimensions; otherwise use floor.</param>
+	/// <returns>A TensorCore::Tensor containing the result of 3D min pooling using the specified filter size, strides, paddings, dilations, and ceilMode.</returns>
+	template <typename T>
+	TensorCore::Tensor<T> MinPool3D(const TensorCore::Tensor<T>& input, size_t filterDepth, size_t filterHeight, size_t filterWidth,
 									size_t strideD = 0, size_t strideH = 0, size_t strideW = 0,
 									size_t paddingD = 0, size_t paddingH = 0, size_t paddingW = 0,
 									size_t dilationD = 1, size_t dilationH = 1, size_t dilationW = 1, bool ceilMode = false);

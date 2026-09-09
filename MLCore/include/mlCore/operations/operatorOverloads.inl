@@ -54,6 +54,11 @@ namespace MLCore::Operations {
 	inline TensorCore::Tensor<T> operator-(T Scalar, const TensorCore::Tensor<T>& Input) {
 		return SubtractScalar(Input, Scalar, true);
 	}
+
+	template <typename T>
+	inline TensorCore::Tensor<T> operator-(const TensorCore::Tensor<T>& Input) {
+		return Negate(Input);
+	}
 	
 	template <typename T>
 	inline TensorCore::Tensor<T> operator--(TensorCore::Tensor<T>& Input) {

@@ -88,6 +88,7 @@ static void BM_Dot(benchmark::State& state) {
 		state.ResumeTiming();
 	}
 
+	state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n) * sizeof(float) * 3);
 	state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * static_cast<int64_t>(n));
 
 	MLCore::Runtime::MLContext::GetAllocator().Reset();

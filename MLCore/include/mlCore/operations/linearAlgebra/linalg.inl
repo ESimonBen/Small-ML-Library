@@ -27,12 +27,29 @@ namespace MLCore::Operations {
 		TensorCore::Tensor<T> C{ {M, N}, *resultAllocator };
 		C.Fill(static_cast<T>(0));
 
-		for (size_t i = 0; i < M; ++i) {
-			for (size_t k = 0; k < K; ++k) {
-				T aVal = A[i * K + k];
+		if (A.IsContiguous() && B.IsContiguous()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			T* cData = C.Data();
 
-				for (size_t j = 0; j < N; ++j) {
-					C[i * N + j] += aVal * B[k * N + j];
+			for (size_t i = 0; i < M; ++i) {
+				for (size_t k = 0; k < K; ++k) {
+					T aVal = aData[i * K + k];
+
+					for (size_t j = 0; j < N; ++j) {
+						cData[i * N + j] += aVal * bData[k * N + j];
+					}
+				}
+			}
+		}
+		else {
+			for (size_t i = 0; i < M; ++i) {
+				for (size_t k = 0; k < K; ++k) {
+					T aVal = A[i * K + k];
+
+					for (size_t j = 0; j < N; ++j) {
+						C[i * N + j] += aVal * B[k * N + j];
+					}
 				}
 			}
 		}
@@ -93,9 +110,20 @@ namespace MLCore::Operations {
 		}
 
 		T sum = static_cast<T>(0);
+		size_t size = A.NumElements();
 
-		for (size_t i = 0; i < A.NumElements(); ++i) {
-			sum += A[i] * B[i];
+		if (A.IsContiguous() && B.IsContiguous()) {
+			const T* aData = A.Data();
+			const T* bData = B.Data();
+			
+			for (size_t i = 0; i < size; ++i) {
+				sum += aData[i] * bData[i];
+			}
+		}
+		else {
+			for (size_t i = 0; i < size; ++i) {
+				sum += A[i] * B[i];
+			}
 		}
 
 		TensorCore::Tensor<T> C{ {1}, *resultAllocator };
