@@ -1,5 +1,6 @@
  /// shape.inl
 #include <numeric>
+#include <iostream>
 #include <stdexcept>
 
 namespace MLCore::Utils {

@@ -288,7 +288,7 @@ namespace MLCore::Operations {
 
 		size_t batches = A.GetShape()[0];
 
-		return Reshape(A, { batches, (A.NumElements() / batches)});
+		return Reshape(A, Utils::Shape{ batches, (A.NumElements() / batches)});
 	}
 	
 	template <typename T>
