@@ -16,7 +16,7 @@ namespace MLCore::NN {
 	inline MaxPool2DLayer<T>::MaxPool2DLayer(size_t filterHeight, size_t filterWidth, size_t strideH, size_t strideW,
 												size_t paddingH, size_t paddingW, size_t dilationH, size_t dilationW, bool ceilMode)
 		: m_FilterHeight(filterHeight), m_FilterWidth(filterWidth), m_StrideH(strideH), m_StrideW(strideW),
-		  m_PaddingH(paddingH), m_PaddingW(paddingW), m_DilationH(dilationH), m_DilationW(dilationW)
+		  m_PaddingH(paddingH), m_PaddingW(paddingW), m_DilationH(dilationH), m_DilationW(dilationW), m_CeilMode(ceilMode)
 	{}
 	
 	template <typename T>

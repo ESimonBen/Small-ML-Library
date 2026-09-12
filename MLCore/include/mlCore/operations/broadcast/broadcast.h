@@ -95,9 +95,23 @@ namespace MLCore::Operations {
 	template <typename T>
 	TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape);
 
+	/// <summary>
+	/// Flattens a tensor into a 2D tensor by preserving the first (batch) dimension and collapsing all other dimensions into a single second dimension. For a rank-1 input, returns a tensor with shape [1, N].
+	/// </summary>
+	/// <typeparam name="T">The element type of the tensor.</typeparam>
+	/// <param name="A">The input tensor to flatten.</param>
+	/// <returns>A 2D tensor. If A.Rank() == 1, the result has shape [1, A.NumElements()]. Otherwise, the result has shape [A.GetShape()[0], A.NumElements() / A.GetShape()[0]].</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Flatten(const TensorCore::Tensor<T>& A);
 
+	/// <summary>
+	/// Returns a new tensor where the specified dimension of the input tensor is replaced (unflattened) by the provided inner shape.
+	/// </summary>
+	/// <typeparam name="T">Element type stored in the tensor.</typeparam>
+	/// <param name="A">Input tensor to unflatten.</param>
+	/// <param name="dim">Index of the dimension in A to replace with innerShape. Must be less than A.Rank().</param>
+	/// <param name="innerShape">Shape whose dimensions will replace the single dimension at index dim. The product of innerShape's dimensions must equal A.Dims()[dim].</param>
+	/// <returns>A TensorCore::Tensor with the same total number of elements as A but with the specified dimension expanded into the provided innerShape. Throws std::out_of_range if dim >= A.Rank(), and std::runtime_error if A.Dims()[dim] does not equal innerShape.NumElements().</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Unflatten(const TensorCore::Tensor<T>& A, size_t dim, const Utils::Shape& innerShape);
 }

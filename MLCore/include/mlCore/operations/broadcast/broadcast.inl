@@ -276,15 +276,28 @@ namespace MLCore::Operations {
 
 		return result;
 	}
-
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Flatten(const TensorCore::Tensor<T>& A) {
-		return Reshape(A, { A.NumElements() });
-	}
+		if (A.Rank() == 1) {
+			TensorCore::Tensor<T> reshaped = Reshape(A, { A.NumElements() });
+			TensorCore::Tensor<T> unsqueezed = Unsqueeze(reshaped, 0);
 
+			return unsqueezed;
+		}
+
+		size_t batches = A.GetShape()[0];
+
+		return Reshape(A, { batches, (A.NumElements() / batches)});
+	}
+	
 	template <typename T>
 	inline TensorCore::Tensor<T> Unflatten(const TensorCore::Tensor<T>& A, size_t dim, const Utils::Shape& innerShape) {
-		auto dims = A.Dims();
+		if (dim >= A.Rank()) {
+			throw std::out_of_range("ERROR: Unflatten: Axis out of bounds");
+		}
+
+		auto& dims = A.Dims();
 
 		if (dims[dim] != innerShape.NumElements()) {
 			throw std::runtime_error("ERROR: Unflatten: Number of elements in dimension is not the same as the number in your inner shape");

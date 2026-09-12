@@ -85,8 +85,8 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	inline Tensor<T> Tensor<T>::Range(const T& start, const T& end, int64_t stepSize) {
-		if (stepSize == 0) {
+	inline Tensor<T> Tensor<T>::Range(const T& start, const T& end, T stepSize) {
+		if (stepSize == static_cast<T>(0)) {
 			throw std::runtime_error("ERROR: Step size cannot be 0");
 		}
 
@@ -95,7 +95,7 @@ namespace MLCore::TensorCore {
 			return empty;
 		}
 
-		int64_t size = (start < end) ? (static_cast<int64_t>(end - start) + stepSize - 1) / stepSize : (static_cast<int64_t>(end - start) + stepSize + 1) / stepSize;
+		T size = (start < end) ? ((end - start) + stepSize - 1) / stepSize : ((end - start) + stepSize + 1) / stepSize;
 
 		Tensor<T> result{ {static_cast<size_t>(size)} };
 		result.FillRange(start, stepSize);
@@ -194,8 +194,8 @@ namespace MLCore::TensorCore {
 	}
 	
 	template <typename T>
-	inline void Tensor<T>::FillRange(const T& value, int64_t stepSize) {
-		if (stepSize == 0) {
+	inline void Tensor<T>::FillRange(const T& value, T stepSize) {
+		if (stepSize == static_cast<T>(0)) {
 			Fill(value);
 			return;
 		}

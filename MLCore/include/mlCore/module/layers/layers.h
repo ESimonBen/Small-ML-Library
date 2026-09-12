@@ -6,3 +6,4 @@
 #include <mlCore/module/layers/pooling/minPoolingLayers.h>
 #include <mlCore/module/layers/activation/activationLayers.h>
 #include <mlCore/module/layers/convolution/convolutionLayers.h>
+#include <mlCore/module/layers/broadcasting/broadcastingLayers.h>

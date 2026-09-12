@@ -169,7 +169,7 @@ namespace MLCore::TensorCore {
 		/// <param name="end">The end bound; values are generated up to but not including this value.</param>
 		/// <param name="stepSize">The step increment between consecutive elements. Must be non-zero. A positive step produces an increasing sequence when start &lt; end; a negative step produces a decreasing sequence when start &gt; end. If the step direction does not move start toward end, the function returns an empty Tensor.</param>
 		/// <returns>A 1-D Tensor containing the generated sequence. If no elements are produced (start == end or incompatible step direction), an empty Tensor is returned. Throws std::runtime_error when stepSize is zero.</returns>
-		static Tensor<T> Range(const T& start, const T& end, int64_t stepSize = 1);
+		static Tensor<T> Range(const T& start, const T& end, T stepSize = static_cast<T>(1));
 
 		/// <summary>
 		/// Creates a Tensor containing a linearly spaced sequence of numElements values from start to end (inclusive). Throws std::runtime_error if numElements is negative.
@@ -185,14 +185,14 @@ namespace MLCore::TensorCore {
 		/// Creates and returns a deep copy of this tensor.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the tensor.</typeparam>
-		/// <returns>A new Tensor<T> with the same shape and allocator as this tensor, containing an element-wise copy of the original data.</returns>
+		/// <returns>A new Tensor with the same shape and allocator as this tensor, containing an element-wise copy of the original data.</returns>
 		Tensor Clone() const;
 
 		/// <summary>
 		/// Creates and returns a new Tensor that shares the same underlying storage but is detached from gradient tracking.
 		/// </summary>
 		/// <typeparam name="T">The element type stored in the Tensor.</typeparam>
-		/// <returns>A Tensor<T> that is a shallow copy/view of the original (sharing storage, shape, allocator, and offset) with requiresGrad set to false and its own autograd state. The original tensor is not modified.</returns>
+		/// <returns>A Tensor that is a shallow copy/view of the original (sharing storage, shape, allocator, and offset) with requiresGrad set to false and its own autograd state. The original tensor is not modified.</returns>
 		Tensor Detach() const;
 
 		/// <summary>
@@ -229,7 +229,7 @@ namespace MLCore::TensorCore {
 		/// <typeparam name="T">Type of the tensor elements; must support addition with a value obtained from static_cast(i * stepSize).</typeparam>
 		/// <param name="value">Starting value assigned to the first element; element i is set to value + static_cast(i * stepSize).</param>
 		/// <param name="stepSize">Increment applied between consecutive elements. If zero, the tensor is filled with the same value for every element.</param>
-		void FillRange(const T& value, int64_t stepSize = 1);
+		void FillRange(const T& value, T stepSize = static_cast<T>(1));
 
 		/// <summary>
 		/// Returns a pointer to the tensor's underlying element data at the tensor's offset.
@@ -440,7 +440,7 @@ namespace MLCore::TensorCore {
 		/// Assigns the gradient function for this tensor by storing the provided AutoGrad::GradFn in the tensor's internal implementation.
 		/// </summary>
 		/// <typeparam name="T">The element type of the Tensor and of the GradFn.</typeparam>
-		/// <param name="gradFn">A std::shared_ptr to an AutoGrad::GradFn<T> that will be stored as this tensor's gradient function. The pointer is moved into the tensor's implementation, so the caller's shared_ptr may be left in a moved-from (null) state after the call.</param>
+		/// <param name="gradFn">A std::shared_ptr to an AutoGrad::GradFn that will be stored as this tensor's gradient function. The pointer is moved into the tensor's implementation, so the caller's shared_ptr may be left in a moved-from (null) state after the call.</param>
 		void SetGradFn(std::shared_ptr<AutoGrad::GradFn<T>> gradFn);
 
 		/// <summary>
@@ -474,8 +474,8 @@ namespace MLCore::TensorCore {
 		/// </summary>
 		/// <typeparam name="T">The tensor element type.</typeparam>
 		/// <param name="start">Inclusive 0-based index of the first row to include.</param>
-		/// <param name="end">Exclusive 0-based index one past the last row to include. Must satisfy 0 <= start < end <= number of rows.</param>
-		/// <returns>A Tensor<T> that views the selected rows (shares storage, adjusted shape and offset).</returns>
+		/// <param name="end">Exclusive 0-based index one past the last row to include. Must satisfy 0 &le; start &lt; end &le; number of rows.</param>
+		/// <returns>A Tensor that views the selected rows (shares storage, adjusted shape and offset).</returns>
 		Tensor<T> SliceRows(size_t start, size_t end) const;
 
 		/// <summary>

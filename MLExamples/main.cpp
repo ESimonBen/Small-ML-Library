@@ -347,37 +347,7 @@ void TestXOR() {
 }
 
 int main() {
-    /*TestXOR();*/
-
-    Tensor<float> input{ {2, 2, 10, 10} };
-    input.FillRange(2.0f, 2);
-
-    Sequential<float> model;
-    model.Emplace<Conv2DLayer<float>>(2, 2, 3, 3);
-    model.Emplace<MaxPool2DLayer<float>>(2, 2);
-    model.Emplace<Conv2DLayer<float>>(2, 2, 2, 2);
-    model.Emplace<MinPool2DLayer<float>>(2, 2);
-
-    auto result = model(input);
-    auto reshaped = Flatten(result);
-
-    std::cout << result.GetShape();
-
-    for (auto& val : result) {
-        std::cout << val << " ";
-    }
-
-    std::cout << "\n\n";
-    std::cout << reshaped.GetShape();
-
-    for (auto& val : reshaped) {
-        std::cout << val << " ";
-    }
-
-    auto reshaped2 = Unflatten(reshaped, 0, Utils::Shape{ 2, 2 });
-
-    std::cout << "\n\n";
-    std::cout << reshaped2.GetShape();
+    TestXOR();
 
     return 0;
 }
