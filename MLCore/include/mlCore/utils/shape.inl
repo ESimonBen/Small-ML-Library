@@ -71,6 +71,22 @@ namespace MLCore::Utils {
 	inline const std::vector<size_t>& Shape::Dims() const {
 		return m_Dims;
 	}
+
+	inline void Shape::Print() const {
+		PrintShape(std::cout, (*this));
+	}
+
+	inline std::ostream& PrintShape(std::ostream& os, const Shape& shape) {
+		os << "Shape: ";
+
+		for (auto& val : shape.m_Dims) {
+			os << val << " ";
+		}
+
+		os << "\n";
+
+		return os;
+	}
 	
 	inline bool Shape::operator==(const Shape& other) const {
 		return m_Dims == other.m_Dims;
@@ -78,5 +94,9 @@ namespace MLCore::Utils {
 	
 	inline bool Shape::operator!=(const Shape& other) const {
 		return !(*this == other);
+	}
+
+	inline std::ostream& operator<<(std::ostream& os, const Shape& shape) {
+		return PrintShape(os, shape);
 	}
 }

@@ -1,7 +1,6 @@
 /// minPoolingLayers.h
 #pragma once
 #include <mlCore/module/module.h>
-#include <mlCore/parameters/initialization.h>
 
 namespace MLCore::NN {
 	/// <summary>

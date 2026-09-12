@@ -276,4 +276,38 @@ namespace MLCore::Operations {
 
 		return result;
 	}
+
+	template <typename T>
+	inline TensorCore::Tensor<T> Flatten(const TensorCore::Tensor<T>& A) {
+		return Reshape(A, { A.NumElements() });
+	}
+
+	template <typename T>
+	inline TensorCore::Tensor<T> Unflatten(const TensorCore::Tensor<T>& A, size_t dim, const Utils::Shape& innerShape) {
+		auto dims = A.Dims();
+
+		if (dims[dim] != innerShape.NumElements()) {
+			throw std::runtime_error("ERROR: Unflatten: Number of elements in dimension is not the same as the number in your inner shape");
+		}
+
+		size_t size = A.Rank();
+		std::vector<size_t> finalDims;
+		finalDims.reserve(size);
+
+		for (size_t i = 0; i < size; ++i) {
+			if (i == dim) {
+				size_t innerShapeSize = innerShape.Rank();
+
+				for (size_t j = 0; j < innerShapeSize; ++j) {
+					finalDims.push_back(innerShape[j]);
+				}
+
+				continue;
+			}
+
+			finalDims.push_back(dims[i]);
+		}
+
+		return Reshape(A, Utils::Shape{ finalDims });
+	}
 }

@@ -1,6 +1,7 @@
 /// pooling.inl
 #include <numeric>
 #include <optional>
+#include "pooling.h"
 #include <mlCore/operations/operatorOverloads.h>
 #include <mlCore/autograd/functions/pooling/poolingGradFn.h>
 

@@ -2,5 +2,7 @@
 
 /// All layer header files
 #include <mlCore/module/layers/linearLayer.h>
+#include <mlCore/module/layers/pooling/maxPoolingLayers.h>
+#include <mlCore/module/layers/pooling/minPoolingLayers.h>
 #include <mlCore/module/layers/activation/activationLayers.h>
 #include <mlCore/module/layers/convolution/convolutionLayers.h>

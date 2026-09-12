@@ -94,6 +94,12 @@ namespace MLCore::Operations {
 	/// <returns>A TensorCore::Tensor that shares A's storage (no data copy) with strides computed for contiguous layout of newShape. Throws std::runtime_error if element count mismatch or if A is not contiguous.</returns>
 	template <typename T>
 	TensorCore::Tensor<T> Reshape(const TensorCore::Tensor<T>& A, const Utils::Shape& newShape);
+
+	template <typename T>
+	TensorCore::Tensor<T> Flatten(const TensorCore::Tensor<T>& A);
+
+	template <typename T>
+	TensorCore::Tensor<T> Unflatten(const TensorCore::Tensor<T>& A, size_t dim, const Utils::Shape& innerShape);
 }
 
 #include "broadcast.inl"

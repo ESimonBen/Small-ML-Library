@@ -9,7 +9,7 @@ namespace MLCore::NN {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MinPool1DLayer<T>::Forward(const TensorCore::Tensor<T>& input) {
-		return MinPool1D(input, m_FilterLength, m_Stride, m_Padding, m_Dilation, m_CeilMode);
+		return Operations::MinPool1D(input, m_FilterLength, m_Stride, m_Padding, m_Dilation, m_CeilMode);
 	}
 
 	template <typename T>
@@ -21,7 +21,7 @@ namespace MLCore::NN {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MinPool2DLayer<T>::Forward(const TensorCore::Tensor<T>& input) {
-		return MinPool2D(input, m_FilterHeight, m_FilterWidth, m_StrideH, m_StrideW, m_PaddingH, m_PaddingW, m_DilationH, m_DilationW, m_CeilMode);
+		return Operations::MinPool2D(input, m_FilterHeight, m_FilterWidth, m_StrideH, m_StrideW, m_PaddingH, m_PaddingW, m_DilationH, m_DilationW, m_CeilMode);
 	}
 
 	template <typename T>
@@ -37,7 +37,7 @@ namespace MLCore::NN {
 
 	template <typename T>
 	inline TensorCore::Tensor<T> MinPool3DLayer<T>::Forward(const TensorCore::Tensor<T>& input) {
-		return MinPool3D(input, m_FilterDepth, m_FilterHeight, m_FilterWidth, m_StrideD, m_StrideH, m_StrideW,
-			m_PaddingD, m_PaddingH, m_PaddingW, m_DilationD, m_DilationH, m_DilationW, m_CeilMode);
+		return Operations::MinPool3D(input, m_FilterDepth, m_FilterHeight, m_FilterWidth, m_StrideD, m_StrideH, m_StrideW,
+									 m_PaddingD, m_PaddingH, m_PaddingW, m_DilationD, m_DilationH, m_DilationW, m_CeilMode);
 	}
 }

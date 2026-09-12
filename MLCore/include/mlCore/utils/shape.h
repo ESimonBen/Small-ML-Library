@@ -1,6 +1,7 @@
  /// shape.h
 #pragma once
 #include <vector>
+#include <ostream>
 #include <cstddef>
 #include <type_traits>
 
@@ -76,6 +77,10 @@ namespace MLCore::Utils{
 		/// <returns>A const reference to the internal std::vector<size_t> that holds the dimension sizes. The reference remains valid as long as the Shape object exists and its internal vector is not modified.</returns>
 		const std::vector<size_t>& Dims() const;
 
+		void Print() const;
+
+		friend std::ostream& PrintShape(std::ostream& os, const Shape& shape);
+
 		/// <summary>
 		/// Determines whether this Shape is equal to another by comparing their dimensions.
 		/// </summary>
@@ -96,6 +101,14 @@ namespace MLCore::Utils{
 		/// <param name="i">Index of the dimension to retrieve. Behavior is undefined if the index is out of range.</param>
 		/// <returns>The dimension at the given index as size_t.</returns>
 		size_t operator[](size_t i) const;
+
+		/// <summary>
+		/// Writes the text "Shape: " followed by the shape's dimensions (each followed by a space) to the provided output stream.
+		/// </summary>
+		/// <param name="os">Output stream to write to. The function inserts the shape description into this stream.</param>
+		/// <param name="shape">The Shape object whose dimensions will be written; passed by const reference and not modified.</param>
+		/// <returns>A reference to the same output stream (os), allowing chaining of stream operations.</returns>
+		friend std::ostream& operator<<(std::ostream& os, const Shape& shape);
 
 	private:
 		std::vector<size_t> m_Dims; /// Member variable that holds the size of each dimension.
