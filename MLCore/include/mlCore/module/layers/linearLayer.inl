@@ -28,7 +28,7 @@ namespace MLCore::NN {
 
 			finalDims.push_back(m_Weight.Data().Dims()[1]); /// Place output features from weight
 
-			TensorCore::Tensor<T> input2D = Operations::Reshape(input, { combinedSize, dims[rank - 1] });
+			TensorCore::Tensor<T> input2D = Operations::Reshape(input, Utils::Shape{ combinedSize, dims[rank - 1] });
 			TensorCore::Tensor<T> mul = Operations::MatMultiply(input2D, m_Weight.Data()); /// Matrix multiply weight with input
 			TensorCore::Tensor<T> result2D = Operations::Add(mul, m_Bias.Data()); /// Add the bias
 			TensorCore::Tensor<T> result = Operations::Reshape(result2D, Utils::Shape{ finalDims });
